@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.jimistore.boot</groupId>
+	<artifactId>nemo-boot-starter-parent</artifactId>
+	<version>1.0.0-RELEASE</version>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>nemo-hibernate-starter</module>
+		<module>nemo-rpc-eureka-starter</module>
+	</modules>
+
+	<parent>
+		<groupId>com.cq</groupId>
+		<artifactId>nemo-boot-starter-parent</artifactId>
+		<version>1.2.0-RELEASE</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.7</java.version>
+		<nemo.boot.version>1.0.0-RELEASE</nemo.boot.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>Dalston.SR1</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-hibernate-starter</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-rpc-eureka-starter</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>jimi-private-release</id>
+			<name>jimi-private-release</name>
+			<url>https://maven.jimistore.com/nexus/content/repositories/jimi-private-release/</url>
+		</repository>
+		<snapshotRepository>
+			<id>jimi-private-snapshot</id>
+			<name>jimi-private-snapshot</name>
+			<url>https://maven.jimistore.com/nexus/content/repositories/jimi-private-snapshot/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>
