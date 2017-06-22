@@ -3,19 +3,23 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>nemo-hibrenate-starter</artifactId>
+	<artifactId>nemo-hibernate-starter</artifactId>
 	<packaging>jar</packaging>
 
-	<name>nemo-hibrenate-starter</name>
+	<name>nemo-hibernate-starter</name>
 	<description></description>
 
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.0.0.RELEASE</version>
+		<version>1.0.0-RELEASE</version>
 	</parent>
 	
 	<dependencies>
+		<dependency>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-hibernate-api</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.cq</groupId>
 			<artifactId>nemo-hibernate-starter</artifactId>

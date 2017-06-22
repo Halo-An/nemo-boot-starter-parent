@@ -8,7 +8,9 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>nemo-hibernate-api</module>
 		<module>nemo-hibernate-starter</module>
+		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
 	</modules>
 
@@ -16,6 +18,7 @@
 		<groupId>com.cq</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
 		<version>1.2.0-RELEASE</version>
+		<relativePath></relativePath>
 	</parent>
 
 	<properties>
@@ -63,7 +66,17 @@
 			</dependency>
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-hibernate-api</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-hibernate-starter</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-rpc-eureka-api</artifactId>
 				<version>${nemo.boot.version}</version>
 			</dependency>
 			<dependency>
