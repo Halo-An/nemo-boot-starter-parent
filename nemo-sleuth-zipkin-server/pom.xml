@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>nemo-sleuth-zipkin-server</artifactId>
+	<packaging>jar</packaging>
+
+	<name>nemo-sleuth-zipkin-server</name>
+	<description>Demo project for Spring Boot</description>
+
+	<parent>
+		<groupId>com.jimistore.boot</groupId>
+		<artifactId>nemo-boot-starter-parent</artifactId>
+		<version>1.0.4-RELEASE</version>
+	</parent>
+
+	<properties>
+		 <nemo-rpc-eureka-starter.version>1.0.4-RELEASE</nemo-rpc-eureka-starter.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-rpc-eureka-starter</artifactId>
+			<version>${nemo-rpc-eureka-starter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.zipkin.java</groupId>
+			<artifactId>zipkin-autoconfigure-ui</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-sleuth-zipkin-stream</artifactId>
+			<version>1.1.4.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-stream-rabbit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+                	<source>1.7</source>
+                	<target>1.7</target>
+                	<encoding>UTF-8</encoding>
+            	</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
