@@ -12,6 +12,7 @@
 		<module>nemo-hibernate-starter</module>
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
+		<module>nemo-sleuth-starter</module>
 	</modules>
 
 	<parent>
