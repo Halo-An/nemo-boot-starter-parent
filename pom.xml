@@ -13,7 +13,6 @@
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
 		<module>nemo-sleuth-starter</module>
-		<module>nemo-sleuth-zipkin-server</module>
 	</modules>
 
 	<parent>
