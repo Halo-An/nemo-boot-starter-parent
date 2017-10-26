@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>nemo-monitor-server</artifactId>
+	<artifactId>nemo-rpc-eureka-server</artifactId>
 	<packaging>jar</packaging>
 
-	<name>nemo-monitor-server</name>
+	<name>nemo-rpc-eureka-server</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -14,34 +14,19 @@
 		<artifactId>nemo-boot-starter-parent</artifactId>
 		<version>1.1.0-RELEASE</version>
 	</parent>
-
+	
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-eureka-server</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-eureka</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>de.codecentric</groupId>
-			<artifactId>spring-boot-admin-server</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.codecentric</groupId>
-			<artifactId>spring-boot-admin-server-ui</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.codecentric</groupId>
-			<artifactId>spring-boot-admin-server-ui-login</artifactId>
 		</dependency>
 	</dependencies>
 

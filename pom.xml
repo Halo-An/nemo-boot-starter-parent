@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.0.7-RELEASE</version>
+	<version>1.1.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -12,50 +12,24 @@
 		<module>nemo-hibernate-starter</module>
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
+		<module>nemo-rpc-eureka-server</module>
+		<module>nemo-monitor-server</module>
 		<module>nemo-sleuth-starter</module>
 	</modules>
 
 	<parent>
 		<groupId>com.cq</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.2.7-RELEASE</version>
+		<version>1.3.0-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.7</java.version>
-		<nemo.boot.version>1.0.7-RELEASE</nemo.boot.version>
+		<nemo.boot.version>1.1.0-RELEASE</nemo.boot.version>
+		<de.codecentric.version>1.5.2</de.codecentric.version>
 	</properties>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-websocket</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-aop</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -85,8 +59,57 @@
 				<artifactId>nemo-rpc-eureka-starter</artifactId>
 				<version>${nemo.boot.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-server</artifactId>
+				<version>${de.codecentric.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-server-ui</artifactId>
+				<version>${de.codecentric.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-starter-client</artifactId>
+				<version>${de.codecentric.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-server-ui-login</artifactId>
+				<version>${de.codecentric.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+		</dependency>
+
+	</dependencies>
 
 	<distributionManagement>
 		<repository>
