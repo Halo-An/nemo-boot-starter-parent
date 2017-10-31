@@ -4,14 +4,6 @@ SERVER=$(cd `dirname $0`;cd ..;pwd)
 APP=$(basename $0 .sh)
 MASTER=$(ifconfig | grep 10.28.148.140 | wc -L)
 
-if [ "$FLAVOR" != "prod" ] || [ "$MASTER" != 0 ]
-then
-  echo "this is master，timer is running"
-else
-  echo "this is not master, timer is not running, i will exit"
-  exit 0
-fi
-
 cd $SERVER
 #
 PID_FILE=$SERVER/pid/$APP-server.pid
