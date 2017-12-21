@@ -17,6 +17,7 @@
 		<module>nemo-sleuth-starter</module>
 		<module>nemo-mq-core</module>
 		<module>nemo-mq-activemq-starter</module>
+		<module>nemo-mq-rabbitmq-starter</module>
 	</modules>
 
 	<parent>
