@@ -3,11 +3,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>nemo-hibernate-api</artifactId>
+	<artifactId>nemo-mq-rabbitmq-starter</artifactId>
 	<packaging>jar</packaging>
 
-	<name>nemo-hibernate-api</name>
-	<description></description>
+	<name>nemo-mq-rabbitmq-starter</name>
+	<description>Demo project for Spring Boot</description>
 
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
@@ -17,8 +17,12 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>com.cq</groupId>
-			<artifactId>nemo-core-api</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-mq-core</artifactId>
 		</dependency>
 	</dependencies>
 
