@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.pool.PooledConnectionFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQProperties;
@@ -34,12 +35,19 @@ public class NemoMQActiveMQAutoConfiguration implements EnvironmentAware {
 		List<JMSDataSource> mQDataSourceList = new ArrayList<JMSDataSource>();
 		for(Entry<String,ActiveMQProperties> entry:activeMQPropertiesMap.entrySet()){
 
+			ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(
+					entry.getValue().getUser(),
+					entry.getValue().getPassword(),
+					entry.getValue().getBrokerUrl());
+			
+			activeMQConnectionFactory.setUseAsyncSend(true);
+			
+			PooledConnectionFactory pooledConnectionFactory = new PooledConnectionFactory();
+			pooledConnectionFactory.setConnectionFactory(activeMQConnectionFactory);
+			pooledConnectionFactory.setMaxConnections(100);
+			
 			JmsMessagingTemplate jmsMessagingTemplate = new JmsMessagingTemplate();
-			jmsMessagingTemplate.setConnectionFactory(
-					new ActiveMQConnectionFactory(
-							entry.getValue().getUser(),
-							entry.getValue().getPassword(),
-							entry.getValue().getBrokerUrl()));
+			jmsMessagingTemplate.setConnectionFactory(pooledConnectionFactory);
 			mQDataSourceList.add(new JMSDataSource()
 					.setKey(entry.getKey())
 					.setType("activemq")
@@ -48,20 +56,6 @@ public class NemoMQActiveMQAutoConfiguration implements EnvironmentAware {
 		}
 		return mQDataSourceList;
 	}
-	
-//	@Bean
-//	@ConditionalOnMissingBean(JmsMessagingTemplate.class)
-//	public JmsMessagingTemplate JmsMessagingTemplate(ConnectionFactory connectionFactory){
-//		JmsMessagingTemplate jmsMessagingTemplate = new JmsMessagingTemplate();
-//		jmsMessagingTemplate.setConnectionFactory(connectionFactory);
-//		return jmsMessagingTemplate;
-//	}
-//	
-//	@Bean
-//	@ConditionalOnMissingBean(JMSDataSource.class)
-//	public JMSDataSource MQDataSource(JmsMessagingTemplate jmsMessagingTemplate){
-//		return new JMSDataSource().setKey(JMSDataSource.DEFAULT).setType("vm").setJmsMessagingTemplate(jmsMessagingTemplate);
-//	}
 	
 	@Bean
 	@ConditionalOnMissingBean({IMQListener.class, IMQSender.class})
@@ -105,6 +99,12 @@ public class NemoMQActiveMQAutoConfiguration implements EnvironmentAware {
 		activeMQProperties.setBrokerUrl(String.valueOf(map.get("broker-url")));
 		activeMQProperties.setUser(String.valueOf(map.get("user")));
 		activeMQProperties.setPassword(String.valueOf(map.get("password")));
+//		if(map.get("pool.enabled")!=null){
+//			Pool pool = new Pool();
+//			pool.setEnabled(Boolean.parseBoolean(map.get("pool.enabled").toString()));
+//			pool.setMaxConnections(Integer.parseInt(map.get("pool.max-connections").toString()));
+//			activeMQProperties.setPool(pool);
+//		}
 		return activeMQProperties;
 	}
 

@@ -89,7 +89,7 @@ public class JMSAdapter implements IMQAdapter, BeanFactoryPostProcessor {
 	                .addPropertyValue("connectionFactory", this.getConnectionFactory(mQReceiver.getmQDataSource()))
 	                .addPropertyValue("destinationName", mQReceiver.getmQName())
 	                .addPropertyValue("sessionTransacted", true)
-	                .addPropertyValue("cacheLevel", DefaultMessageListenerContainer.CACHE_AUTO)
+	                .addPropertyValue("cacheLevel", DefaultMessageListenerContainer.CACHE_NONE)
 	                .addPropertyValue("messageListener", new SessionAwareMessageListener<TextMessage>(){
 
 						@Override

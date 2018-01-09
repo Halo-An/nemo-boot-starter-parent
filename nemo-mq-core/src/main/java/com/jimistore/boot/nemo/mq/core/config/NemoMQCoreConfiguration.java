@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQListener;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQSender;
+import com.jimistore.boot.nemo.mq.core.helper.AsynExecuter;
 import com.jimistore.boot.nemo.mq.core.helper.MQCoreClient;
 
 @Configuration
@@ -21,12 +22,18 @@ public class NemoMQCoreConfiguration {
 		return new ObjectMapper();
 	}
 	
+	@Bean
+	@ConditionalOnMissingBean(AsynExecuter.class)
+	public AsynExecuter AsynExecuter(){
+		return new AsynExecuter().setCapacity(5);
+	}
+	
 	
 	@Bean
 	@ConditionalOnMissingBean(MQCoreClient.class)
-	@ConditionalOnBean({IMQListener.class, IMQListener.class, ObjectMapper.class})
-	public MQCoreClient MQClient(IMQSender mQSender,IMQListener mQListener, ObjectMapper objectMapper){
-		return new MQCoreClient().setmQListener(mQListener).setmQSender(mQSender).setObjectMapper(objectMapper);
+	@ConditionalOnBean({IMQListener.class, IMQListener.class, ObjectMapper.class, AsynExecuter.class})
+	public MQCoreClient MQClient(IMQSender mQSender,IMQListener mQListener, ObjectMapper objectMapper, AsynExecuter asynExecuter){
+		return new MQCoreClient().setmQListener(mQListener).setmQSender(mQSender).setObjectMapper(objectMapper).setAsynExecuter(asynExecuter);
 	}
 
 }

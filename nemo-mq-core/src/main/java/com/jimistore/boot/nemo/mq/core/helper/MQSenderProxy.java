@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.remoting.support.RemoteAccessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +38,15 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	Object proxyObject;
 	
 	ObjectMapper objectMapper;
+	
+	ApplicationContext applicationContext;
+	
+	AsynExecuter asynExecuter;
+	
+	public MQSenderProxy setAsynExecuter(AsynExecuter asynExecuter) {
+		this.asynExecuter = asynExecuter;
+		return this;
+	}
 
 	public MQSenderProxy setObjectMapper(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
@@ -59,9 +69,18 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	}
 
 	@Override
-	public void send(String dataSource,String mqname, QueueType type, Object msg) {
+	public void send(final String dataSource,final String mqname, final QueueType type, final Object msg) {
 		log.debug("request send of MQSenderProxy");
-		mQSender.send(dataSource, mqname, type, msg);
+		if(asynExecuter!=null){
+			asynExecuter.execute(new IExecuter(){
+				@Override
+				public void execute() {
+					mQSender.send(dataSource, mqname, type, msg);
+				}
+			});
+		}else{
+			mQSender.send(dataSource, mqname, type, msg);
+		}
 	}
 
 	@Override

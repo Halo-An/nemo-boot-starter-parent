@@ -56,6 +56,13 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 	
 	ApplicationContext applicationContext;
 	
+	AsynExecuter asynExecuter;
+	
+	public MQCoreClient setAsynExecuter(AsynExecuter asynExecuter) {
+		this.asynExecuter = asynExecuter;
+		return this;
+	}
+
 	public MQCoreClient setmQListener(IMQListener mQListener) {
 		this.mQListener = mQListener;
 		return this;
@@ -124,6 +131,7 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
                             String beanName = this.getExistKey(className);
                         	if(beanName!=null){
                         		MQSenderProxy mQSenderProxy = new MQSenderProxy()
+                        				.setAsynExecuter(asynExecuter)
                         				.setObjectMapper(objectMapper)
                         				.setmQSender(mQSender)
                         				.setDataSource(dataSource)
@@ -164,6 +172,7 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 			Class<?> serviceInterface = Class.forName(className);
 			BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
 	                .rootBeanDefinition(MQSenderProxy.class)
+	                .addPropertyValue("asynExecuter", asynExecuter)
 	                .addPropertyValue("dataSource", dataSource)
 	                .addPropertyValue("mQGroup", mQGroup)
 	                .addPropertyValue("serviceInterface", serviceInterface)
