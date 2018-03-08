@@ -2,6 +2,8 @@ package com.jimistore.boot.nemo.mq.core.helper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JavaType;
@@ -34,11 +36,23 @@ public class MQReceiverProxy implements IMQReceiver {
 		String msgStr = (String) msg;
 		JavaType javaType = objectMapper.getTypeFactory().constructParametricType(List.class, String.class); 
 		List<String> sourceList = objectMapper.readValue(msgStr, javaType);
+		Method method = MQNameHelper.getMethodByMQNameAndTarget(mQName, msgClass, target);
+		Type[] types = method.getGenericParameterTypes();
+		
 		Object[] dest = new Object[sourceList.size()];
 		for(int i=0;i<sourceList.size();i++){
-			dest[i] = objectMapper.readValue(sourceList.get(i), msgClass[i]);
+			if(types[i] instanceof ParameterizedType){
+				Type[] genericTypes = ((ParameterizedType)types[i]).getActualTypeArguments();
+				Class<?>[] classes = new Class[genericTypes.length];
+				for(int j=0;j<genericTypes.length;j++){
+					classes[j]=(Class<?>)genericTypes[j];
+				}
+				javaType = objectMapper.getTypeFactory().constructParametricType(msgClass[i], classes);
+				dest[i] = objectMapper.readValue(sourceList.get(i), javaType);
+			}else{
+				dest[i] = objectMapper.readValue(sourceList.get(i), msgClass[i]);
+			}
 		}
-		Method method = MQNameHelper.getMethodByMQNameAndTarget(mQName, msgClass, target);
 		try{
 			method.invoke(target, dest);
 		}catch(InvocationTargetException e){
