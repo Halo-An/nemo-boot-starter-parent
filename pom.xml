@@ -4,18 +4,18 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.2.3-RELEASE</version>
+	<version>1.3.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>nemo-hibernate-api</module>
-		<module>nemo-hibernate-starter</module>
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
 		<module>nemo-rpc-eureka-server</module>
 		<module>nemo-monitor-server</module>
 		<module>nemo-sleuth-starter</module>
 		<module>nemo-mq-core</module>
+		<module>nemo-dao-api</module>
+		<module>nemo-dao-hibernate-starter</module>
 		<module>nemo-mq-activemq-starter</module>
 		<module>nemo-mq-rabbitmq-starter</module>
 		<module>nemo-config-server</module>
@@ -24,14 +24,14 @@
 	<parent>
 		<groupId>com.cq</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.3.11-RELEASE</version>
+		<version>1.3.14-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.7</java.version>
-		<nemo.boot.version>1.2.3-RELEASE</nemo.boot.version>
+		<java.version>1.8</java.version>
+		<nemo.boot.version>1.3.0-RELEASE</nemo.boot.version>
 		<de.codecentric.version>1.5.2</de.codecentric.version>
 	</properties>
 	<dependencyManagement>
@@ -42,16 +42,6 @@
 				<version>Dalston.SR1</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.jimistore.boot</groupId>
-				<artifactId>nemo-hibernate-api</artifactId>
-				<version>${nemo.boot.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.jimistore.boot</groupId>
-				<artifactId>nemo-hibernate-starter</artifactId>
-				<version>${nemo.boot.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
@@ -76,6 +66,16 @@
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-mq-rabbitmq-starter</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-dao-api</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-dao-hibernate-starter</artifactId>
 				<version>${nemo.boot.version}</version>
 			</dependency>
 			<dependency>
