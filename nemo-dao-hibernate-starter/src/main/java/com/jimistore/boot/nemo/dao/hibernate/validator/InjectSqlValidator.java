@@ -10,7 +10,7 @@ public class InjectSqlValidator implements IInjectSqlValidator {
 	/**
 	 * 非法字符串
 	 */
-	public String[] errStr={
+	public static final String[] errStr={
 			"'",
 			" ",
 			",",
@@ -32,6 +32,17 @@ public class InjectSqlValidator implements IInjectSqlValidator {
 			"@",
 			"#"
 			};
+	
+	public static void check(Object obj) throws QueryValidatorException{
+		//是否字符串
+		if(obj!=null && obj instanceof String){
+			for(String str:errStr){
+				if(obj.toString().indexOf(str)>=0){
+					throw new QueryValidatorException();
+				}
+			}
+		}
+	}
 
 	@Override
 	public void check(Query query) throws QueryValidatorException {
@@ -41,14 +52,7 @@ public class InjectSqlValidator implements IInjectSqlValidator {
 		Filter filter = query.getFilter();
 		do{
 			for(FilterEntry filterEntry : filter.getFilterEntrys()){
-				//是否字符串
-				if(filterEntry.getValue()!=null && filterEntry.getValue() instanceof String){
-					for(String str:errStr){
-						if(filterEntry.getValue().toString().indexOf(str)>=0){
-							throw new QueryValidatorException();
-						}
-					}
-				}
+				check(filterEntry.getValue());
 			}
 			
 		}while((filter=filter.getNext())!=null);
