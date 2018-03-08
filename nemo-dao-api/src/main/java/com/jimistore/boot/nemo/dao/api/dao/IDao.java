@@ -13,13 +13,13 @@ public interface IDao {
 	 */
 	public Object create(Object entity);
 	
-//	/**
-//	 * 删除一个对象
-//	 * @param entityClass
-//	 * @param filter
-//	 * @return
-//	 */
-//	public <T> List<T> delete(Class<T> entityClass, Filter filter);
+	/**
+	 * 删除一个对象
+	 * @param entityClass
+	 * @param query
+	 * @return
+	 */
+	public <T> List<T> delete(Class<T> entityClass, Query query);
 	
 //	/**
 //	 * 更新对象的部分数据

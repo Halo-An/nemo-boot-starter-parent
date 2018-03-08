@@ -117,4 +117,13 @@ public class HibernateDao implements IDao {
 		}
 	}
 
+	@Override
+	public <T> List<T> delete(Class<T> entityClass, Query query) {
+		List<T> dataList = this.list(entityClass, query);
+		for(T t:dataList){
+			this.getSession().delete(t);
+		}
+		return dataList;
+	}
+
 }
