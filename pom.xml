@@ -13,9 +13,10 @@
 		<module>nemo-rpc-eureka-server</module>
 		<module>nemo-monitor-server</module>
 		<module>nemo-sleuth-starter</module>
-		<module>nemo-mq-core</module>
 		<module>nemo-dao-api</module>
 		<module>nemo-dao-hibernate-starter</module>
+		<module>nemo-mq-core-api</module>
+		<module>nemo-mq-core</module>
 		<module>nemo-mq-activemq-starter</module>
 		<module>nemo-mq-rabbitmq-starter</module>
 		<module>nemo-config-server</module>
@@ -51,6 +52,11 @@
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-rpc-eureka-starter</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-mq-core-api</artifactId>
 				<version>${nemo.boot.version}</version>
 			</dependency>
 			<dependency>
