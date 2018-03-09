@@ -30,19 +30,19 @@ public class Filter {
 	}
 	
 	public Filter or(FilterEntry... entries){
-		return this.setNext(new Filter().setAndOr(AndOr.or).setFilterEntrys(entries));
+		return this.setNext(new Filter().setAndOr(AndOr.or).setFilterEntrys(entries).setNext(this.getNext()));
 	}
 	
 	public Filter or(AndOr andOr, FilterEntry... entries){
-		return this.setNext(new Filter().setAndOr(AndOr.or).setChildAndOr(andOr).setFilterEntrys(entries));
+		return this.setNext(new Filter().setAndOr(AndOr.or).setChildAndOr(andOr).setFilterEntrys(entries).setNext(this.getNext()));
 	}
 	
 	public Filter and(AndOr andOr, FilterEntry... entries){
-		return this.setNext(new Filter().setAndOr(AndOr.and).setChildAndOr(andOr).setFilterEntrys(entries));
+		return this.setNext(new Filter().setAndOr(AndOr.and).setChildAndOr(andOr).setFilterEntrys(entries).setNext(this.getNext()));
 	}
 	
 	public Filter and(FilterEntry... entries){
-		return this.setNext(new Filter().setAndOr(AndOr.and).setFilterEntrys(entries));
+		return this.setNext(new Filter().setAndOr(AndOr.and).setFilterEntrys(entries).setNext(this.getNext()));
 	}
 
 	public AndOr getAndOr() {
