@@ -9,7 +9,7 @@ public class QueryValidatorException extends DaoException {
 	
 	private String code="500";
 	
-	private static final String msg = "疑似sql注入异常";
+	private static final String msg = "疑似sql注入攻击，本次请求已记录日志，请联系公司法务部门取证！";
 	
 	public QueryValidatorException(String message,Throwable cause) {
 		super(message,cause);

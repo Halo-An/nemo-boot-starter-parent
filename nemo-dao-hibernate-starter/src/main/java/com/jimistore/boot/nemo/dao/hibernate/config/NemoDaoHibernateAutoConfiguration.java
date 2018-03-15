@@ -78,8 +78,8 @@ public class NemoDaoHibernateAutoConfiguration {
 	
 	@Bean()
 	@ConditionalOnMissingBean({IQueryParser.class, IQueryValidator.class})
-	public IQueryParser IQueryParser(){
-		return new QueryParser();
+	public IQueryParser IQueryParser(HibernateNamingStrategy hibernateNamingStrategy){
+		return new QueryParser().setHibernateNamingStrategy(hibernateNamingStrategy);
 	}
 	
 	@Bean()

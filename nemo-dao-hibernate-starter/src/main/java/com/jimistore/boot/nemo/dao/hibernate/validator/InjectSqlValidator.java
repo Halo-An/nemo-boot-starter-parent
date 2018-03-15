@@ -3,7 +3,9 @@ package com.jimistore.boot.nemo.dao.hibernate.validator;
 import com.jimistore.boot.nemo.dao.api.exception.QueryValidatorException;
 import com.jimistore.boot.nemo.dao.api.request.Filter;
 import com.jimistore.boot.nemo.dao.api.request.FilterEntry;
-import com.jimistore.boot.nemo.dao.api.request.Query;
+import com.jimistore.boot.nemo.dao.api.request.IQuery;
+import com.jimistore.boot.nemo.dao.api.request.ITarget;
+import com.jimistore.boot.nemo.dao.hibernate.request.SqlTarget;
 
 public class InjectSqlValidator implements IInjectSqlValidator {
 	
@@ -45,11 +47,28 @@ public class InjectSqlValidator implements IInjectSqlValidator {
 	}
 
 	@Override
-	public void check(Query query) throws QueryValidatorException {
-		if(query==null||query.getFilter()==null){
+	public void check(IQuery<?> query) throws QueryValidatorException {
+		if(query==null||query.getTarget()==null){
 			return ;
 		}
-		Filter filter = query.getFilter();
+		this.check(query.getTarget());
+		
+	}
+	
+	private void check(ITarget target){
+		this.check(target.getFilter());
+		if(target instanceof SqlTarget){
+			SqlTarget sqlTarget = (SqlTarget) target;
+			if(sqlTarget.getJoinList()!=null){
+				for(SqlTarget joinTarget:sqlTarget.getJoinList()){
+					this.check(joinTarget);
+				}
+			}
+			
+		}
+	}
+	
+	private void check(Filter filter){
 		do{
 			for(FilterEntry filterEntry : filter.getFilterEntrys()){
 				check(filterEntry.getValue());

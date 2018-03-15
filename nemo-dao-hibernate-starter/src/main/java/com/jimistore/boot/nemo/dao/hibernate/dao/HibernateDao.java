@@ -9,7 +9,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import com.jimistore.boot.nemo.dao.api.dao.IDao;
-import com.jimistore.boot.nemo.dao.api.request.Query;
+import com.jimistore.boot.nemo.dao.api.request.IQuery;
 import com.jimistore.boot.nemo.dao.api.validator.IQueryValidator;
 import com.jimistore.boot.nemo.dao.hibernate.helper.IQueryParser;
 
@@ -42,20 +42,11 @@ public class HibernateDao implements IDao {
 	}
 
 	@Override
-	public Object create(Object entity) {
-		return this.getSession().save(entity);
+	public <T> T create(T entity) {
+		this.getSession().save(entity);
+		return entity;
 	}
 
-//	@SuppressWarnings({ "rawtypes", "unchecked" })
-//	@Override
-//	public <T> List<T> delete(Class<T> entityClass, Filter filter) {
-//		List list = this.list(entityClass, filter);
-//		for(Object obj:list){
-//			this.getSession().delete(obj);
-//		}
-//		return list;
-//	}
-//
 //	@SuppressWarnings({ "rawtypes", "unchecked" })
 //	@Override
 //	public <T> List<T> update(Class<T> entityClass, Filter filter, Map<String,Object> entity) {
@@ -67,31 +58,9 @@ public class HibernateDao implements IDao {
 //	}
 
 	@Override
-	public Object update(Object entity) {
+	public <T> T update(T entity) {
 		this.getSession().update(entity);
 		return entity;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> List<T> list(Class<T> entityClass, Query query) {
-		//校验参数
-		this.check(query);
-		return queryParser.parse(this.getSession(), entityClass, query).list();
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public <T> T get(Class<T> entityClass, Query query) {
-		//校验参数
-		this.check(query);
-		
-		//查询
-		List list = queryParser.parse(this.getSession(), entityClass, query).list();
-		if(list!=null&&list.size()>0){
-			return (T) list.get(0);
-		}
-		return null;
 	}
 
 	@SuppressWarnings("unused")
@@ -110,7 +79,7 @@ public class HibernateDao implements IDao {
 		return null;
 	}
 	
-	private void check(Query query){
+	private void check(IQuery<?> query){
 		Iterator<IQueryValidator> it = queryValidatorList.iterator();
 		while(it.hasNext()){
 			it.next().check(query);
@@ -118,12 +87,34 @@ public class HibernateDao implements IDao {
 	}
 
 	@Override
-	public <T> List<T> delete(Class<T> entityClass, Query query) {
-		List<T> dataList = this.list(entityClass, query);
+	public <T> List<T> delete(IQuery<T> query) {
+		List<T> dataList = this.list(query);
 		for(T t:dataList){
 			this.getSession().delete(t);
 		}
 		return dataList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> List<T> list(IQuery<T> query) {
+		//校验参数
+		this.check(query);
+		return queryParser.parse(this.getSession(), query).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T get(IQuery<T> query) {
+		//校验参数
+		this.check(query);
+		
+		//查询
+		List<T> list = queryParser.parse(this.getSession(), query).list();
+		if(list!=null&&list.size()>0){
+			return (T) list.get(0);
+		}
+		return null;
 	}
 
 }

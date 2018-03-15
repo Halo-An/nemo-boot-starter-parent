@@ -1,8 +1,8 @@
 package com.jimistore.boot.nemo.dao.api.request;
 
-public class Query implements IQuery {
+public class Query<T> implements IQuery<T> {
 	
-	Filter filter;
+	ITarget target;
 	
 	private Integer pageNum;
 	
@@ -10,23 +10,47 @@ public class Query implements IQuery {
 	
 	Order[] orders;
 	
-	String[] columns;
+	protected Query(){}
 	
-	private Query(){}
-	
-	public static Query create(Filter filter, Order... orders){
-		return new Query().setFilter(filter).setOrders(orders);
+	public static <T> Query<T> create(Class<T> entityClass, Filter filter, Integer pageNum, Integer pageSize , Order... orders){
+		return new Query<T>()
+				.setPageNum(pageNum)
+				.setPageSize(pageSize)
+				.setOrders(orders)
+				.setTarget(new Target().setEntityClass(entityClass).setFilter(filter));
 	}
 	
+	public static <T> Query<T> create(Class<T> entityClass, Filter filter, Order... orders){
+		return new Query<T>()
+				.setOrders(orders)
+				.setTarget(new Target().setEntityClass(entityClass).setFilter(filter));
+	}
+	
+	public static <T> Query<T> create(ITarget target, Integer pageNum, Integer pageSize , Order... orders){
+		return new Query<T>()
+				.setPageNum(pageNum)
+				.setPageSize(pageSize)
+				.setOrders(orders)
+				.setTarget(target);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	@Deprecated
+	public static Query create(Filter filter, Order... orders){
+		return new Query().setTarget(new Target().setFilter(filter)).setOrders(orders);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	@Deprecated
 	public static Query create(Filter filter, Integer pageNum, Integer pageSize , Order... orders){
-		return new Query().setFilter(filter).setPageNum(pageNum).setPageSize(pageSize).setOrders(orders);
+		return new Query().setTarget(new Target().setFilter(filter)).setPageNum(pageNum).setPageSize(pageSize).setOrders(orders);
 	}
 
 	public Integer getPageNum() {
 		return pageNum;
 	}
 
-	public Query setPageNum(Integer pageNum) {
+	public Query<T> setPageNum(Integer pageNum) {
 		this.pageNum = pageNum;
 		return this;
 	}
@@ -35,7 +59,7 @@ public class Query implements IQuery {
 		return pageSize;
 	}
 
-	public Query setPageSize(Integer pageSize) {
+	public Query<T> setPageSize(Integer pageSize) {
 		this.pageSize = pageSize;
 		return this;
 	}
@@ -44,26 +68,19 @@ public class Query implements IQuery {
 		return orders;
 	}
 
-	public Query setOrders(Order... orders) {
+	public Query<T> setOrders(Order... orders) {
 		this.orders = orders;
 		return this;
 	}
 
-	public String[] getColumns() {
-		return columns;
+	@Override
+	public ITarget getTarget() {
+		return target;
 	}
 
-	public Query setColumns(String[] columns) {
-		this.columns = columns;
-		return this;
-	}
-
-	public Filter getFilter() {
-		return filter;
-	}
-
-	public Query setFilter(Filter filter) {
-		this.filter = filter;
+	@Override
+	public Query<T> setTarget(ITarget target) {
+		this.target=target;
 		return this;
 	}
 

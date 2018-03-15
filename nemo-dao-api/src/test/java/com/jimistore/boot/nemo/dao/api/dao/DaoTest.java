@@ -30,7 +30,7 @@ public class DaoTest {
 		
 		Order order = Order.create(COLUMN_USERNAME, OrderType.asc);
 		
-		dao.list(Order.class, Query.create(filter, 0, 10, order));
+		dao.list(Query.create(Order.class, filter, 0, 10, order));
 	}
 
 }

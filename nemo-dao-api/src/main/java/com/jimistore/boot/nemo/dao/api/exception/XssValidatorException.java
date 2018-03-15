@@ -10,7 +10,7 @@ public class XssValidatorException extends DaoException {
 
 	private String code="500";
 
-	private static final String msg = "疑似XSS脚本攻击异常";
+	private static final String msg = "疑似XSS脚本攻击，本次请求已记录日志，请联系公司法务部门取证！";
 	
 	public XssValidatorException(String message,Throwable cause) {
 		super(message,cause);

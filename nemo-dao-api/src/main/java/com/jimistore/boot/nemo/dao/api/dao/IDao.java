@@ -2,7 +2,7 @@ package com.jimistore.boot.nemo.dao.api.dao;
 
 import java.util.List;
 
-import com.jimistore.boot.nemo.dao.api.request.Query;
+import com.jimistore.boot.nemo.dao.api.request.IQuery;
 
 public interface IDao {
 	
@@ -11,15 +11,15 @@ public interface IDao {
 	 * @param entity
 	 * @return
 	 */
-	public Object create(Object entity);
+	public <T> T create(T entity);
 	
 	/**
-	 * 删除一个对象
+	 * 删除一些对象
 	 * @param entityClass
 	 * @param query
 	 * @return
 	 */
-	public <T> List<T> delete(Class<T> entityClass, Query query);
+	public <T> List<T> delete(IQuery<T> query);
 	
 //	/**
 //	 * 更新对象的部分数据
@@ -35,7 +35,7 @@ public interface IDao {
 	 * @param entity 新的数据对象
 	 * @return
 	 */
-	public Object update(Object entity);
+	public <T> T update(T entity);
 	
 	/**
 	 * 批量查询
@@ -44,15 +44,14 @@ public interface IDao {
 	 * @param target
 	 * @return
 	 */
-	public <T> List<T> list(Class<T> entityClass, Query query);
+	public <T> List<T> list(IQuery<T> query);
+	
 	
 	/**
 	 * 查询单个
-	 * @param entityClass
-	 * @param filter
-	 * @param target
+	 * @param query
 	 * @return
 	 */
-	public <T> T get(Class<T> entityClass, Query query);
+	public <T> T get(IQuery<T> query);
 
 }
