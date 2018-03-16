@@ -289,13 +289,13 @@ public class QueryParser implements IQueryParser {
 			fieldType = field.getType();
 		}
 		if(filterEntry.getCompare().equals(Compare.like)){
-			return new StringBuffer().append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("%'").toString();
+			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("%'").toString();
 		}else if(filterEntry.getCompare().equals(Compare.nl)){
 			return String.format("%s is null", column);
 		}else if(filterEntry.getCompare().equals(Compare.nnl)){
 			return String.format("%s is not null", column);
 		}else if(fieldType.isArray()){
-			StringBuffer sb =new StringBuffer(filterEntry.getCompare().getCode()).append(" (");
+			StringBuffer sb =new StringBuffer(column).append(" ").append(filterEntry.getCompare().getCode()).append(" (");
 			Object[] objs = (Object[])filterEntry.getValue();
 			String joinStr="";
 			for(Object obj:objs){
