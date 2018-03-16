@@ -8,7 +8,7 @@ public class Order {
 	
 	private String key;
 	
-	private Order(){}
+	protected Order(){}
 	
 	public static Order create(String key, OrderType orderType){
 		return new Order().setKey(key).setOrderType(orderType);

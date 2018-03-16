@@ -16,6 +16,7 @@ import com.jimistore.boot.nemo.dao.api.request.FilterEntry;
 import com.jimistore.boot.nemo.dao.api.request.IQuery;
 import com.jimistore.boot.nemo.dao.api.request.ITarget;
 import com.jimistore.boot.nemo.dao.api.request.Order;
+import com.jimistore.boot.nemo.dao.hibernate.request.SqlOrder;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlQuery;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlTarget;
 
@@ -45,10 +46,15 @@ public class QueryParser implements IQueryParser {
 	 */
 	public Query parseSql(Session session, SqlQuery<?> query) {
 		
+		List<SqlTarget> sqlTargetList = new ArrayList<SqlTarget>();
+		this.fillTargetList(query.getSqlTarget(), sqlTargetList);
+		Map<SqlTarget,String> aliasMap = this.initAliasMap(sqlTargetList);
+		
 		//解析sql
-		String targetSql = this.getTargetSql(query.getSqlTarget());
-		String orderSql = this.getOrderSql(query);
-		String sql = String.format("%s %s", targetSql, orderSql);	
+		String selectSql = this.getSelectSql(query.getSqlTarget(), aliasMap , sqlTargetList);
+		String targetSql = this.getFromSql(query.getSqlTarget(), aliasMap, sqlTargetList);
+		String orderSql = this.getOrderSql(query, aliasMap);
+		String sql = String.format("%s %s %s ", selectSql, targetSql, orderSql);	
 		
 		Query sQuery = session.createSQLQuery(sql);
 		sQuery.setResultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP);
@@ -86,43 +92,70 @@ public class QueryParser implements IQueryParser {
 		return hQuery;
 	}
 	
-	/**
-	 * 根据SqlTarget解析sql
-	 * @param target
-	 * @return
-	 */
-	private String getTargetSql(SqlTarget target){
-		StringBuffer selectSql = new StringBuffer();
-		StringBuffer fromSql = new StringBuffer();
-		
-		List<SqlTarget> sqlTargetList = new ArrayList<SqlTarget>();
-		this.fillTargetList(target, sqlTargetList);
-		
-		Map<SqlTarget,String> aliasMap = new HashMap<SqlTarget,String>();
+	private Map<SqlTarget,String> initAliasMap(List<SqlTarget> sqlTargetList){
 
-		int i=-1;
-		for(SqlTarget sqlTarget:sqlTargetList){
-			i++;
-			String entity = this.getTableNameByClass(sqlTarget.getEntityClass());
-			if(entity==null){
-				entity = sqlTarget.getEntityClass().getSimpleName();
-			}
-			String alias = String.format("%s_%s", entity.toLowerCase(), i);
+		Map<SqlTarget,String> aliasMap = new HashMap<SqlTarget,String>();
+		
+		for(int i=0;i<sqlTargetList.size();i++){
+			SqlTarget sqlTarget = sqlTargetList.get(i);
+			String alias = String.format("%s_%s", sqlTarget.getEntityClass().getSimpleName().toLowerCase(), i);
 			aliasMap.put(sqlTarget, alias);
+		}
+		return aliasMap;
+	}
+	
+
+	
+	private String getSelectSql(SqlTarget target, Map<SqlTarget,String> aliasMap, List<SqlTarget> sqlTargetList){
+		StringBuffer selectSql = new StringBuffer();
+		for(int i=0;i<sqlTargetList.size();i++){
+			SqlTarget sqlTarget = sqlTargetList.get(i);
+			String alias = aliasMap.get(sqlTarget);
 			if(sqlTarget.getOutFieldNames()!=null){
 				for(String fieldName:sqlTarget.getOutFieldNames()){
-					String column = this.getColumnByFieldName(fieldName);
 					if(selectSql.length()>0){
 						selectSql.append(", ");
 					}else{
 						selectSql.append("select ");
 					}
-					if(column.indexOf("as ")>=0){
-						selectSql.append(column);
+					if(fieldName.indexOf("as ")>=0){
+						//判断是否是聚合函数
+						if(fieldName.indexOf("(")>=0&&fieldName.indexOf(")")>=0){
+							selectSql.append(fieldName);
+						}else{
+							String column = fieldName.substring(0,fieldName.indexOf("as ")-1);
+							column = this.getColumnByFieldName(column);
+							String as = fieldName.substring(fieldName.indexOf("as "));
+							selectSql.append(String.format("%s.%s %s", alias, column, as));
+						}
 					}else{
-						selectSql.append(alias).append(".").append(column);
+						String column = this.getColumnByFieldName(fieldName);
+						selectSql.append(String.format("%s.%s as %s", alias, column, fieldName));
 					}
 				}
+			}
+		}
+		
+		if(selectSql.length()==0){
+			throw new RuntimeException("columns of target cannot be empty.");
+		}
+		return selectSql.toString();
+	}
+	
+	/**
+	 * 根据SqlTarget解析sql
+	 * @param target
+	 * @return
+	 */
+	private String getFromSql(SqlTarget target, Map<SqlTarget,String> aliasMap, List<SqlTarget> sqlTargetList){
+		StringBuffer fromSql = new StringBuffer();
+
+		for(int i=0;i<sqlTargetList.size();i++){
+			SqlTarget sqlTarget = sqlTargetList.get(i);
+			String alias = aliasMap.get(sqlTarget);
+			String entity = this.getTableNameByClass(sqlTarget.getEntityClass());
+			if(entity==null){
+				entity = sqlTarget.getEntityClass().getSimpleName();
 			}
 			String whereSql = this.getWhereSql(sqlTarget);
 			if(fromSql.length()==0){
@@ -142,13 +175,38 @@ public class QueryParser implements IQueryParser {
 			}
 		}
 		
-		if(selectSql.length()==0){
-			throw new RuntimeException("columns of target cannot be empty.");
+		return fromSql.toString();
+		
+	}
+
+	/**
+	 * 解析排序的sql
+	 * @param query
+	 * @return
+	 */
+	private String getOrderSql(IQuery<?> query, Map<SqlTarget,String> aliasMap){
+		StringBuffer orderSql = new StringBuffer();
+		
+		//处理排序
+		if(query.getOrders()!=null&&query.getOrders().length>0){
+			
+			for(Order order:query.getOrders()){
+				if(orderSql.length()==0){
+					orderSql.append(" order by ");
+				}else{
+					orderSql.append(",");
+				}
+				
+				if(order instanceof SqlOrder){
+					String column = this.getColumnByFieldName(order.getKey());
+					String alias = aliasMap.get(((SqlOrder)order).getSqlTarget());
+					orderSql.append(String.format("%s.%s %s", alias, column, order.getOrderType().getCode()));
+				}else{
+					orderSql.append(String.format("%s %s", order.getKey(), order.getOrderType().getCode()));
+				}
+			}
 		}
-		
-		
-		return String.format("%s %s", selectSql.toString(), fromSql.toString());
-		
+		return orderSql.toString();
 	}
 	
 	/**
@@ -190,31 +248,26 @@ public class QueryParser implements IQueryParser {
 		return hql.toString();
 	}
 	
-	/**
-	 * 解析排序的sql
-	 * @param query
-	 * @return
-	 */
 	private String getOrderSql(IQuery<?> query){
-		StringBuffer hql = new StringBuffer();
-		//处理排序
-		if(query.getOrders()!=null&&query.getOrders().length>0){
-			
-			for(Order order:query.getOrders()){
-				if(hql.length()==0){
-					hql.append(" order by ");
-				}else{
-					hql.append(",");
-				}
-				String column = order.getKey();
-				if(query.getTarget() instanceof SqlTarget){
-					column = this.getColumnByFieldName(column);
-				}
-				hql.append(String.format("%s %s", column, order.getOrderType().getCode()));
-			}
-		}
-		return hql.toString();
-		
+		return this.getOrderSql(query, null);
+//		StringBuffer hql = new StringBuffer();
+//		//处理排序
+//		if(query.getOrders()!=null&&query.getOrders().length>0){
+//			
+//			for(Order order:query.getOrders()){
+//				if(hql.length()==0){
+//					hql.append(" order by ");
+//				}else{
+//					hql.append(",");
+//				}
+//				String column = order.getKey();
+//				if(order instanceof SqlOrder){
+//					column = this.getColumnByFieldName(column);
+//				}
+//				hql.append(String.format("%s %s", column, order.getOrderType().getCode()));
+//			}
+//		}
+//		return hql.toString();
 	}
 	
 	/**
@@ -238,9 +291,9 @@ public class QueryParser implements IQueryParser {
 		if(filterEntry.getCompare().equals(Compare.like)){
 			return new StringBuffer().append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("%'").toString();
 		}else if(filterEntry.getCompare().equals(Compare.nl)){
-			return "is null";
+			return String.format("%s is null", column);
 		}else if(filterEntry.getCompare().equals(Compare.nnl)){
-			return "is not null";
+			return String.format("%s is not null", column);
 		}else if(fieldType.isArray()){
 			StringBuffer sb =new StringBuffer(filterEntry.getCompare().getCode()).append(" (");
 			Object[] objs = (Object[])filterEntry.getValue();

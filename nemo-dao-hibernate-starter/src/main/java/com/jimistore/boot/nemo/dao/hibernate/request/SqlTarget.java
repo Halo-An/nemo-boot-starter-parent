@@ -25,6 +25,10 @@ public class SqlTarget extends Target {
 		return new SqlTarget().setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames);
 	}
 	
+	public static final SqlTarget createJoin(JoinType joinType, String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
+		return new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(joinType);
+	}
+	
 	public SqlTarget innerJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
 		joinList.add(new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(JoinType.inner));
 		return this;
@@ -43,6 +47,12 @@ public class SqlTarget extends Target {
 	public SqlTarget fullJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
 		joinList.add(new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(JoinType.full));
 		return this;
+	}
+	
+	public SqlTarget join(SqlTarget sqlTarget){
+		joinList.add(sqlTarget);
+		return this;
+		
 	}
 
 	public List<SqlTarget> getJoinList() {

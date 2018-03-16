@@ -69,6 +69,9 @@ public class InjectSqlValidator implements IInjectSqlValidator {
 	}
 	
 	private void check(Filter filter){
+		if(filter==null){
+			return ;
+		}
 		do{
 			for(FilterEntry filterEntry : filter.getFilterEntrys()){
 				check(filterEntry.getValue());
