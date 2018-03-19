@@ -1,5 +1,6 @@
 package com.jimistore.boot.nemo.dao.hibernate.helper;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import com.jimistore.boot.nemo.dao.api.request.FilterEntry;
 import com.jimistore.boot.nemo.dao.api.request.IQuery;
 import com.jimistore.boot.nemo.dao.api.request.ITarget;
 import com.jimistore.boot.nemo.dao.api.request.Order;
+import com.jimistore.boot.nemo.dao.hibernate.request.SqlFunction;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlOrder;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlQuery;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlTarget;
@@ -278,16 +280,26 @@ public class QueryParser implements IQueryParser {
 	 */
 	private Object getFilterEntrySql(Class<?> entityClass, FilterEntry filterEntry, boolean isSql){
 		Class<?> fieldType = String.class;
-		String column = filterEntry.getKey();
-		Field field = this.getField(entityClass, column);
-		if(isSql){
-			column = this.getColumnByFieldName(column);
-		}
-		if(field==null){
-//			throw new RuntimeException(String.format("field not mapping: %s", filterEntry.getKey()));
+		String column = null;
+		Serializable key = filterEntry.getKey();
+		if(key instanceof SqlFunction){
+			SqlFunction sqlFunction = (SqlFunction) key;
+			column = sqlFunction.getContent();
+			fieldType = sqlFunction.getValueType();
 		}else{
-			fieldType = field.getType();
+			column = key.toString();
+			Field field = this.getField(entityClass, column);
+			if(isSql){
+				column = this.getColumnByFieldName(column);
+			}
+			if(field==null){
+//				throw new RuntimeException(String.format("field not mapping: %s", filterEntry.getKey()));
+			}else{
+				fieldType = field.getType();
+			}
 		}
+		
+		
 		if(filterEntry.getCompare().equals(Compare.like)){
 			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("%'").toString();
 		}else if(filterEntry.getCompare().equals(Compare.nl)){

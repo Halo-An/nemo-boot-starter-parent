@@ -1,10 +1,12 @@
 package com.jimistore.boot.nemo.dao.api.request;
 
+import java.io.Serializable;
+
 import com.jimistore.boot.nemo.dao.api.enums.Compare;
 
 public class FilterEntry {
 	
-	String key;
+	Serializable key;
 	
 	Object value;
 	
@@ -12,7 +14,7 @@ public class FilterEntry {
 	
 	private FilterEntry(){}
 	
-	public static FilterEntry create(String key, Compare compare, Object... value){
+	public static FilterEntry create(Serializable key, Compare compare, Object... value){
 		Object obj = value;
 		if(value.length==1){
 			obj = value[0];
@@ -20,11 +22,11 @@ public class FilterEntry {
 		return new FilterEntry().setKey(key).setCompare(compare).setValue(obj);
 	}
 
-	public String getKey() {
+	public Serializable getKey() {
 		return key;
 	}
 
-	public FilterEntry setKey(String key) {
+	public FilterEntry setKey(Serializable key) {
 		this.key = key;
 		return this;
 	}
