@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.3.2-RELEASE</version>
+	<version>1.3.3-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -20,6 +20,8 @@
 		<module>nemo-mq-activemq-starter</module>
 		<module>nemo-mq-rabbitmq-starter</module>
 		<module>nemo-config-server</module>
+		<module>nemo-high-concurrency-api</module>
+		<module>nemo-high-concurrency-starter</module>
 	</modules>
 
 	<parent>
@@ -32,7 +34,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<nemo.boot.version>1.3.2-RELEASE</nemo.boot.version>
+		<nemo.boot.version>1.3.3-RELEASE</nemo.boot.version>
 		<de.codecentric.version>1.5.2</de.codecentric.version>
 	</properties>
 	<dependencyManagement>
@@ -84,6 +86,19 @@
 				<artifactId>nemo-dao-hibernate-starter</artifactId>
 				<version>${nemo.boot.version}</version>
 			</dependency>
+			
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-high-concurrency-api</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-high-concurrency-starter</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			
 			<dependency>
 				<groupId>de.codecentric</groupId>
 				<artifactId>spring-boot-admin-server</artifactId>

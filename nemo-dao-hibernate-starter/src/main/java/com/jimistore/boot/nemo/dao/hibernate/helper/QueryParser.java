@@ -296,6 +296,9 @@ public class QueryParser implements IQueryParser {
 //				throw new RuntimeException(String.format("field not mapping: %s", filterEntry.getKey()));
 			}else{
 				fieldType = field.getType();
+				if(fieldType.equals(Object.class)){
+					fieldType = filterEntry.getValue().getClass();
+				}
 			}
 		}
 		
@@ -344,6 +347,10 @@ public class QueryParser implements IQueryParser {
 			return this.getField(entityClass.getSuperclass(), fieldName);
 		}
 		return field;
+	}
+	
+	public Class<?> getTypeByField(Field field, Class<?> entityClass){
+		return null;
 	}
 	
 	private String getTableNameByClass(Class<?> clazz){
