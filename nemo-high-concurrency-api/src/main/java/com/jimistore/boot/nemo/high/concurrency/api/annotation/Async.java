@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Async {
 	
-	String value();
+	String value() default "";
 	
 	int capacity() default 10;
 

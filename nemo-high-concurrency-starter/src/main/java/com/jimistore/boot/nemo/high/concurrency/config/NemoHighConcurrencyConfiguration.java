@@ -71,7 +71,7 @@ public class NemoHighConcurrencyConfiguration {
 	}
 	
 	@Bean
-	@ConditionalOnMissingBean(value=StockAspect.class)
+	@ConditionalOnMissingBean(value=AsyncExecuterAspect.class)
 	public AsyncExecuterAspect AsyncExecuterAspect(AsyncExecuterHelper asyncExecuterHelper){
 		return new AsyncExecuterAspect().setAsyncExecuterHelper(asyncExecuterHelper);
 	}

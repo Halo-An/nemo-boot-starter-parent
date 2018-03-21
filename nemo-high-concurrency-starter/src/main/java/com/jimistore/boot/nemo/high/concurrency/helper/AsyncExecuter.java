@@ -4,17 +4,17 @@ public class AsyncExecuter {
 	
 	public static int DEFAULT_CAPACITY = 5;
 	
-	int capacity = DEFAULT_CAPACITY;
+	private Integer capacity = DEFAULT_CAPACITY;
 	
 	String name;
 
-	public AsyncExecuter(int capacity, String name) {
+	public AsyncExecuter(Integer capacity, String name) {
 		super();
 		this.capacity = capacity;
 		this.name = name;
 	}
 
-	public AsyncExecuter setCapacity(int capacity) {
+	public AsyncExecuter setCapacity(Integer capacity) {
 		this.capacity = capacity;
 		return this;
 	}
@@ -25,19 +25,19 @@ public class AsyncExecuter {
 	}
 
 	public void execute(final IExecuter executer){
-		try{
 			this.consume();
 			new Thread(String.format("%s-%s", name, capacity)){
 
 				@Override
 				public void run() {
-					executer.execute();
+					try{
+						executer.execute();
+					}finally{
+						produce();
+					}
 				}
 				
 			}.start();
-		}finally{
-			this.produce();
-		}
 	}
 	
 	public synchronized void consume(){

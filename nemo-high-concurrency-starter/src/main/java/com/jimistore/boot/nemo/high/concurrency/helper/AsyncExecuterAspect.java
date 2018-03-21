@@ -37,8 +37,19 @@ public class AsyncExecuterAspect {
 		Method method = methodSignature.getMethod();
 		
 		Async async = AnnotationUtil.getAnnotation(method, Async.class);
+		
+		String group = async.value();
+		if(group==null||group.trim().length()==0){
+			StringBuffer sb = new StringBuffer();
+			sb.append(joinPoint.getTarget().getClass().getSimpleName());
+			sb.append("-").append(method.getName());
+			for(Class<?> paramType:method.getParameterTypes()){
+				sb.append("-").append(paramType.getSimpleName());
+			}
+			group = sb.toString();
+		}
 
-		asyncExecuterHelper.execute(async.value(), async.capacity(), new IExecuter() {
+		asyncExecuterHelper.execute(group, async.capacity(), new IExecuter() {
 			
 			@Override
 			public void execute() {
