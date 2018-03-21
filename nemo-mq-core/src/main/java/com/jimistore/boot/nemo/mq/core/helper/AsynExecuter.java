@@ -4,27 +4,27 @@ public class AsynExecuter {
 	
 	public static int DEFAULT_CAPACITY = 5;
 	
-	int capacity = DEFAULT_CAPACITY;
+	Integer capacity = DEFAULT_CAPACITY;
 
-	public AsynExecuter setCapacity(int capacity) {
+	public AsynExecuter setCapacity(Integer capacity) {
 		this.capacity = capacity;
 		return this;
 	}
 	
 	public void execute(final IExecuter executer){
-		try{
 			this.consume();
 			new Thread(String.format("AsynExecuter-%s", capacity)){
 
 				@Override
 				public void run() {
-					executer.execute();
+					try{
+						executer.execute();
+					}finally{
+						produce();
+					}
 				}
 				
 			}.start();
-		}finally{
-			this.produce();
-		}
 	}
 	
 	public synchronized void consume(){
