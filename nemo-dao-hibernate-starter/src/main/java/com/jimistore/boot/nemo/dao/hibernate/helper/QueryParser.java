@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -18,6 +19,7 @@ import com.jimistore.boot.nemo.dao.api.request.IQuery;
 import com.jimistore.boot.nemo.dao.api.request.ITarget;
 import com.jimistore.boot.nemo.dao.api.request.Order;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlFunction;
+import com.jimistore.boot.nemo.dao.hibernate.request.SqlJoinTarget;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlOrder;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlQuery;
 import com.jimistore.boot.nemo.dao.hibernate.request.SqlTarget;
@@ -47,16 +49,21 @@ public class QueryParser implements IQueryParser {
 	 * @return
 	 */
 	public Query parseSql(Session session, SqlQuery<?> query) {
-		
 		List<SqlTarget> sqlTargetList = new ArrayList<SqlTarget>();
-		this.fillTargetList(query.getSqlTarget(), sqlTargetList);
+		if(query.getTarget() instanceof SqlTarget){
+			this.fillTargetList((SqlTarget) query.getTarget(), sqlTargetList);
+		}else if(query.getTarget() instanceof SqlJoinTarget){
+			this.fillTargetList((SqlJoinTarget) query.getTarget(), sqlTargetList);
+		}
+		
 		Map<SqlTarget,String> aliasMap = this.initAliasMap(sqlTargetList);
 		
 		//解析sql
-		String selectSql = this.getSelectSql(query.getSqlTarget(), aliasMap , sqlTargetList);
-		String targetSql = this.getFromSql(query.getSqlTarget(), aliasMap, sqlTargetList);
+		String selectSql = this.getSelectSql(aliasMap);
+		String targetSql = this.getFromSql(sqlTargetList, aliasMap);
+		String groupSql = this.getGroupSql(aliasMap);
 		String orderSql = this.getOrderSql(query, aliasMap);
-		String sql = String.format("%s %s %s ", selectSql, targetSql, orderSql);	
+		String sql = String.format("%s %s %s %s", selectSql, targetSql, groupSql, orderSql);	
 		
 		Query sQuery = session.createSQLQuery(sql);
 		sQuery.setResultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP);
@@ -95,26 +102,31 @@ public class QueryParser implements IQueryParser {
 	}
 	
 	private Map<SqlTarget,String> initAliasMap(List<SqlTarget> sqlTargetList){
-
 		Map<SqlTarget,String> aliasMap = new HashMap<SqlTarget,String>();
-		
-		for(int i=0;i<sqlTargetList.size();i++){
-			SqlTarget sqlTarget = sqlTargetList.get(i);
+		int i=0;
+		for(SqlTarget sqlTarget:sqlTargetList){
 			String alias = String.format("%s_%s", sqlTarget.getEntityClass().getSimpleName().toLowerCase(), i);
 			aliasMap.put(sqlTarget, alias);
+			i++;
 		}
 		return aliasMap;
 	}
 	
-
-	
-	private String getSelectSql(SqlTarget target, Map<SqlTarget,String> aliasMap, List<SqlTarget> sqlTargetList){
+	private String getSelectSql(Map<SqlTarget,String> aliasMap){
 		StringBuffer selectSql = new StringBuffer();
-		for(int i=0;i<sqlTargetList.size();i++){
-			SqlTarget sqlTarget = sqlTargetList.get(i);
+		Set<SqlTarget> sqlTargetSet = aliasMap.keySet();
+		for(SqlTarget sqlTarget:sqlTargetSet){
 			String alias = aliasMap.get(sqlTarget);
 			if(sqlTarget.getOutFieldNames()!=null){
-				for(String fieldName:sqlTarget.getOutFieldNames()){
+				for(Serializable field:sqlTarget.getOutFieldNames()){
+					String fieldName = null;
+					if(field instanceof SqlFunction){
+						String column = ((SqlFunction)field).getContent();
+						String as = ((SqlFunction)field).getAs();
+						fieldName = String.format("%s as %s", column, as);
+					}else{
+						fieldName = field.toString();
+					}
 					if(selectSql.length()>0){
 						selectSql.append(", ");
 					}else{
@@ -149,11 +161,10 @@ public class QueryParser implements IQueryParser {
 	 * @param target
 	 * @return
 	 */
-	private String getFromSql(SqlTarget target, Map<SqlTarget,String> aliasMap, List<SqlTarget> sqlTargetList){
+	private String getFromSql(List<SqlTarget> sqlTargetList, Map<SqlTarget,String> aliasMap){
 		StringBuffer fromSql = new StringBuffer();
 
-		for(int i=0;i<sqlTargetList.size();i++){
-			SqlTarget sqlTarget = sqlTargetList.get(i);
+		for(SqlTarget sqlTarget:sqlTargetList){
 			String alias = aliasMap.get(sqlTarget);
 			String entity = this.getTableNameByClass(sqlTarget.getEntityClass());
 			if(entity==null){
@@ -180,6 +191,45 @@ public class QueryParser implements IQueryParser {
 		return fromSql.toString();
 		
 	}
+	
+	private String getGroupSql(Map<SqlTarget,String> aliasMap){
+		StringBuffer groupSql = new StringBuffer();
+		
+		Set<SqlTarget> sqlTargetSet = aliasMap.keySet();
+		for(SqlTarget sqlTarget:sqlTargetSet){
+			String alias = aliasMap.get(sqlTarget);
+			if(sqlTarget.getGroupFieldNames()!=null){
+				for(Serializable field:sqlTarget.getGroupFieldNames()){
+					String fieldName = null;
+					if(field instanceof SqlFunction){
+						fieldName = ((SqlFunction)field).getContent();
+					}else{
+						fieldName = field.toString();
+					}
+					if(groupSql.length()>0){
+						groupSql.append(", ");
+					}else{
+						groupSql.append("group by ");
+					}
+					if(fieldName.indexOf("as ")>=0){
+						//判断是否是聚合函数
+						if(fieldName.indexOf("(")>=0&&fieldName.indexOf(")")>=0){
+							groupSql.append(fieldName);
+						}else{
+							String column = fieldName.substring(0,fieldName.indexOf("as ")-1);
+							column = this.getColumnByFieldName(column);
+							groupSql.append(String.format("%s.%s", alias, column));
+						}
+					}else{
+						String column = this.getColumnByFieldName(fieldName);
+						groupSql.append(String.format("%s.%s", alias, column));
+					}
+				}
+			}
+		}
+		
+		return groupSql.toString();
+	}
 
 	/**
 	 * 解析排序的sql
@@ -200,7 +250,12 @@ public class QueryParser implements IQueryParser {
 				}
 				
 				if(order instanceof SqlOrder){
-					String column = this.getColumnByFieldName(order.getKey());
+					String column = null;
+					if(order.getKey() instanceof SqlFunction){
+						column = ((SqlFunction)order.getKey()).getContent();
+					}else{
+						column = this.getColumnByFieldName(order.getKey().toString());
+					}
 					String alias = aliasMap.get(((SqlOrder)order).getSqlTarget());
 					orderSql.append(String.format("%s.%s %s", alias, column, order.getOrderType().getCode()));
 				}else{
@@ -224,6 +279,30 @@ public class QueryParser implements IQueryParser {
 				sqlTarget.setPreTarget(target);
 				this.fillTargetList(sqlTarget, sqlTargetList);
 			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param target root
+	 * @param sqlTargetList 目标集合
+	 */
+	private void fillTargetList(SqlJoinTarget target, List<SqlTarget> sqlTargetList){
+		if(sqlTargetList.contains(target.getParent())){
+			sqlTargetList.add(target.getParent());
+		}
+		if(sqlTargetList.contains(target.getChild())){
+			sqlTargetList.add(target.getChild());
+		}
+		if(!target.getParent().getJoinList().contains(target.getChild())){
+			target.getParent().getJoinList().add(target.getChild()
+					.setJoinType(target.getJoinType())
+					.setPreKey(target.getParentKey())
+					.setSelfKey(target.getChildKey())
+					);
+		}
+		if(target.getNext()!=null){
+			this.fillTargetList(target.getNext(), sqlTargetList);
 		}
 	}
 	
@@ -309,7 +388,7 @@ public class QueryParser implements IQueryParser {
 			return String.format("%s is null", column);
 		}else if(filterEntry.getCompare().equals(Compare.nnl)){
 			return String.format("%s is not null", column);
-		}else if(fieldType.isArray()){
+		}else if(filterEntry.getValue().getClass().isArray() || fieldType.isArray()){
 			StringBuffer sb =new StringBuffer(column).append(" ").append(filterEntry.getCompare().getCode()).append(" (");
 			Object[] objs = (Object[])filterEntry.getValue();
 			String joinStr="";

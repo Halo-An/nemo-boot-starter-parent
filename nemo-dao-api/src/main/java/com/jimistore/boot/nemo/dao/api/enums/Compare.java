@@ -3,11 +3,13 @@ package com.jimistore.boot.nemo.dao.api.enums;
 public enum Compare{
 
 	eq("=","等于"),
+	neq("<>","不等于"),
 	lt("<","等于"),
 	lte("<=","等于"),
 	gt(">","等于"),
 	gte(">=","等于"),
 	in("in","在范围内"),
+	nin("not in","不在范围内"),
 	nl("null","为空的"),
 	nnl("notnull","不为空的"),
 	like("like","模糊匹配");

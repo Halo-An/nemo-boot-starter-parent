@@ -1,5 +1,7 @@
 package com.jimistore.boot.nemo.dao.hibernate.request;
 
+import java.io.Serializable;
+
 import com.jimistore.boot.nemo.dao.api.enums.OrderType;
 import com.jimistore.boot.nemo.dao.api.request.Order;
 
@@ -23,12 +25,12 @@ public class SqlOrder extends Order {
 	}
 
 	@Override
-	public SqlOrder setKey(String key) {
+	public SqlOrder setKey(Serializable key) {
 		super.setKey(key);
 		return this;
 	}
 
-	public static SqlOrder create(SqlTarget sqlTarget, String key, OrderType orderType){
+	public static SqlOrder create(SqlTarget sqlTarget, Serializable key, OrderType orderType){
 		return new SqlOrder().setSqlTarget(sqlTarget).setKey(key).setOrderType(orderType);
 	}
 

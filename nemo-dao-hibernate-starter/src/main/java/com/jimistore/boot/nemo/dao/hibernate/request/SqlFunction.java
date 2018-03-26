@@ -11,10 +11,16 @@ public class SqlFunction implements Serializable {
 
 	String content;
 	
+	String as;
+	
 	Class<?> valueType;
 	
 	public static final SqlFunction create(String content, Class<?> valueType) {
 		return new SqlFunction().setContent(content).setValueType(valueType);
+	}
+	
+	public static final SqlFunction create(String content, Class<?> valueType, String as) {
+		return new SqlFunction().setContent(content).setValueType(valueType).setAs(as);
 	}
 
 	public String getContent() {
@@ -32,6 +38,15 @@ public class SqlFunction implements Serializable {
 
 	public SqlFunction setValueType(Class<?> valueType) {
 		this.valueType = valueType;
+		return this;
+	}
+
+	public String getAs() {
+		return as;
+	}
+
+	public SqlFunction setAs(String as) {
+		this.as = as;
 		return this;
 	}
 	

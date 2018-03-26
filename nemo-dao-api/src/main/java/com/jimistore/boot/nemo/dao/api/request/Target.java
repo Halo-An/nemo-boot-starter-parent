@@ -1,10 +1,12 @@
 package com.jimistore.boot.nemo.dao.api.request;
 
+import java.io.Serializable;
+
 public class Target implements ITarget {
 	
 	Class<?> entityClass;
 	
-	String[] outFieldNames;
+	Serializable[] outFieldNames;
 	
 	Filter filter;
 
@@ -13,11 +15,11 @@ public class Target implements ITarget {
 		return entityClass;
 	}
 
-	public String[] getOutFieldNames() {
+	public Serializable[] getOutFieldNames() {
 		return outFieldNames;
 	}
 
-	public Target setOutFieldNames(String[] outFieldNames) {
+	public Target setOutFieldNames(Serializable... outFieldNames) {
 		this.outFieldNames = outFieldNames;
 		return this;
 	}

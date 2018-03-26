@@ -1,5 +1,6 @@
 package com.jimistore.boot.nemo.dao.hibernate.request;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,32 +20,34 @@ public class SqlTarget extends Target {
 	
 	String selfKey;
 	
+	Serializable[] groupFieldNames;
+	
 	public SqlTarget(){}
 	
-	public static final SqlTarget create(Class<?> entityClass, Filter filter, String... outFieldNames){
+	public static final SqlTarget create(Class<?> entityClass, Filter filter, Serializable... outFieldNames){
 		return new SqlTarget().setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames);
 	}
 	
-	public static final SqlTarget createJoin(JoinType joinType, String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
+	public static final SqlTarget createJoin(JoinType joinType, String preKey, String selfKey, Class<?> entityClass, Filter filter, Serializable... outFieldNames){
 		return new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(joinType);
 	}
 	
-	public SqlTarget innerJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
+	public SqlTarget innerJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, Serializable... outFieldNames){
 		joinList.add(new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(JoinType.inner));
 		return this;
 	}
 	
-	public SqlTarget leftJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
+	public SqlTarget leftJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, Serializable... outFieldNames){
 		joinList.add(new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(JoinType.left));
 		return this;
 	}
 	
-	public SqlTarget rightJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
+	public SqlTarget rightJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, Serializable... outFieldNames){
 		joinList.add(new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(JoinType.right));
 		return this;
 	}
 	
-	public SqlTarget fullJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, String... outFieldNames){
+	public SqlTarget fullJoin(String preKey, String selfKey, Class<?> entityClass, Filter filter, Serializable... outFieldNames){
 		joinList.add(new SqlTarget().setPreKey(preKey).setSelfKey(selfKey).setEntityClass(entityClass).setFilter(filter).setOutFieldNames(outFieldNames).setJoinType(JoinType.full));
 		return this;
 	}
@@ -113,9 +116,20 @@ public class SqlTarget extends Target {
 	}
 
 	@Override
-	public SqlTarget setOutFieldNames(String[] fieldNames) {
+	public SqlTarget setOutFieldNames(Serializable... fieldNames) {
 		super.setOutFieldNames(fieldNames);
 		return this;
 	}
+
+	public Serializable[] getGroupFieldNames() {
+		return groupFieldNames;
+	}
+
+	public SqlTarget setGroupFieldNames(Serializable... groupFieldNames) {
+		this.groupFieldNames = groupFieldNames;
+		return this;
+	}
+	
+	
 
 }

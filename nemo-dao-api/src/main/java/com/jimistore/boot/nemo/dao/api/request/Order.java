@@ -1,12 +1,14 @@
 package com.jimistore.boot.nemo.dao.api.request;
 
+import java.io.Serializable;
+
 import com.jimistore.boot.nemo.dao.api.enums.OrderType;
 
 public class Order {
 	
 	private OrderType orderType;
 	
-	private String key;
+	private Serializable key;
 	
 	protected Order(){}
 	
@@ -23,11 +25,11 @@ public class Order {
 		return this;
 	}
 
-	public String getKey() {
+	public Serializable getKey() {
 		return key;
 	}
 
-	public Order setKey(String key) {
+	public Order setKey(Serializable key) {
 		this.key = key;
 		return this;
 	}
