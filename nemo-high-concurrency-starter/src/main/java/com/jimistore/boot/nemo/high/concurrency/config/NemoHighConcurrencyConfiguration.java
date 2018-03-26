@@ -22,8 +22,8 @@ import com.jimistore.boot.nemo.high.concurrency.helper.AsyncExecuterHelper;
 @Configuration
 public class NemoHighConcurrencyConfiguration {
 	
-	@Bean
-	@ConditionalOnMissingBean(RedisTemplate.class)
+	@Bean("redisTemplate")
+	@ConditionalOnMissingBean(value = RedisTemplate.class)
 	public RedisTemplate<String, String> redisTemplate(
 			RedisConnectionFactory connectionFactory) {
 		StringRedisTemplate template = new StringRedisTemplate(connectionFactory);
