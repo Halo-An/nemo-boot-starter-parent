@@ -76,7 +76,7 @@ public class StockAspect {
 		Long num = this.parseExpression(context, lock.num(), Long.class);
 		
 		Object obj = joinPoint.proceed();
-		stockHelper.create(key, num);
+		stockHelper.create(key, num, lock.timeout());
 		return obj;
 	}
 	
@@ -92,7 +92,7 @@ public class StockAspect {
 		Long num = this.parseExpression(context, lock.num(), Long.class);
 		
 		Object obj = joinPoint.proceed();
-		stockHelper.cover(key, num);
+		stockHelper.cover(key, num, lock.timeout());
 		return obj;
 	}
 	

@@ -1,7 +1,10 @@
 package com.jimistore.boot.nemo.high.concurrency.helper;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.log4j.Logger;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 
 import com.cq.nemo.core.exception.StockConsumeException;
 
@@ -29,13 +32,14 @@ public class StockHelper {
 		this.maxSuffix = maxSuffix;
 	}
 
-	public StockHelper cover(String key,Long count){
+	public StockHelper cover(String key,Long count, Long timeout){
 		log.debug(String.format("request cover , the key is : %s, the num is : %s", key, count));
 		//设置新的最大库存并获取老的最大库存
 		Long oldMaxStock = parseLong(redisTemplate.opsForValue().getAndSet(String.format("%s%s", key, maxSuffix), count));
+		redisTemplate.opsForHash().scan(key, ScanOptions.scanOptions().count(1000).match("").build());
 		if(oldMaxStock==null||oldMaxStock==0){
 			//如果老的库存没有设置，则这是一个新的库存，则创建一个库存
-			return this.create(key, count);
+			return this.create(key, count, timeout);
 		}
 		
 		if(oldMaxStock<count){
@@ -53,12 +57,18 @@ public class StockHelper {
 		return this;
 	}
 	
-	public StockHelper create(String key,Long count){
+	public StockHelper create(String key,Long count, Long timeout){
 		log.debug(String.format("request create , the key is : %s, the num is : %s", key, count));
 		//设置最大库存
 		redisTemplate.opsForValue().getAndSet(String.format("%s%s", key, maxSuffix), count);
 		//设置即时库存
 		redisTemplate.opsForValue().getAndSet(getFormatKey(key), count);
+
+		//设置过期时间
+		if(timeout==null||timeout<=0){
+			redisTemplate.expire(String.format("%s%s", key, maxSuffix), timeout, TimeUnit.MILLISECONDS);
+			redisTemplate.expire(getFormatKey(key), timeout, TimeUnit.MILLISECONDS);
+		}
 		return this;
 	}
 
