@@ -172,12 +172,12 @@ public class QueryParser implements IQueryParser {
 			}
 			String whereSql = this.getWhereSql(sqlTarget);
 			if(fromSql.length()==0){
-				fromSql.append("from ");
+				fromSql.append("from");
 			}else{
 				fromSql.append(" ").append(sqlTarget.getJoinType().getCode());
 			}
 
-			fromSql.append(String.format("(select * from %s %s ) %s ", entity, whereSql, alias));
+			fromSql.append(String.format(" (select * from %s %s) as %s", entity, whereSql, alias));
 			
 			if(sqlTarget.getPreKey()!=null){
 				String preAlias = aliasMap.get(sqlTarget.getPreTarget());
@@ -288,10 +288,10 @@ public class QueryParser implements IQueryParser {
 	 * @param sqlTargetList 目标集合
 	 */
 	private void fillTargetList(SqlJoinTarget target, List<SqlTarget> sqlTargetList){
-		if(sqlTargetList.contains(target.getParent())){
+		if(!sqlTargetList.contains(target.getParent())){
 			sqlTargetList.add(target.getParent());
 		}
-		if(sqlTargetList.contains(target.getChild())){
+		if(!sqlTargetList.contains(target.getChild())){
 			sqlTargetList.add(target.getChild());
 		}
 		if(!target.getParent().getJoinList().contains(target.getChild())){
@@ -300,6 +300,8 @@ public class QueryParser implements IQueryParser {
 					.setPreKey(target.getParentKey())
 					.setSelfKey(target.getChildKey())
 					);
+			
+			target.getChild().setPreTarget(target.getParent());
 		}
 		if(target.getNext()!=null){
 			this.fillTargetList(target.getNext(), sqlTargetList);

@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.3.6-RELEASE</version>
+	<version>1.3.7-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -38,7 +38,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<nemo.boot.version>1.3.6-RELEASE</nemo.boot.version>
+		<nemo.boot.version>1.3.7-RELEASE</nemo.boot.version>
 		<de.codecentric.version>1.5.2</de.codecentric.version>
 	</properties>
 	<dependencyManagement>
