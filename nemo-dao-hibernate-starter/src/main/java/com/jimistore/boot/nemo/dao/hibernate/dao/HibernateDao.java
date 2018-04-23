@@ -10,8 +10,9 @@ import org.hibernate.SessionFactory;
 
 import com.jimistore.boot.nemo.dao.api.dao.IDao;
 import com.jimistore.boot.nemo.dao.api.request.IQuery;
-import com.jimistore.boot.nemo.dao.api.validator.IQueryValidator;
+import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 import com.jimistore.boot.nemo.dao.hibernate.helper.IQueryParser;
+import com.jimistore.boot.nemo.dao.hibernate.validator.IInjectSqlValidator;
 
 public class HibernateDao implements IDao {
 	
@@ -19,7 +20,9 @@ public class HibernateDao implements IDao {
 	
 	private IQueryParser queryParser;
 	
-	private List<IQueryValidator> queryValidatorList;
+	private List<IInjectSqlValidator> queryValidatorList;
+	
+	private List<IXSSValidator> xssValidatorList;
 
 	public HibernateDao setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
@@ -31,8 +34,12 @@ public class HibernateDao implements IDao {
 		return this;
 	}
 
+	public HibernateDao setXssValidatorList(List<IXSSValidator> xssValidatorList) {
+		this.xssValidatorList = xssValidatorList;
+		return this;
+	}
 
-	public HibernateDao setQueryValidatorList(List<IQueryValidator> queryValidatorList) {
+	public HibernateDao setQueryValidatorList(List<IInjectSqlValidator> queryValidatorList) {
 		this.queryValidatorList = queryValidatorList;
 		return this;
 	}
@@ -43,6 +50,7 @@ public class HibernateDao implements IDao {
 
 	@Override
 	public <T> T create(T entity) {
+		this.check(entity);
 		this.getSession().save(entity);
 		return entity;
 	}
@@ -59,6 +67,7 @@ public class HibernateDao implements IDao {
 
 	@Override
 	public <T> T update(T entity) {
+		this.check(entity);
 		this.getSession().update(entity);
 		return entity;
 	}
@@ -79,8 +88,15 @@ public class HibernateDao implements IDao {
 		return null;
 	}
 	
+	private void check(Object obj){
+		Iterator<IXSSValidator> it = xssValidatorList.iterator();
+		while(it.hasNext()){
+			it.next().check(obj);
+		}
+	}
+	
 	private void check(IQuery<?> query){
-		Iterator<IQueryValidator> it = queryValidatorList.iterator();
+		Iterator<IInjectSqlValidator> it = queryValidatorList.iterator();
 		while(it.hasNext()){
 			it.next().check(query);
 		}

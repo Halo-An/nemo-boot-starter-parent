@@ -97,8 +97,8 @@ public class NemoDaoHibernateAutoConfiguration {
 	
 	@Bean("hibernate")
 	@ConditionalOnMissingBean(IDao.class)
-	public HibernateDao HibernateDao(SessionFactory sessionFactory, IQueryParser queryParser, List<IQueryValidator> queryValidatorList){
-		return new HibernateDao().setSessionFactory(sessionFactory).setQueryParser(queryParser).setQueryValidatorList(queryValidatorList);
+	public HibernateDao HibernateDao(SessionFactory sessionFactory, IQueryParser queryParser, List<IXSSValidator> xssValidatorList, List<IInjectSqlValidator> queryValidatorList){
+		return new HibernateDao().setSessionFactory(sessionFactory).setQueryParser(queryParser).setXssValidatorList(xssValidatorList).setQueryValidatorList(queryValidatorList);
 	}
 	
 }

@@ -407,6 +407,9 @@ public class QueryParser implements IQueryParser {
 			return sb.toString();
 		}else if(fieldType.equals(String.class)){
 			return String.format("%s %s '%s'", column, filterEntry.getCompare().getCode(), filterEntry.getValue());
+		}else if(fieldType.equals(Boolean.class)||filterEntry.getValue() instanceof Boolean){
+			boolean v = (Boolean)filterEntry.getValue();
+			return String.format("%s %s %s", column, filterEntry.getCompare().getCode(), v?"1":"0");
 		}else{
 			return String.format("%s %s %s", column, filterEntry.getCompare().getCode(), filterEntry.getValue());
 		}
@@ -435,7 +438,7 @@ public class QueryParser implements IQueryParser {
 	}
 	
 	private String getTableNameByClass(Class<?> clazz){
-		return hibernateNamingStrategy.classToTableName(clazz.getName());
+		return hibernateNamingStrategy.classToTableName(clazz.getSimpleName());
 	}
 	
 	private String getColumnByFieldName(String filedName){

@@ -21,7 +21,7 @@ public class InjectSqlValidator implements IInjectSqlValidator {
 			"/",
 			"\\",
 			"+",
-//			"-",
+			"--",
 			"=",
 			"!",
 			"<",
