@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.cq.nemo.util.reflex.ClassUtil;
-import com.jimistore.boot.nemo.dao.api.exception.QueryValidatorException;
 import com.jimistore.boot.nemo.dao.api.exception.XssValidatorException;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 
@@ -49,14 +48,14 @@ public class XSSValidator implements IXSSValidator {
 				if(value instanceof String){
 					String str = (String) value;
 					int result = checkValue(str);
-					if(result>0){
+					if(result>=0){
 						//替换还是直接抛异常
 						if(replace!=null&&replace.length()>0){
 							str = str.replaceAll(errStr[result], String.format("%s%s%s", replace, str, replace));
 							String setMethod = ClassUtil.getSetMethodNameByField(field);
 							entity.getClass().getMethod(setMethod, new Class[]{String.class}).invoke(entity, new Object[]{str});
 						}else{
-							throw new QueryValidatorException();
+							throw new XssValidatorException();
 						}
 						
 					}
