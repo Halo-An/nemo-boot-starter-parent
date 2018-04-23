@@ -7,10 +7,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Calendar;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Value;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -20,6 +23,12 @@ import com.jimistore.boot.nemo.security.api.exception.TokenInvalidException;
 public class TokenFactory implements ITokenFactory {
 	
 	private static final String SIGN_TYPE = "RSA";
+	
+	@Value("${token.appid:}")
+	String appid;
+	
+	@Value("${token.appid.ignored:false}")
+	boolean appIgnored;
 	
 	@Value("${token.encrypt-type:HMAC256}")
 	String encryptType;
@@ -82,11 +91,8 @@ public class TokenFactory implements ITokenFactory {
 		}
 				
 	}
-
-	@Override
-	public String create(String userId, String deviceId) {
-		Calendar expired = Calendar.getInstance();
-		expired.add(Calendar.MILLISECOND, timeout);
+	
+	private Algorithm getAlgorithm(){
 		Algorithm algorithm = null;
 		if(encryptType.equals("RSA256")){
 			algorithm = Algorithm.RSA256(this.getRSAKeyProvider());
@@ -97,7 +103,35 @@ public class TokenFactory implements ITokenFactory {
 				throw new RuntimeException("genner token faild");
 			}
 		}
-		return JWT.create().withSubject(userId).withKeyId(deviceId).withExpiresAt(expired.getTime()).sign(algorithm);
+		return algorithm;
+	}
+
+	@Override
+	public String create(String userId, String deviceId) {
+		Calendar expired = Calendar.getInstance();
+		expired.add(Calendar.MILLISECOND, this.timeout);
+		return JWT.create().withSubject(userId).withKeyId(deviceId).withIssuer(appid).withExpiresAt(expired.getTime()).sign(getAlgorithm());
+	}
+
+	@Override
+	public String create(String appid, String userId, String deviceId, int timeout) {
+		Calendar expired = Calendar.getInstance();
+		expired.add(Calendar.MILLISECOND, timeout);
+		JWTCreator.Builder builder = JWT.create().withSubject(userId).withKeyId(deviceId).withIssuer(appid).withExpiresAt(expired.getTime());
+		return builder.sign(getAlgorithm());
+	}
+
+	@Override
+	public String create(String appid, String userId, String deviceId, Map<String, String> extend, int timeout) {
+		Calendar expired = Calendar.getInstance();
+		expired.add(Calendar.MILLISECOND, timeout);
+		JWTCreator.Builder builder = JWT.create().withSubject(userId).withKeyId(deviceId).withIssuer(appid).withExpiresAt(expired.getTime());
+		if(extend!=null&&extend.size()>0){
+			for(Entry<String,String> entry:extend.entrySet()){
+				builder.withClaim(entry.getKey(), entry.getValue());
+			}
+		}
+		return builder.sign(getAlgorithm());
 	}
 
 	@Override
@@ -113,6 +147,10 @@ public class TokenFactory implements ITokenFactory {
 			throw new TokenInvalidException("decode token faild");
 		}
 		
+		if(jwt.getExpiresAt()==null||jwt.getExpiresAt().getTime()<System.currentTimeMillis()){
+			throw new TokenInvalidException("token has expired");
+		}
+		
 		if(jwt.getSubject()==null||!jwt.getSubject().equals(userId)){
 			throw new TokenInvalidException("check userId of token faild");
 		}
@@ -121,8 +159,11 @@ public class TokenFactory implements ITokenFactory {
 			throw new TokenInvalidException("check deviceId of token faild");
 		}
 		
-		if(jwt.getExpiresAt()==null||jwt.getExpiresAt().getTime()<System.currentTimeMillis()){
-			throw new TokenInvalidException("token has expired");
+		if(appid!=null&&appid.trim().length()>0&&!appIgnored){
+			
+			if(jwt.getIssuer()==null||!jwt.getIssuer().equals(appid)){
+				throw new TokenInvalidException("token has expired");
+			}
 		}
 	}
 	
