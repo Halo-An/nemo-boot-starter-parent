@@ -20,4 +20,6 @@ public @interface LockStockCreate {
 	 * The actual value expression: e.g. "#p0.getStock()".
 	 */
 	String num();
+	
+	long timeout();
 }

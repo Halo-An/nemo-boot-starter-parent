@@ -11,8 +11,8 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.Order;
 
-import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.jimistore.boot.nemo.high.concurrency.api.annotation.Async;
+import com.jimistore.util.reflex.AnnotationUtil;
 
 @Aspect
 @Order(14)

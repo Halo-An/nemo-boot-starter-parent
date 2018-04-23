@@ -6,7 +6,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import com.cq.nemo.core.exception.LockException;
+import com.jimistore.boot.nemo.high.concurrency.api.exception.LockException;
+
 
 public class LockHelper {
 	

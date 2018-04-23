@@ -6,18 +6,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
-import com.cq.nemo.core.helper.LockAspect;
-import com.cq.nemo.core.helper.LockHelper;
-import com.cq.nemo.core.helper.NemoJsonRedisSerializer;
-import com.cq.nemo.core.helper.StockAspect;
-import com.cq.nemo.core.helper.StockHelper;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.high.concurrency.helper.AsyncExecuterAspect;
 import com.jimistore.boot.nemo.high.concurrency.helper.AsyncExecuterHelper;
+import com.jimistore.boot.nemo.high.concurrency.helper.LockAspect;
+import com.jimistore.boot.nemo.high.concurrency.helper.LockHelper;
+import com.jimistore.boot.nemo.high.concurrency.helper.StockAspect;
+import com.jimistore.boot.nemo.high.concurrency.helper.StockHelper;
 
 @Configuration
 public class NemoHighConcurrencyConfiguration {
@@ -27,8 +27,7 @@ public class NemoHighConcurrencyConfiguration {
 	public RedisTemplate<String, String> redisTemplate(
 			RedisConnectionFactory connectionFactory) {
 		StringRedisTemplate template = new StringRedisTemplate(connectionFactory);
-		NemoJsonRedisSerializer nemoJsonRedisSerializer = new NemoJsonRedisSerializer(
-				Object.class);
+		Jackson2JsonRedisSerializer<?> nemoJsonRedisSerializer = new Jackson2JsonRedisSerializer<Object>(Object.class);
 		ObjectMapper om = new ObjectMapper();
 		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
 		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

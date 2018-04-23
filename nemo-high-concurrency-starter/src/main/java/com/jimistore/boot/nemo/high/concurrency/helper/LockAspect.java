@@ -16,8 +16,8 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.jimistore.boot.nemo.high.concurrency.api.annotation.Lock;
+import com.jimistore.util.reflex.AnnotationUtil;
 
 @Aspect
 @Order(12)

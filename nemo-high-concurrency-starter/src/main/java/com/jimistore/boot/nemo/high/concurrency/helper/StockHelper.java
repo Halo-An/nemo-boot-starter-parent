@@ -6,7 +6,8 @@ import org.apache.log4j.Logger;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 
-import com.cq.nemo.core.exception.StockConsumeException;
+import com.jimistore.boot.nemo.high.concurrency.api.exception.StockConsumeException;
+
 
 public class StockHelper {
 	

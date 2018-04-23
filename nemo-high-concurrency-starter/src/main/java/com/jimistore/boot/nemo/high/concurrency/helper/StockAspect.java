@@ -15,11 +15,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import com.cq.nemo.core.annotation.LockConsume;
-import com.cq.nemo.core.annotation.LockProduce;
-import com.cq.nemo.core.annotation.LockStockCreate;
-import com.cq.nemo.core.annotation.LockStockUpdate;
-import com.cq.nemo.util.reflex.AnnotationUtil;
+import com.jimistore.boot.nemo.high.concurrency.api.annotation.LockConsume;
+import com.jimistore.boot.nemo.high.concurrency.api.annotation.LockProduce;
+import com.jimistore.boot.nemo.high.concurrency.api.annotation.LockStockCreate;
+import com.jimistore.boot.nemo.high.concurrency.api.annotation.LockStockUpdate;
+import com.jimistore.util.reflex.AnnotationUtil;
 
 @Aspect
 @Order(13)
