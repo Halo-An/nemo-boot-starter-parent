@@ -51,7 +51,7 @@ public class XSSValidator implements IXSSValidator {
 					if(result>=0){
 						//替换还是直接抛异常
 						if(replace!=null&&replace.length()>0){
-							str = str.replaceAll(errStr[result], String.format("%s%s%s", replace, str, replace));
+							str = str.replaceAll(errStr[result], String.format("%s%s%s", replace, errStr[result], replace));
 							String setMethod = ClassUtil.getSetMethodNameByField(field);
 							entity.getClass().getMethod(setMethod, new Class[]{String.class}).invoke(entity, new Object[]{str});
 						}else{
