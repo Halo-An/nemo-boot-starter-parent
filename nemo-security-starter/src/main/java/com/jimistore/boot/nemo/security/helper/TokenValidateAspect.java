@@ -120,7 +120,9 @@ public class TokenValidateAspect {
 				if(userRequest.getUserId()==null||!userRequest.getUserId().equals(userid)){
 					throw new TokenInvalidException();
 				}
-			}else if(arg instanceof IDeviceAuthRequest){
+			}
+
+			if(arg instanceof IDeviceAuthRequest){
 				IDeviceAuthRequest deviceRequest = (IDeviceAuthRequest)arg;
 				if(deviceRequest.getDeviceId()==null||!deviceRequest.getDeviceId().equals(device)){
 					throw new TokenInvalidException();
