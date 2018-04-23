@@ -3,11 +3,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>nemo-mq-core-api</artifactId>
+	<artifactId>nemo-core-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>nemo-mq-core-api</name>
-	<description>Demo project for Spring Boot</description>
+	<name>nemo-core-api</name>
+	<description>定义通用的标准</description>
 
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
@@ -15,17 +15,5 @@
 		<version>1.4.0-RELEASE</version>
 	</parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 
 </project>

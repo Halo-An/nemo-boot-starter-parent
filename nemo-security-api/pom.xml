@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>nemo-mq-core-api</artifactId>
+	<artifactId>nemo-security-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>nemo-mq-core-api</name>
+	<name>nemo-security-api</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -14,18 +14,13 @@
 		<artifactId>nemo-boot-starter-parent</artifactId>
 		<version>1.4.0-RELEASE</version>
 	</parent>
-
+	
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-core-api</artifactId>
 		</dependency>
 	</dependencies>
+
 
 </project>
