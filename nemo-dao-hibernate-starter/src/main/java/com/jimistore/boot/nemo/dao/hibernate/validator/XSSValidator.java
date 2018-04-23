@@ -4,13 +4,17 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.cq.nemo.core.service.JsonString;
 import com.cq.nemo.util.reflex.ClassUtil;
 import com.jimistore.boot.nemo.dao.api.exception.XssValidatorException;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 
 public class XSSValidator implements IXSSValidator {
+	
+	private static final Logger log = Logger.getLogger(XSSValidator.class);
 	
 	@Value("${xss.replace:}")
 	String replace;
@@ -37,6 +41,9 @@ public class XSSValidator implements IXSSValidator {
 
 	@Override
 	public void check(Object entity) throws XssValidatorException {
+		if(log.isDebugEnabled()){
+			log.debug(String.format("xss checking, the entity is %s", JsonString.toJson(entity)));
+		}
 		if(entity==null){
 			return ;
 		}
@@ -61,7 +68,9 @@ public class XSSValidator implements IXSSValidator {
 					}
 				}
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				e.printStackTrace();
+				if(log.isDebugEnabled()){
+					log.debug(e);
+				}
 			}
 		}
 	}
