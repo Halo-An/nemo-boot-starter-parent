@@ -4,10 +4,12 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.3.7-RELEASE</version>
+	<version>1.4.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>nemo-core-api</module>
+		<module>nemo-core</module>
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
 		<!-- 
@@ -26,23 +28,34 @@
 		 -->
 		<module>nemo-high-concurrency-api</module>
 		<module>nemo-high-concurrency-starter</module>
+		<module>nemo-security-api</module>
+		<module>nemo-security-starter</module>
 	</modules>
 
 	<parent>
 		<groupId>com.cq</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.3.14-RELEASE</version>
+		<version>1.3.15-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<nemo.boot.version>1.3.7-RELEASE</nemo.boot.version>
+		<nemo.boot.version>1.4.0-RELEASE</nemo.boot.version>
+		<common.util.version>1.0.7-RELEASE</common.util.version>
 		<de.codecentric.version>1.5.2</de.codecentric.version>
+		<jwt.version>3.3.0</jwt.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>com.jimistore.util</groupId>
+				<artifactId>common-util-parent</artifactId>
+				<version>${common.util.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
@@ -50,6 +63,19 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-core-api</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-core</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-rpc-eureka-api</artifactId>
@@ -104,6 +130,24 @@
 			</dependency>
 			
 			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-security-api</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-security-starter</artifactId>
+				<version>${nemo.boot.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.auth0</groupId>
+				<artifactId>java-jwt</artifactId>
+				<version>${jwt.version}</version>
+			</dependency>
+			
+			<dependency>
 				<groupId>de.codecentric</groupId>
 				<artifactId>spring-boot-admin-server</artifactId>
 				<version>${de.codecentric.version}</version>
@@ -130,6 +174,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 
 		<dependency>
