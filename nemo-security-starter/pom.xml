@@ -4,6 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>nemo-security-starter</artifactId>
+	<version>${nemo.security.version}</version>
 	<packaging>jar</packaging>
 
 	<name>nemo-security-starter</name>
@@ -12,14 +13,10 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.0-RELEASE</version>
+		<version>1.4.1-RELEASE</version>
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.jimistore.boot</groupId>
-			<artifactId>nemo-security-api</artifactId>
-		</dependency>
 		
 		<dependency>
 			<groupId>com.jimistore.boot</groupId>

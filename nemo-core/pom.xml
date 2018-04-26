@@ -4,6 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>nemo-core</artifactId>
+	<version>${nemo.core.version}</version>
 	<packaging>jar</packaging>
 
 	<name>nemo-core</name>
@@ -21,6 +22,4 @@
 			<artifactId>nemo-core-api</artifactId>
 		</dependency>
 	</dependencies>
-
-
 </project>

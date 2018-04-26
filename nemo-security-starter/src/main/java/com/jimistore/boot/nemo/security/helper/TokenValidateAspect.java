@@ -14,9 +14,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.jimistore.boot.nemo.core.helper.Context;
-import com.jimistore.boot.nemo.security.api.exception.TokenInvalidException;
-import com.jimistore.boot.nemo.security.api.request.IDeviceAuthRequest;
-import com.jimistore.boot.nemo.security.api.request.IUserAuthRequest;
+import com.jimistore.boot.nemo.security.exception.TokenInvalidException;
+import com.jimistore.boot.nemo.security.request.IDeviceAuthRequest;
+import com.jimistore.boot.nemo.security.request.IUserAuthRequest;
 import com.jimistore.util.format.string.StringUtil;
 
 

@@ -3,11 +3,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>nemo-config-server</artifactId>
-	<version>${nemo.config.server.version}</version>
+	<artifactId>nemo-fuse-starter</artifactId>
+	<version>${nemo.fuse.version}</version>
 	<packaging>jar</packaging>
 
-	<name>nemo-config-server</name>
+	<name>nemo-fuse-starter</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
@@ -18,19 +18,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-config-server</artifactId>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-core-api</artifactId>
 		</dependency>
-	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+	</dependencies>
 
 
 </project>

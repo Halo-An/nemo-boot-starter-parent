@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import com.jimistore.boot.nemo.security.api.helper.IApiAuth;
 import com.jimistore.boot.nemo.security.helper.ApiAuth;
+import com.jimistore.boot.nemo.security.helper.IApiAuth;
 import com.jimistore.boot.nemo.security.helper.ITokenFactory;
 import com.jimistore.boot.nemo.security.helper.RequestProxyFilter;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateAspect;

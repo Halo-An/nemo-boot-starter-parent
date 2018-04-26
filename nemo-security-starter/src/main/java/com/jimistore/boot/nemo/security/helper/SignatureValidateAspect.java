@@ -19,8 +19,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.jimistore.boot.nemo.security.api.exception.SignatureInvalidException;
-import com.jimistore.boot.nemo.security.api.helper.IApiAuth;
+import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
 import com.jimistore.util.format.collection.MapUtil;
 import com.jimistore.util.format.exception.SignException;
 import com.jimistore.util.format.string.SecurityUtil;

@@ -2,7 +2,7 @@ package com.jimistore.boot.nemo.security.helper;
 
 import java.util.Map;
 
-import com.jimistore.boot.nemo.security.api.exception.SignatureInvalidException;
+import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
 import com.jimistore.util.format.exception.SignException;
 import com.jimistore.util.format.string.SecurityUtil;
 

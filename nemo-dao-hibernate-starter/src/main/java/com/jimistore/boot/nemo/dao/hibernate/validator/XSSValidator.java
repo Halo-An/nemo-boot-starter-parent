@@ -8,7 +8,9 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.cq.nemo.core.service.JsonString;
+import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.cq.nemo.util.reflex.ClassUtil;
+import com.jimistore.boot.nemo.dao.api.annotation.XssIgnoreField;
 import com.jimistore.boot.nemo.dao.api.exception.XssValidatorException;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 
@@ -54,7 +56,12 @@ public class XSSValidator implements IXSSValidator {
 				Object value = entity.getClass().getMethod(getMethod, new Class[]{}).invoke(entity, new Object[]{});
 				if(value instanceof String){
 					String str = (String) value;
-					int result = checkValue(str);
+					String[] ignores = null;
+					XssIgnoreField xssIgnoreField = AnnotationUtil.getAnnotation(field, XssIgnoreField.class);
+					if(xssIgnoreField!=null){
+						ignores = xssIgnoreField.value();
+					}
+					int result = checkValue(str, ignores);
 					if(result>=0){
 						//替换还是直接抛异常
 						if(replace!=null&&replace.length()>0){
@@ -81,9 +88,25 @@ public class XSSValidator implements IXSSValidator {
 	 * @return
 	 * @throws XssValidatorException
 	 */
-	public static int checkValue(String value) throws XssValidatorException {
+	public static int checkValue(String value, String[] ignores) throws XssValidatorException {
 		for(int i=0;i<errStr.length;i++){
 			String str = errStr[i];
+			if(ignores!=null){
+				//忽略全部
+				if(ignores.length==0){
+					continue ;
+				}
+				boolean flag = false;
+				//忽略制定关键字
+				for(String ignore:ignores){
+					if(ignore!=null&&ignore.equals(str)){
+						flag=true;
+					}
+				}
+				if(flag){
+					continue ;
+				}
+			}
 			if(value.toString().indexOf(str)>=0){
 				return i;
 			}

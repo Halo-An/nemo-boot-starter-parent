@@ -2,7 +2,7 @@ package com.jimistore.boot.nemo.security.helper;
 
 import java.util.Map;
 
-import com.jimistore.boot.nemo.security.api.exception.TokenInvalidException;
+import com.jimistore.boot.nemo.security.exception.TokenInvalidException;
 
 public interface ITokenFactory {
 	

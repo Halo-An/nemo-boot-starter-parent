@@ -2,6 +2,8 @@ package com.jimistore.boot.nemo.dao.hibernate.request;
 
 import java.io.Serializable;
 
+import com.jimistore.boot.nemo.dao.api.annotation.XssIgnoreField;
+
 public class SqlFunction implements Serializable {
 	
 	/**
@@ -9,6 +11,7 @@ public class SqlFunction implements Serializable {
 	 */
 	private static final long serialVersionUID = -4249623597990910176L;
 
+	@XssIgnoreField()
 	String content;
 	
 	String as;
