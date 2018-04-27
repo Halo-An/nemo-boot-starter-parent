@@ -16,17 +16,20 @@ public class HttpServletRequestProxy extends HttpServletRequestWrapper {
 
 	public HttpServletRequestProxy(HttpServletRequest request) {
 		super(request);
-//		try{
-//			StringBuilder sb = new StringBuilder();
-//			BufferedReader br = request.getReader();
-//			String str;
-//			while((str = br.readLine()) != null){
-//				sb.append(str);
-//			}
-//			body = sb.toString().getBytes();
-//		}catch(Exception e){
-//			
-//		}
+		try{
+			StringBuilder sb = new StringBuilder();
+			BufferedReader br = request.getReader();
+			String str;
+			while((str = br.readLine()) != null){
+				if(sb.length()>0){
+					sb.append("\n");
+				}
+				sb.append(str);
+			}
+			body = sb.toString().getBytes();
+		}catch(Exception e){
+			
+		}
 	}
 	
 	@Override  
@@ -36,8 +39,8 @@ public class HttpServletRequestProxy extends HttpServletRequestWrapper {
   
     @Override  
     public ServletInputStream getInputStream() throws IOException {
-    	return super.getInputStream();
-//        return new ServletInputStreamProxy(new ByteArrayInputStream(body));
+//    	return super.getInputStream();
+        return new ServletInputStreamProxy(new ByteArrayInputStream(body));
     } 
     
     class ServletInputStreamProxy extends ServletInputStream{
@@ -56,7 +59,7 @@ public class HttpServletRequestProxy extends HttpServletRequestWrapper {
 
 		@Override
 		public boolean isReady() {
-			return false;
+			return true;
 		}
 
 		@Override

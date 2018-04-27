@@ -14,11 +14,11 @@ public class UnauthorizedException extends BaseException {
 	private static final String ERROR_MSG="接口鉴权异常";
 
 	public UnauthorizedException(Throwable cause) {
-		super(ERROR_CODE, String.format("%s==>%s", ERROR_MSG, cause.getMessage()), cause);
+		super(ERROR_CODE, ERROR_MSG, cause);
 	}
 
 	public UnauthorizedException(String message) {
-		super(ERROR_CODE, String.format("%s:%s", ERROR_MSG, message));
+		super(ERROR_CODE, message);
 	}
 
 	public UnauthorizedException() {

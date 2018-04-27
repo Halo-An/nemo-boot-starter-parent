@@ -228,6 +228,9 @@ public class SignatureValidateAspect {
 			BufferedReader br = request.getReader();
 			String str;
 			while((str = br.readLine()) != null){
+				if(sb.length()>0){
+					sb.append("\n");
+				}
 				sb.append(str);
 			}
 			if(sb.length()>0){

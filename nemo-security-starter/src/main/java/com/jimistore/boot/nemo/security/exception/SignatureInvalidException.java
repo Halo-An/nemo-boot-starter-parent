@@ -17,7 +17,7 @@ public class SignatureInvalidException extends UnauthorizedException {
 	}
 
 	public SignatureInvalidException(String message) {
-		super(String.format("%s==>%s", ERROR_MSG, message));
+		super(message);
 		super.setCode(ERROR_CODE);
 	}
 
