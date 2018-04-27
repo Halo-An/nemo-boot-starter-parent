@@ -12,8 +12,15 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.0-RELEASE</version>
+		<version>1.4.3-RELEASE</version>
 	</parent>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.cq</groupId>
+			<artifactId>nemo-core-api</artifactId>
+		</dependency>
+	</dependencies>
 
 
 </project>
