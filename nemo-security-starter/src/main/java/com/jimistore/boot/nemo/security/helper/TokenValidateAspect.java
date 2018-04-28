@@ -28,11 +28,14 @@ public class TokenValidateAspect {
 	public static final String TOKEN = "token";
 	public static final String USERID = "userId";
 	public static final String DEVICE = "deviceId";
+	public static final String OS = "OSVersion";
 	public static final int dev = 120;
 		
 	private String[] ignoreMatchs;
 	
 	private String[] matchs;
+	
+	private String[] OSMatchs;
 	
 	private ITokenFactory tokenFactory;
 	
@@ -53,8 +56,11 @@ public class TokenValidateAspect {
 		return this;
 	}
 
-
-
+	@Value("${token.ignore.os.match:}")
+	public TokenValidateAspect setOSMatchStr(String matchStr) {
+		this.OSMatchs = StringUtil.split(matchStr, StringUtil.SPLIT_STR);
+		return this;
+	}
 
 	@Pointcut("@annotation(org.springframework.web.bind.annotation.RequestMapping)")
 	public void auth(){
@@ -100,11 +106,25 @@ public class TokenValidateAspect {
             for(String matchStr:ignoreMatchs){
             	if(matchStr.trim().length()>0&&matcher.match(matchStr, url)){
             		if(log.isDebugEnabled()){
-            			log.debug(String.format("hit ignore strategy, the match is %s, url is %s ", matchStr, url));
+            			log.debug(String.format("hit ignore of url strategy, the match is %s, url is %s ", matchStr, url));
             		}
-            		return true;
+            		flag = true;
             	}
             }
+        }
+        
+        //匹配忽略os
+        if(!flag&&OSMatchs!=null){
+        	String os = request.getHeader(OS);
+        	for(String matchStr:OSMatchs){
+            	if(matchStr.trim().length()>0&&matcher.match(matchStr, os)){
+            		if(log.isDebugEnabled()){
+            			log.debug(String.format("hit ignore of os strategy, the match is %s, url is %s ", matchStr, url));
+            		}
+            		flag = true;
+            	}
+            }
+        	
         }
         return flag;
 	}
