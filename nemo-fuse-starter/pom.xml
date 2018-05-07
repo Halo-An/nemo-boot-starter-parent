@@ -21,6 +21,13 @@
 			<groupId>com.jimistore.boot</groupId>
 			<artifactId>nemo-core-api</artifactId>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/io.reactivex/rxjava -->
+		<dependency>
+		    <groupId>io.reactivex</groupId>
+		    <artifactId>rxjava</artifactId>
+		</dependency>
+				
 
 	</dependencies>
 
