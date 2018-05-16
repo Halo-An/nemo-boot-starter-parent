@@ -131,8 +131,17 @@ public class TokenValidateAspect {
 	
 	private void checkToken(JoinPoint joinPoint, HttpServletRequest request){
 		String device = request.getHeader(DEVICE);
+		if(device==null){
+			device = request.getParameter(DEVICE);
+		}
     	String token = request.getHeader(TOKEN);
+		if(token==null){
+			token = request.getParameter(TOKEN);
+		}
     	String userid = request.getHeader(USERID);
+		if(userid==null){
+			userid = request.getParameter(USERID);
+		}
 		
 		for(Object arg:joinPoint.getArgs()){
 			if(arg instanceof IUserAuthRequest){
