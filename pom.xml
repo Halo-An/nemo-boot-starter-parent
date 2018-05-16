@@ -47,7 +47,7 @@
 		<nemo.core.version>1.4.0-RELEASE</nemo.core.version>
 		<nemo.dao.api.version>1.4.1-RELEASE</nemo.dao.api.version>
 		<nemo.dao.hibernate.version>1.4.1-RELEASE</nemo.dao.hibernate.version>
-		<nemo.mq.core.api.version>1.4.0-RELEASE</nemo.mq.core.api.version>
+		<nemo.mq.core.api.version>1.5.0-RELEASE</nemo.mq.core.api.version>
 		<nemo.mq.core.version>1.5.0-RELEASE</nemo.mq.core.version>
 		<nemo.mq.activemq.version>1.5.0-RELEASE</nemo.mq.activemq.version>
 		<nemo.mq.rabbitmq.version>1.5.0-RELEASE</nemo.mq.rabbitmq.version>
