@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.4.4-RELEASE</version>
+	<version>1.5.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -21,9 +21,8 @@
 		<module>nemo-mq-core</module>
 		<module>nemo-mq-activemq-starter</module>
 		<module>nemo-mq-rabbitmq-starter</module>
-		<!-- 
-		<module>nemo-config-server</module>
-		 -->
+		<module>nemo-mq-rocketmq-starter</module>
+		<!-- <module>nemo-config-server</module> -->
 		<module>nemo-lock-starter</module>
 		<module>nemo-security-starter</module>
 	</modules>
@@ -41,19 +40,22 @@
 		<common.util.version>1.1.0-RELEASE</common.util.version>
 		<de.codecentric.version>1.5.2</de.codecentric.version>
 		<jwt.version>3.3.0</jwt.version>
-		
+		<rocketmq.version>3.6.2.Final</rocketmq.version>
+		<ons.client.version>1.2.7.Final</ons.client.version>
+
 		<nemo.core.api.version>1.4.3-RELEASE</nemo.core.api.version>
 		<nemo.core.version>1.4.0-RELEASE</nemo.core.version>
 		<nemo.dao.api.version>1.4.1-RELEASE</nemo.dao.api.version>
 		<nemo.dao.hibernate.version>1.4.1-RELEASE</nemo.dao.hibernate.version>
 		<nemo.mq.core.api.version>1.4.0-RELEASE</nemo.mq.core.api.version>
-		<nemo.mq.core.version>1.4.0-RELEASE</nemo.mq.core.version>
-		<nemo.mq.activemq.version>1.4.0-RELEASE</nemo.mq.activemq.version>
-		<nemo.mq.rabbitmq.version>1.4.0-RELEASE</nemo.mq.rabbitmq.version>
+		<nemo.mq.core.version>1.5.0-RELEASE</nemo.mq.core.version>
+		<nemo.mq.activemq.version>1.5.0-RELEASE</nemo.mq.activemq.version>
+		<nemo.mq.rabbitmq.version>1.5.0-RELEASE</nemo.mq.rabbitmq.version>
+		<nemo.mq.rocketmq.version>1.5.0-RELEASE</nemo.mq.rocketmq.version>
 		<nemo.rpc.eureka.api.version>1.4.0-RELEASE</nemo.rpc.eureka.api.version>
 		<nemo.rpc.eureka.version>1.4.0-RELEASE</nemo.rpc.eureka.version>
 		<nemo.lock.version>1.4.1-RELEASE</nemo.lock.version>
-		<nemo.security.version>1.4.4-RELEASE</nemo.security.version>
+		<nemo.security.version>1.5.0-RELEASE</nemo.security.version>
 		<nemo.fuse.version>1.4.0-RELEASE</nemo.fuse.version>
 		<nemo.monitor.server.version>1.4.0-RELEASE</nemo.monitor.server.version>
 		<nemo.rpc.eureka.server.version>1.4.0-RELEASE</nemo.rpc.eureka.server.version>
@@ -75,19 +77,19 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-core-api</artifactId>
 				<version>${nemo.core.api.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-core</artifactId>
 				<version>${nemo.core.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-rpc-eureka-api</artifactId>
@@ -120,6 +122,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-mq-rocketmq-starter</artifactId>
+				<version>${nemo.mq.rocketmq.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-dao-api</artifactId>
 				<version>${nemo.dao.api.version}</version>
 			</dependency>
@@ -128,25 +135,38 @@
 				<artifactId>nemo-dao-hibernate-starter</artifactId>
 				<version>${nemo.dao.hibernate.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-lock-starter</artifactId>
 				<version>${nemo.lock.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-security-starter</artifactId>
 				<version>${nemo.security.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.auth0</groupId>
 				<artifactId>java-jwt</artifactId>
 				<version>${jwt.version}</version>
 			</dependency>
-			
+
+			<!-- https://mvnrepository.com/artifact/com.alibaba.rocketmq/rocketmq-client -->
+			<dependency>
+				<groupId>com.alibaba.rocketmq</groupId>
+				<artifactId>rocketmq-client</artifactId>
+				<version>${rocketmq.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.aliyun.openservices</groupId>
+				<artifactId>ons-client</artifactId>
+				<version>${ons.client.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>de.codecentric</groupId>
 				<artifactId>spring-boot-admin-server</artifactId>
@@ -196,7 +216,7 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>

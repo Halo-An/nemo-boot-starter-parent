@@ -1,4 +1,4 @@
-package com.jimistore.boot.nemo.mq.activemq.config;
+package com.jimistore.boot.nemo.mq.rocketmq.config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,22 +11,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import com.jimistore.boot.nemo.mq.activemq.adapter.JMSAdapter;
-import com.jimistore.boot.nemo.mq.activemq.adapter.MyActiveMQProperties;
-import com.jimistore.boot.nemo.mq.activemq.helper.JMSAdapterHelper;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQDataSource;
 import com.jimistore.boot.nemo.mq.core.config.NemoMQCoreConfiguration;
 import com.jimistore.boot.nemo.mq.core.helper.MQDataSource;
 import com.jimistore.boot.nemo.mq.core.helper.MQDataSourceGroup;
+import com.jimistore.boot.nemo.mq.rocketmq.adapter.RocketAdapter;
+import com.jimistore.boot.nemo.mq.rocketmq.adapter.RocketMQProperties;
 
 @Configuration
 @AutoConfigureBefore(NemoMQCoreConfiguration.class)
-public class NemoMQActiveMQAutoConfiguration implements EnvironmentAware {
+public class NemoMQRocketMQAutoConfiguration implements EnvironmentAware {
 	
-	public static final String ACTIVEMQ = "activemq";
+	public static final String ROCKETMQ  = "rocketmq";
 	
-	private List<MyActiveMQProperties> activeMQPropertiesList=new ArrayList<MyActiveMQProperties>();
-
+	private List<RocketMQProperties> rocketMQPropertiesList=new ArrayList<RocketMQProperties>();
+	
 	@Override
 	public void setEnvironment(Environment environment) {
 		RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(
@@ -35,6 +34,7 @@ public class NemoMQActiveMQAutoConfiguration implements EnvironmentAware {
 		if(dsPrefixs==null){
 			throw new RuntimeException("can not find nemo.mq.names in application.properties");
 		}
+
 		
 		String[] dsPrefixsArr = dsPrefixs.split(",");
 		if(dsPrefixsArr==null){
@@ -42,45 +42,40 @@ public class NemoMQActiveMQAutoConfiguration implements EnvironmentAware {
 		}
 		for (String dsPrefix : dsPrefixsArr) {
 			Map<String, Object> dsMap = propertyResolver.getSubProperties(dsPrefix + ".");
-			if(dsMap==null){
-				return ;
-			}
 			Object type = dsMap.get("type");
 			if(type==null){
 				throw new RuntimeException("can not find nemo.mq.*.type in application.properties");
 			}
-			if(!type.equals(ACTIVEMQ)){
+			if(!type.equals(ROCKETMQ)){
 				continue ;
 			}
-			activeMQPropertiesList.add(this.parse(dsMap).setKey(dsPrefix));
-
+			
+			rocketMQPropertiesList.add(this.parse(dsMap).setKey(dsPrefix));
 		}
 	}
 	
-	private MyActiveMQProperties parse(Map<String,Object> map){
-		MyActiveMQProperties activeMQProperties = new MyActiveMQProperties();
-		activeMQProperties.setType(String.valueOf(map.get("type")));
-		activeMQProperties.setBrokerUrl(String.valueOf(map.get("url")));
-		activeMQProperties.setUser(String.valueOf(map.get("user")));
-		activeMQProperties.setPassword(String.valueOf(map.get("password")));
-		return activeMQProperties;
+	private RocketMQProperties parse(Map<String,Object> map){
+		RocketMQProperties rocketMQProperties = new RocketMQProperties();
+		rocketMQProperties.setType(String.valueOf(map.get("type")));
+		rocketMQProperties.setUrl(String.valueOf(map.get("url")));
+		rocketMQProperties.setUser(String.valueOf(map.get("user")));
+		rocketMQProperties.setPassword(String.valueOf(map.get("password")));
+		rocketMQProperties.setProducerId(String.valueOf(map.get("producer-id")));
+		rocketMQProperties.setConsumerId(String.valueOf(map.get("consumer-id")));
+		
+		return rocketMQProperties;
 	}
 	
 	@Bean
-	public JMSAdapterHelper jMSAdapterHelper(){
-		return new JMSAdapterHelper();
-	}
-	
-	@Bean
-	public MQDataSourceGroup initActivemqDataSourceGroup(JMSAdapterHelper jMSAdapterHelper){
+	public MQDataSourceGroup initRocketDataSourceGroup(){
 		List<IMQDataSource> mQDataSourceList = new ArrayList<IMQDataSource>();
-		for(MyActiveMQProperties myActiveMQProperties:activeMQPropertiesList){
-			JMSAdapter adapter = new JMSAdapter().setjMSAdapterHelper(jMSAdapterHelper).setMyActiveMQProperties(myActiveMQProperties);
+		for(RocketMQProperties rocketMQProperties:rocketMQPropertiesList){
+			RocketAdapter adapter = new RocketAdapter().setRocketMQProperties(rocketMQProperties);
 			mQDataSourceList.add(new MQDataSource().setSender(adapter).setListener(adapter)
-					.setType(myActiveMQProperties.getType())
-					.setKey(myActiveMQProperties.getKey()));
+					.setType(rocketMQProperties.getType())
+					.setKey(rocketMQProperties.getKey()));
 		}
-		return new MQDataSourceGroup().setType(ACTIVEMQ).setDataSourceList(mQDataSourceList);
+		return new MQDataSourceGroup().setType(ROCKETMQ).setDataSourceList(mQDataSourceList);
 	}
 
 }

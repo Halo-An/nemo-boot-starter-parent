@@ -1,19 +1,20 @@
 package com.jimistore.boot.nemo.mq.core.config;
 
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jimistore.boot.nemo.mq.core.adapter.IMQListener;
-import com.jimistore.boot.nemo.mq.core.adapter.IMQSender;
+import com.jimistore.boot.nemo.mq.core.adapter.IMQDataSource;
 import com.jimistore.boot.nemo.mq.core.helper.AsynExecuter;
 import com.jimistore.boot.nemo.mq.core.helper.MQCoreClient;
+import com.jimistore.boot.nemo.mq.core.helper.MQDataSourceGroup;
 
 @Configuration
-@AutoConfigureAfter(NemoMQCoreConfiguration.class)
 public class NemoMQCoreConfiguration {
 	
 	@Bean
@@ -31,9 +32,15 @@ public class NemoMQCoreConfiguration {
 	
 	@Bean
 	@ConditionalOnMissingBean(MQCoreClient.class)
-	@ConditionalOnBean({IMQListener.class, IMQListener.class, ObjectMapper.class, AsynExecuter.class})
-	public MQCoreClient MQClient(IMQSender mQSender,IMQListener mQListener, ObjectMapper objectMapper, AsynExecuter asynExecuter){
-		return new MQCoreClient().setmQListener(mQListener).setmQSender(mQSender).setObjectMapper(objectMapper).setAsynExecuter(asynExecuter);
+	@ConditionalOnBean({IMQDataSource.class, ObjectMapper.class, AsynExecuter.class})
+	public MQCoreClient MQClient(List<MQDataSourceGroup> mQDataSourceGroupList, ObjectMapper objectMapper, AsynExecuter asynExecuter){
+		List<IMQDataSource> mQDataSourceList = new ArrayList<IMQDataSource>();
+		for(MQDataSourceGroup mQDataSourceGroup:mQDataSourceGroupList){
+			if(mQDataSourceGroup.getDataSourceList()!=null){
+				mQDataSourceList.addAll(mQDataSourceGroup.getDataSourceList());
+			}
+		}
+		return new MQCoreClient().setmQDataSourceList(mQDataSourceList).setObjectMapper(objectMapper).setAsynExecuter(asynExecuter);
 	}
 
 }

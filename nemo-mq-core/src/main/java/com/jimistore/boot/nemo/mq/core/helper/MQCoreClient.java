@@ -29,8 +29,8 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jimistore.boot.nemo.mq.core.adapter.IMQDataSource;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQListener;
-import com.jimistore.boot.nemo.mq.core.adapter.IMQSender;
 import com.jimistore.boot.nemo.mq.core.annotation.EnableJsonMQ;
 import com.jimistore.boot.nemo.mq.core.annotation.JsonMQService;
 
@@ -38,9 +38,7 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 	
 	private static final Logger log = Logger.getLogger(MQCoreClient.class);
 	
-	IMQListener mQListener;
-	
-	IMQSender mQSender;
+	Map<String, IMQDataSource> mQDataSourceMap = new HashMap<String, IMQDataSource>();
 	
 	ObjectMapper objectMapper;
 	
@@ -58,24 +56,31 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 	
 	AsynExecuter asynExecuter;
 	
+	
+	
+	public MQCoreClient setmQDataSourceList(List<IMQDataSource> mQDataSourceList) {
+		for(IMQDataSource mQDataSource:mQDataSourceList){
+			mQDataSourceMap.put(mQDataSource.getKey(), mQDataSource);
+		}
+		return this;
+	}
+
 	public MQCoreClient setAsynExecuter(AsynExecuter asynExecuter) {
 		this.asynExecuter = asynExecuter;
-		return this;
-	}
-
-	public MQCoreClient setmQListener(IMQListener mQListener) {
-		this.mQListener = mQListener;
-		return this;
-	}
-
-	public MQCoreClient setmQSender(IMQSender mQSender) {
-		this.mQSender = mQSender;
 		return this;
 	}
 
 	public MQCoreClient setObjectMapper(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
 		return this;
+	}
+	
+	private IMQDataSource getMQDataSource(String dataSource){
+		IMQDataSource ds = mQDataSourceMap.get(dataSource);
+		if(ds==null){
+			throw new RuntimeException(String.format("no datasource[%s] can be found in your configuration, check application.properties please ", dataSource));
+		}
+		return ds;
 	}
 
 	@Override
@@ -126,14 +131,13 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
                             if(StringUtils.isEmpty(mQGroup)){
                             	mQGroup = className;
                             }
-                            
 
                             String beanName = this.getExistKey(className);
                         	if(beanName!=null){
                         		MQSenderProxy mQSenderProxy = new MQSenderProxy()
                         				.setAsynExecuter(asynExecuter)
                         				.setObjectMapper(objectMapper)
-                        				.setmQSender(mQSender)
+                        				.setmQSender(this.getMQDataSource(dataSource).getMQSender())
                         				.setDataSource(dataSource)
                         				.setmQGroup(mQGroup);
                         		mQSenderProxy.setServiceInterface(Class.forName(className));
@@ -177,7 +181,7 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 	                .addPropertyValue("mQGroup", mQGroup)
 	                .addPropertyValue("serviceInterface", serviceInterface)
 	                .addPropertyValue("objectMapper", objectMapper)
-	                .addPropertyValue("mQSender", mQSender);
+	                .addPropertyValue("mQSender", this.getMQDataSource(dataSource).getMQSender());
 			dlbf.registerBeanDefinition(className+ "-clientProxy", beanDefinitionBuilder.getBeanDefinition());
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -222,6 +226,7 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 		List<Method> methodList = this.listMethodByAnnotaion(clazz);
 		for(Method method:methodList){
 			String mQName = MQNameHelper.getMQNameByGroupAndMethod(clazz.getName(), jsonMQService.value(), method);
+			IMQListener mQListener = this.getMQDataSource(jsonMQService.dataSource()).getMQListener();
 			mQListener.listener(new MQReceiverProxy()
 					.setQueueType(jsonMQService.type())
 					.setTarget(target)
