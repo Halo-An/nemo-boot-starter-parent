@@ -8,12 +8,12 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Import;
 
-import com.jimistore.boot.nemo.lock.config.NemoHighConcurrencyConfiguration;
+import com.jimistore.boot.nemo.lock.config.NemoLockConfiguration;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import({NemoHighConcurrencyConfiguration.class})
+@Import({NemoLockConfiguration.class})
 public @interface EnableLock {
 
 }

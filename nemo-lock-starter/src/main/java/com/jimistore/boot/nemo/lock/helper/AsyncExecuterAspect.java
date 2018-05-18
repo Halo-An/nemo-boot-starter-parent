@@ -25,7 +25,7 @@ public class AsyncExecuterAspect {
 		return this;
 	}
 
-	@Pointcut("@annotation(com.jimistore.boot.nemo.high.concurrency.api.annotation.Async)")
+	@Pointcut("@annotation(com.jimistore.boot.nemo.lock.annotation.Async)")
 	public void syn(){
 	}
 	
