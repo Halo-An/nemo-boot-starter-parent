@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.5.1-RELEASE</version>
+	<version>1.5.2-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -54,7 +54,7 @@
 		<nemo.mq.rocketmq.version>1.5.0-RELEASE</nemo.mq.rocketmq.version>
 		<nemo.rpc.eureka.api.version>1.4.0-RELEASE</nemo.rpc.eureka.api.version>
 		<nemo.rpc.eureka.version>1.4.0-RELEASE</nemo.rpc.eureka.version>
-		<nemo.lock.version>1.5.1-RELEASE</nemo.lock.version>
+		<nemo.lock.version>1.5.2-RELEASE</nemo.lock.version>
 		<nemo.security.version>1.5.0-RELEASE</nemo.security.version>
 		<nemo.fuse.version>1.4.0-RELEASE</nemo.fuse.version>
 		<nemo.monitor.server.version>1.4.0-RELEASE</nemo.monitor.server.version>
