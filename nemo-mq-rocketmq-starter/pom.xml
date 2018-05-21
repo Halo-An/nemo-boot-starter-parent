@@ -13,14 +13,10 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.5.0-RELEASE</version>
+		<version>1.5.3-RELEASE</version>
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.jimistore.boot</groupId>
 			<artifactId>nemo-mq-core</artifactId>
