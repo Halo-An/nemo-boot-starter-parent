@@ -2,9 +2,7 @@ package com.jimistore.boot.nemo.lock.helper;
 
 public class AsyncExecuter {
 	
-	public static int DEFAULT_CAPACITY = 5;
-	
-	private Integer capacity = DEFAULT_CAPACITY;
+	private Integer capacity;
 	
 	String name;
 

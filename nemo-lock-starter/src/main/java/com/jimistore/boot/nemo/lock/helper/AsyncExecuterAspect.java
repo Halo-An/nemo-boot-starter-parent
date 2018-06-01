@@ -49,10 +49,10 @@ public class AsyncExecuterAspect {
 			group = sb.toString();
 		}
 
-		asyncExecuterHelper.execute(group, async.capacity(), new IExecuter() {
+		asyncExecuterHelper.execute(group, async.capacity(), async.maxCapacity(), async.queueCapacity(), new Thread(String.format("%s-%s", group, System.currentTimeMillis())) {
 			
 			@Override
-			public void execute() {
+			public void run() {
 				try {
 					joinPoint.proceed();
 				} catch (Throwable e) {
