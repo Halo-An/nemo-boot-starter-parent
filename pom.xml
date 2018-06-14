@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.5.4-RELEASE</version>
+	<version>1.6.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -25,6 +25,8 @@
 		<!-- <module>nemo-config-server</module> -->
 		<module>nemo-lock-starter</module>
 		<module>nemo-security-starter</module>
+		<module>nemo-sliding-window-starter</module>
+		
 	</modules>
 
 	<parent>
@@ -60,6 +62,7 @@
 		<nemo.monitor.server.version>1.4.0-RELEASE</nemo.monitor.server.version>
 		<nemo.rpc.eureka.server.version>1.4.0-RELEASE</nemo.rpc.eureka.server.version>
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
+		<nemo.sliding.window.version>1.6.0-RELEASE</nemo.sliding.window.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -146,6 +149,12 @@
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-security-starter</artifactId>
 				<version>${nemo.security.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-sliding-window-starter</artifactId>
+				<version>${nemo.sliding.window.version}</version>
 			</dependency>
 
 			<dependency>
