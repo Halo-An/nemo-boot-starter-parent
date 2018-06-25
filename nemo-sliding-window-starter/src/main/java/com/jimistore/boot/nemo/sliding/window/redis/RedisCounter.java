@@ -88,7 +88,7 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 	private void initStart(){
 		//初始化开始
 		redisTemplate.opsForHash().putIfAbsent(this.getRedisKey(), String.valueOf(START_KEY), String.valueOf(System.currentTimeMillis()));
-		redisTemplate.expire(this.getRedisKey(), 365, TimeUnit.DAYS);
+		redisTemplate.expire(this.getRedisKey(), slidingWindowProperties.getRedisExpired(), TimeUnit.SECONDS);
 		long value = Long.parseLong(redisTemplate.opsForHash().get(this.getRedisKey(), String.valueOf(START_KEY)).toString());
 		super.setStart(value);
 		
