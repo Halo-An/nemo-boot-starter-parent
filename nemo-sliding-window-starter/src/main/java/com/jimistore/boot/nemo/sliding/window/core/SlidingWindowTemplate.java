@@ -2,12 +2,14 @@ package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.exception.ConfigException;
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
 import com.jimistore.boot.nemo.sliding.window.handler.IPublishHandler;
+import com.jimistore.boot.nemo.sliding.window.redis.RedisCounterContainer;
 
 /**
  * 调度中心代理类-主入口
@@ -35,14 +37,18 @@ public class SlidingWindowTemplate implements IDispatcher {
 		this.dispatcher = dispatcher;
 		return this;
 	}
-
+	
 	public static final SlidingWindowTemplate create(SlidingWindowProperties slidingWindowProperties){
+		return create(slidingWindowProperties, null);
+	}
+
+	public static final SlidingWindowTemplate create(SlidingWindowProperties slidingWindowProperties, RedisTemplate<?,?> redisTemplate){
 		if(slidingWindowProperties==null){
 			throw new ConfigException("sliding window properties connot be null");
 		}
 		Dispatcher dispatcher = new Dispatcher().setChannelContainer(new ChannelContainer());
 		if(!StringUtils.isEmpty(slidingWindowProperties.getCacheModel())&&slidingWindowProperties.getCacheModel().equals(SlidingWindowProperties.CACHE_MODEL_REDIS)){
-			dispatcher.setCounterContainer(new RedisCounterContainer());
+			dispatcher.setCounterContainer(new RedisCounterContainer().setRedisTemplate(redisTemplate).setSlidingWindowProperties(slidingWindowProperties));
 		}else{
 			dispatcher.setCounterContainer(new LocalCounterContainer());
 		}

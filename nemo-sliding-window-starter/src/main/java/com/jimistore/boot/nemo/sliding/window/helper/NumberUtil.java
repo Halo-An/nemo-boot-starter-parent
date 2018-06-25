@@ -1,6 +1,21 @@
 package com.jimistore.boot.nemo.sliding.window.helper;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.jimistore.boot.nemo.sliding.window.exception.TypeCannotSupportException;
+
 public class NumberUtil {
+	
+	private static final Class<?>[] NUM_CLASSES = new Class[]{Short.class, Float.class, Integer.class, Long.class, Double.class};
+	
+	private static final Map<Class<?>, Integer> NUM_CLASS_MAP = new HashMap<Class<?>, Integer>();
+	
+	static{
+		for(int i=0;i<NUM_CLASSES.length;i++){
+			NUM_CLASS_MAP.put(NUM_CLASSES[i], i);
+		}
+	}
 	
 	public static Number add(Number a, Number b){
 		if(a==null||a.equals(0)){
@@ -9,6 +24,11 @@ public class NumberUtil {
 		if(b==null||b.equals(0)){
 			return a;
 		}
+
+		Class<?> valueType = getIncludeClass(a, b);
+		a = parse(a.toString(), valueType);
+		b = parse(b.toString(), valueType);
+		
 		if(a instanceof Double){
 			Double c = (Double)a + (Double) b;
 			return c;
@@ -36,6 +56,9 @@ public class NumberUtil {
 		if(b==null){
 			return 1;
 		}
+		Class<?> valueType = getIncludeClass(a, b);
+		a = parse(a.toString(), valueType);
+		b = parse(b.toString(), valueType);
 		if(a instanceof Comparable){
 			return ((Comparable)a).compareTo((Comparable)b);
 		}
@@ -61,6 +84,49 @@ public class NumberUtil {
 		}else if(number instanceof Short){
 			Integer c = (Short)number / except;
 			return c;
+		}
+		return null;
+	}
+	
+	public static void checkType(Class<?> valueType){
+		for(Class<?> clazz:NUM_CLASSES){
+			if(valueType.equals(clazz)){
+				return ;
+			}
+		}
+		throw new TypeCannotSupportException();
+	}
+	
+	private static Class<?> getIncludeClass(Number a, Number b){
+		
+		if(a==null||b==null){
+			return null;
+		}
+		checkType(a.getClass());
+		checkType(b.getClass());
+		if(NUM_CLASS_MAP.get(a.getClass())>NUM_CLASS_MAP.get(b.getClass())){
+			return a.getClass();
+		}else{
+			return b.getClass();
+		}
+	}
+	
+	
+	
+	public static Number parse(String number, Class<?> valueType){
+		if(number==null||number.trim().length()==0){
+			return null;
+		}
+		if(valueType.equals(Double.class)){
+			return Double.parseDouble(number);
+		}else if(valueType.equals(Float.class)){
+			return Float.parseFloat(number);
+		}else if(valueType.equals(Long.class)){
+			return Long.parseLong(number);
+		}else if(valueType.equals(Integer.class)){
+			return Integer.parseInt(number);
+		}else if(valueType.equals(Short.class)){
+			return Short.parseShort(number);
 		}
 		return null;
 	}

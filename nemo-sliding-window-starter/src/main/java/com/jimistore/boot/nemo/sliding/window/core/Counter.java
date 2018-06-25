@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.jimistore.boot.nemo.sliding.window.exception.TypeCannotSupportException;
+import com.jimistore.boot.nemo.sliding.window.exception.ValidateException;
 import com.jimistore.boot.nemo.sliding.window.helper.NumberUtil;
 
 /**
@@ -16,77 +16,95 @@ import com.jimistore.boot.nemo.sliding.window.helper.NumberUtil;
  *
  * @param <T>
  */
-public class Counter<T> implements ICounter<T> {
+public class Counter<T> extends Thread implements ICounter<T> {
 	
-	/**
-	 * 上个索引的时间(微秒)
-	 */
-	public Long old;
+	public static final Long START_KEY = -1l;
 	
-	/**
-	 * 上个索引的值
-	 */
-	public Integer index=0;
+	private TimeUnit timeUnit;
 	
-	TimeUnit timeUnit;
+	private int capacity;
 	
-	int capacity;
+	private String key;
 	
-	Map<Integer, Number> dataMap = new HashMap<Integer, Number>();
+	private long start;
 	
-	private Counter(){
+	protected Map<Long, Number> valueMap = new HashMap<Long, Number>();
+	
+	protected Counter(){
 	}
 	
-	public static <E> Counter<E> create(TimeUnit timeUnit, Integer capacity, Class<E> valueType){
-		return new Counter<E>().checkType(valueType).setCapacity(capacity).setTimeUnit(timeUnit).init();
+	public static <E> Counter<E> create(String key, TimeUnit timeUnit, Integer capacity, Class<E> valueType){
+		return new Counter<E>().checkType(valueType).setCapacity(capacity).setTimeUnit(timeUnit).setStart(System.currentTimeMillis()).init();
 	}
 	
-	private Counter<T> init(){
-		for(int i=0;i<capacity;i++){
-			dataMap.put(i, 0);
-		}
-		old = System.currentTimeMillis();
+	protected Counter<T> init(){
+		
+		this.setName(String.format("sliding-window-counter-heabert-%s", key));
+		this.setDaemon(true);
+		this.start();
 		return this;
+	}
+	
+	protected Counter<T> setStart(long start){
+		this.start = start;
+		valueMap.put(START_KEY, start);
+		return this;
+	}
+	
+	
+
+	@Override
+	public void run() {
+		while(true){
+			try {
+				Long index = this.getIndex(valueMap.get(START_KEY).longValue())-capacity;
+				if(valueMap.containsKey(index)){
+					valueMap.remove(index);
+				}
+				Thread.sleep(timeUnit.toMillis(1));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	protected Long getIndex(long start){
+		long now = System.currentTimeMillis();
+		Long index = (now / timeUnit.toMillis(1) - start / timeUnit.toMillis(1)) % capacity;
+		return index;
 	}
 
 	@Override
 	public Counter<T> put(IPublishEvent<?> event) {
-		this.handdleDiff();
-		Number value = dataMap.get(index);
-		dataMap.put(index, NumberUtil.add(value, event.getValue()));
 		
+		Long index = this.getIndex(valueMap.get(START_KEY).longValue());
+		Number value = valueMap.get(index);
+		valueMap.put(index, NumberUtil.add(value, event.getValue()));
 		
-		return this;
-	}
-	
-	/**
-	 * 处理偏移
-	 * @return
-	 */
-	private synchronized Counter<T> handdleDiff(){
-		
-		Long now = System.currentTimeMillis();
-		long diff = now / timeUnit.toMillis(1) - old / timeUnit.toMillis(1);
-		for(;diff>0;diff--){
-			index++;
-			if(index>=capacity){
-				index = 0;
-			}
-			dataMap.put(index, 0);
-			old = now;
-		}
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
+	public long getStart() {
+		return start;
+	}
+
 	@Override
 	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType) {
+		return this.window(this.valueMap, timeUnit, length, valueType);
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected <E> List<E> window(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType) {
 		this.checkType(valueType);
-		this.handdleDiff();
+		if(dataMap==null||dataMap.size()==0){
+			throw new ValidateException(String.format("dataMap[%s] can not be empty", key));
+		}
 		
 		long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
 		List<E> dataList = new ArrayList<E>();
-		int cursor = index;
+		long index = this.getIndex(dataMap.get(START_KEY).longValue());
+		long cursor = index;
 		for(int i=0;i<length;i++){
 			Number value = 0;
 			for(int j=0;j<times;j++){
@@ -99,11 +117,15 @@ public class Counter<T> implements ICounter<T> {
 					break;
 				}
 				value = NumberUtil.add(value, dataMap.get(cursor));
+				if(value==null){
+					value=0;
+				}
 			}
 			//如果已经覆盖整个计数器，则跳出循环
 			if(cursor==index){
 				break;
 			}
+			
 			dataList.add((E)value);
 		}
 		
@@ -120,26 +142,30 @@ public class Counter<T> implements ICounter<T> {
 		return this;
 	}
 	
-	
-	
+	public Counter<T> setKey(String key) {
+		this.key = key;
+		return this;
+	}
+
+	public TimeUnit getTimeUnit() {
+		return timeUnit;
+	}
+
+	public int getCapacity() {
+		return capacity;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
 	/**
 	 * 检验数据类型是否支持
 	 * @param valueType
 	 */
 	protected Counter<T> checkType(Class<?> valueType){
-		if(valueType.equals(Double.class)){
-			return this;
-		}
-		if(valueType.equals(Float.class)){
-			return this;
-		}if(valueType.equals(Long.class)){
-			return this;
-		}if(valueType.equals(Integer.class)){
-			return this;
-		}if(valueType.equals(Short.class)){
-			return this;
-		}
-		throw new TypeCannotSupportException();
+		NumberUtil.checkType(valueType);
+		return this;
 	}
 
 }

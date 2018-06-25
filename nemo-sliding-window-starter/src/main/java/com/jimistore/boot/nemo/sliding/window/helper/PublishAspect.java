@@ -63,7 +63,7 @@ public class PublishAspect {
 			boolean condition = this.parseExpression(context, topic.condition(), Boolean.class);
 			int num = this.parseExpression(context, topic.num(), Integer.class);
 			
-			log.debug(String.format("create counter %s", key));
+			log.debug(String.format("publish counter %s", key));
 			
 			publisherHelper.createCounter(key, topic.timeUnit(), topic.capacity(), topic.valueType());
 			if(condition){

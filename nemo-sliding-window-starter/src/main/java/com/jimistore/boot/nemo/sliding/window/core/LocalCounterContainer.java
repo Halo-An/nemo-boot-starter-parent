@@ -21,13 +21,18 @@ public class LocalCounterContainer extends Thread implements ICounterContainer {
 	
 	private static final Logger log = Logger.getLogger(LocalCounterContainer.class);
 	
-	Map<String, ICounter<?>> counterMap = new HashMap<String, ICounter<?>>();
+	protected Map<String, ICounter<?>> counterMap = new HashMap<String, ICounter<?>>();
 	
-	Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
+	protected Map<String, Class<?>> classMap = new HashMap<String, Class<?>>();
 	
 	LinkedBlockingQueue<IPublishEvent<?>> queue = new LinkedBlockingQueue<IPublishEvent<?>>();
 	
 	public LocalCounterContainer(){
+		this.init();
+	}
+	
+	private void init(){
+		super.setName("sliding-window-counter-container-queue");
 		super.setDaemon(true);
 		this.start();
 	}
@@ -53,7 +58,7 @@ public class LocalCounterContainer extends Thread implements ICounterContainer {
 		if(counterMap.containsKey(key)){
 			throw new ValidatedException(String.format("counter[%s] is exist", key));
 		}
-		ICounter<?> counter = Counter.create(timeUnit, capacity, valueType);
+		ICounter<?> counter = Counter.create(key, timeUnit, capacity, valueType);
 		counterMap.put(key, counter);
 		classMap.put(key, valueType);
 		return this;
