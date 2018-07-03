@@ -392,6 +392,10 @@ public class QueryParser implements IQueryParser {
 		
 		if(filterEntry.getCompare().equals(Compare.like)){
 			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("%'").toString();
+		}else if(filterEntry.getCompare().equals(Compare.lelike)){
+			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("'").toString();
+		}else if(filterEntry.getCompare().equals(Compare.rilike)){
+			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '").append(filterEntry.getValue()).append("%'").toString();
 		}else if(filterEntry.getCompare().equals(Compare.nl)){
 			return String.format("%s is null", column);
 		}else if(filterEntry.getCompare().equals(Compare.nnl)){
