@@ -3,11 +3,9 @@ package com.jimistore.boot.nemo.dao.hibernate.config;
 import java.util.List;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.jimistore.boot.nemo.dao.api.dao.IDao;
 import com.jimistore.boot.nemo.dao.api.validator.IQueryValidator;
@@ -25,21 +23,13 @@ import com.jimistore.boot.nemo.dao.hibernate.validator.XSSValidator;
 
 @Configuration
 @EnableConfigurationProperties({HibernateProperties.class, DataSourceProperties.class, MutilDataSourceProperties.class})
-@EnableTransactionManagement(proxyTargetClass = true)
-@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true", matchIfMissing = true)
-public class NemoDaoHibernateAutoConfiguration {
-
-	HibernateProperties hibernateProperties;
-	
-	DataSourceProperties dataSourceProperties;
+public class NemoDaoHibernateAutoConfiguration2 {
 	
 	private MutilDataSourceProperties mutilDataSourceProperties;
-	
-	public NemoDaoHibernateAutoConfiguration(HibernateProperties hibernateProperties,
+			
+	public NemoDaoHibernateAutoConfiguration2(HibernateProperties hibernateProperties,
 			DataSourceProperties dataSourceProperties, MutilDataSourceProperties mutilDataSourceProperties) {
 		super();
-		this.hibernateProperties = hibernateProperties;
-		this.dataSourceProperties = dataSourceProperties;
 		this.mutilDataSourceProperties = mutilDataSourceProperties;
 		if(dataSourceProperties!=null&&dataSourceProperties.getJdbcUrl()!=null){
 			this.mutilDataSourceProperties.getDatasource().put(MutilDataSourceProperties.DEFAULT_DATASOURCE, dataSourceProperties);
@@ -49,12 +39,12 @@ public class NemoDaoHibernateAutoConfiguration {
 
 //	@Bean
 //	@ConditionalOnMissingBean(HibernateNamingStrategy.class)
-//	public HibernateNamingStrategy HibernateNamingStrategy(){
+//	public HibernateNamingStrategy hibernateNamingStrategy(HibernateProperties hibernateProperties){
 //		HibernateNamingStrategy hibernateNamingStrategy = new HibernateNamingStrategy();
 //		hibernateNamingStrategy.setHibernateProperties(hibernateProperties);
 //		return hibernateNamingStrategy;
 //	}
-//	
+	
 //	@Bean
 //	@ConditionalOnMissingBean(BaseDataSource.class)
 //	public BaseDataSource BaseDataSource(){
@@ -65,7 +55,7 @@ public class NemoDaoHibernateAutoConfiguration {
 //
 //	@Bean("sessionFactory")
 //	@ConditionalOnMissingBean(SessionFactory.class)
-//	public BaseSessionFactory BaseSessionFactory(DataSource dataSource,HibernateNamingStrategy hibernateNamingStrategy){
+//	public BaseSessionFactory baseSessionFactory(DataSource dataSource,HibernateNamingStrategy hibernateNamingStrategy){
 //		BaseSessionFactory sessionFactory = new BaseSessionFactory();
 //		sessionFactory.setDataSource(dataSource);
 //		sessionFactory.setNamingStrategy(hibernateNamingStrategy);
@@ -81,34 +71,10 @@ public class NemoDaoHibernateAutoConfiguration {
 //		baseTransactionManager.setSessionFactory(sessionFactory);
 //		return baseTransactionManager;
 //	}
-//	
-//	@Bean()
-//	@ConditionalOnMissingBean({IQueryParser.class, IQueryValidator.class})
-//	public IQueryParser IQueryParser(HibernateNamingStrategy hibernateNamingStrategy){
-//		return new QueryParser().setHibernateNamingStrategy(hibernateNamingStrategy);
-//	}
-//	
-//	@Bean()
-//	@ConditionalOnMissingBean({IInjectSqlValidator.class})
-//	public IInjectSqlValidator IInjectSqlValidator(){
-//		return new InjectSqlValidator();
-//	}
-//	
-//	@Bean()
-//	@ConditionalOnMissingBean({IXSSValidator.class})
-//	public IXSSValidator IXSSValidator(){
-//		return new XSSValidator();
-//	}
-//
-//	
-//	@Bean("hibernate")
-//	@ConditionalOnMissingBean(IDao.class)
-//	public HibernateDao HibernateDao(SessionFactory sessionFactory, IQueryParser queryParser, List<IXSSValidator> xssValidatorList, List<IInjectSqlValidator> queryValidatorList){
-//		return new HibernateDao().setSessionFactory(sessionFactory).setQueryParser(queryParser).setXssValidatorList(xssValidatorList).setQueryValidatorList(queryValidatorList);
-//	}
-//	
+	
 //	@Bean
-//	public HibernateDao hibernateDao(){
+//	public HibernateDao test(HibernateProperties hibernateProperties,
+//			DataSourceProperties dataSourceProperties, MutilDataSourceProperties mutilDataSourceProperties){
 //		return new HibernateDao();
 //	}
 	
@@ -154,4 +120,5 @@ public class NemoDaoHibernateAutoConfiguration {
 	public HibernateDao HibernateDao(MutilSessionFactory sessionFactory, IQueryParser queryParser, List<IXSSValidator> xssValidatorList, List<IInjectSqlValidator> queryValidatorList){
 		return new MutilHibernateDao().setMutilSessionFactory(sessionFactory).setQueryParser(queryParser).setXssValidatorList(xssValidatorList).setQueryValidatorList(queryValidatorList);
 	}
+	
 }

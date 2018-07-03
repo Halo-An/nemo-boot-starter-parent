@@ -33,6 +33,12 @@ public class QueryParser implements IQueryParser {
 		return this;
 	}
 
+	public HibernateNamingStrategy getHibernateNamingStrategy() {
+		return hibernateNamingStrategy;
+	}
+
+
+
 	@Override
 	public Query parse(Session session, IQuery<?> query) {
 		if(query instanceof SqlQuery){
@@ -438,11 +444,11 @@ public class QueryParser implements IQueryParser {
 	}
 	
 	private String getTableNameByClass(Class<?> clazz){
-		return hibernateNamingStrategy.classToTableName(clazz.getSimpleName());
+		return getHibernateNamingStrategy().classToTableName(clazz.getSimpleName());
 	}
 	
 	private String getColumnByFieldName(String filedName){
-		return hibernateNamingStrategy.propertyToColumnName(filedName);
+		return getHibernateNamingStrategy().propertyToColumnName(filedName);
 	}
 	
 

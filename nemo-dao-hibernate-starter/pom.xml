@@ -4,6 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>nemo-dao-hibernate-starter</artifactId>
+	<version>${nemo.dao.hibernate.version}</version>
 	<packaging>jar</packaging>
 
 	<name>nemo-dao-hibernate-starter</name>
@@ -12,7 +13,7 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.1-RELEASE</version>
+		<version>1.7.0-RELEASE</version>
 	</parent>
 	
 	<dependencies>

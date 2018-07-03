@@ -1,4 +1,4 @@
-package com.jimistore.boot.nemo.dao.hibernate.helper;
+package com.jimistore.boot.nemo.dao.hibernate.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
