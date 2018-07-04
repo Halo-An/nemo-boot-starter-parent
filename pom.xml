@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.7.1-RELEASE</version>
+	<version>1.7.2-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -47,7 +47,7 @@
 
 		<nemo.core.api.version>1.4.3-RELEASE</nemo.core.api.version>
 		<nemo.core.version>1.4.0-RELEASE</nemo.core.version>
-		<nemo.dao.api.version>1.7.1-RELEASE</nemo.dao.api.version>
+		<nemo.dao.api.version>1.7.2-RELEASE</nemo.dao.api.version>
 		<nemo.dao.hibernate.version>1.7.1-RELEASE</nemo.dao.hibernate.version>
 		<nemo.mq.core.api.version>1.5.0-RELEASE</nemo.mq.core.api.version>
 		<nemo.mq.core.version>1.5.0-RELEASE</nemo.mq.core.version>
