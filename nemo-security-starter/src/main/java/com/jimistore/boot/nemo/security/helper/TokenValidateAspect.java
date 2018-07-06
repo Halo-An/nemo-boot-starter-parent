@@ -1,5 +1,9 @@
 package com.jimistore.boot.nemo.security.helper;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -129,19 +133,24 @@ public class TokenValidateAspect {
         return flag;
 	}
 	
+	private String getTop(String... strs){
+		for(String str:strs){
+			if(str!=null){
+				return str;
+			}
+		}
+		return null;
+	}
+	
 	private void checkToken(JoinPoint joinPoint, HttpServletRequest request){
-		String device = request.getHeader(DEVICE);
-		if(device==null){
-			device = request.getParameter(DEVICE);
+		Cookie[] cookies = request.getCookies();
+		Map<String,String> map = new HashMap<String,String>();
+		for(Cookie cookie:cookies){
+			map.put(cookie.getName(), cookie.getValue());
 		}
-    	String token = request.getHeader(TOKEN);
-		if(token==null){
-			token = request.getParameter(TOKEN);
-		}
-    	String userid = request.getHeader(USERID);
-		if(userid==null){
-			userid = request.getParameter(USERID);
-		}
+		String device = this.getTop(map.get(DEVICE), request.getHeader(DEVICE), request.getParameter(DEVICE));
+    	String token = this.getTop(map.get(TOKEN), request.getHeader(TOKEN), request.getParameter(TOKEN));
+    	String userid = this.getTop(map.get(USERID), request.getHeader(USERID), request.getParameter(USERID));
 		
 		for(Object arg:joinPoint.getArgs()){
 			if(arg instanceof IUserAuthRequest){
