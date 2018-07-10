@@ -145,8 +145,10 @@ public class TokenValidateAspect {
 	private void checkToken(JoinPoint joinPoint, HttpServletRequest request){
 		Cookie[] cookies = request.getCookies();
 		Map<String,String> map = new HashMap<String,String>();
-		for(Cookie cookie:cookies){
-			map.put(cookie.getName(), cookie.getValue());
+		if(cookies!=null){
+			for(Cookie cookie:cookies){
+				map.put(cookie.getName(), cookie.getValue());
+			}
 		}
 		String device = this.getTop(map.get(DEVICE), request.getHeader(DEVICE), request.getParameter(DEVICE));
     	String token = this.getTop(map.get(TOKEN), request.getHeader(TOKEN), request.getParameter(TOKEN));
