@@ -1,5 +1,10 @@
 package com.jimistore.boot.nemo.sliding.window.redis;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.log4j.Logger;
 
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
@@ -18,6 +23,14 @@ public class RedisDispatcher extends Dispatcher {
 	RedisCounterContainer redisCounterContainer;
 	
 	SlidingWindowProperties slidingWindowProperties;
+
+	public static final Map<String, TimeUnit> timeUnitMap = new HashMap<String, TimeUnit>();
+
+	static {
+		for (TimeUnit timeUnit : TimeUnit.values()) {
+			timeUnitMap.put(timeUnit.toString(), timeUnit);
+		}
+	}
 	
 	//同步远端数据线程
 	Thread syncThread = new Thread("nemo-sliding-window-redis-sync"){
@@ -54,6 +67,16 @@ public class RedisDispatcher extends Dispatcher {
 	protected void sync(){
 		if(redisCounterContainer!=null){
 			log.debug("request sync");
+			//同步计数容器
+			List<CounterMsg> counterList = redisCounterContainer.getNotExistCounterList();
+			for(CounterMsg counterMsg:counterList){
+				try {
+					this.createCounter(counterMsg.getKey(), timeUnitMap.get(counterMsg.getTimeUnit()), counterMsg.getCapacity(), Class.forName(counterMsg.getClassName()));
+				} catch (ClassNotFoundException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			//同步计数
 			redisCounterContainer.sync();
 		}
 	}

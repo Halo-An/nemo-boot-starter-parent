@@ -1,6 +1,7 @@
 package com.jimistore.boot.nemo.sliding.window.redis;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -30,14 +31,6 @@ public class RedisCounterContainer extends LocalCounterContainer {
 
 	private ObjectMapper objectMapper;
 
-	public static final Map<String, TimeUnit> timeUnitMap = new HashMap<String, TimeUnit>();
-
-	static {
-		for (TimeUnit timeUnit : TimeUnit.values()) {
-			timeUnitMap.put(timeUnit.toString(), timeUnit);
-		}
-	}
-
 	public RedisCounterContainer() {
 		super();
 	}
@@ -61,38 +54,47 @@ public class RedisCounterContainer extends LocalCounterContainer {
 	@SuppressWarnings("unchecked")
 	@Override
 	public ICounterContainer createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
-		this.createCounterNotRedis(key, timeUnit, capacity, valueType);
 
-		// 同步给redis
-		CounterMsg counter = new CounterMsg().setCapacity(capacity).setKey(key).setClassName(valueType.getName())
-				.setTimeUnit(timeUnit.toString());
-
-		try {
-			redisTemplate.opsForHash().put(slidingWindowProperties.getRedisContainerKey(), key,
-					objectMapper.writeValueAsString(counter));
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-		redisTemplate.expire(slidingWindowProperties.getRedisContainerKey(), slidingWindowProperties.getRedisExpired(),
-				TimeUnit.MILLISECONDS);
-		return this;
-	}
-
-	private ICounterContainer createCounterNotRedis(String key, TimeUnit timeUnit, Integer capacity,
-			Class<?> valueType) {
 		RedisCounter<?> counter = RedisCounter.create(slidingWindowProperties, redisTemplate, key, timeUnit, capacity,
 				valueType);
 		counterMap.put(key, counter);
+
+		// 同步给redis
+		CounterMsg counterMsg = new CounterMsg().setCapacity(capacity).setKey(key).setClassName(valueType.getName())
+				.setTimeUnit(timeUnit.toString());
+
+		try {
+			boolean result = redisTemplate.opsForHash().putIfAbsent(slidingWindowProperties.getRedisContainerKey(), key,
+					objectMapper.writeValueAsString(counterMsg));
+			if(result){
+				redisTemplate.expire(slidingWindowProperties.getRedisContainerKey(), slidingWindowProperties.getRedisExpired(),
+						TimeUnit.MILLISECONDS);
+			}
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
 		return this;
 	}
 
-	private ICounterContainer createCounter(CounterMsg counter) {
-		try {
-			return this.createCounterNotRedis(counter.getKey(), timeUnitMap.get(counter.getTimeUnit()), counter.getCapacity(),
-					Class.forName(counter.getClassName()));
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+	@SuppressWarnings({ "unchecked" })
+	protected List<CounterMsg> getNotExistCounterList(){
+		List<CounterMsg> counterMsgList = new ArrayList<CounterMsg>();
+		// 同步计数容器
+		Map<String, String> src = redisTemplate.opsForHash()
+				.entries(slidingWindowProperties.getRedisContainerKey());
+		for (String key : src.keySet()) {
+			if (!counterMap.containsKey(key)) {
+				try {
+					String content = src.get(key);
+					CounterMsg counter = objectMapper.readValue(content, CounterMsg.class);
+					counterMsgList.add(counter);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
 		}
+		return counterMsgList;
+		
 	}
 
 	protected void sync() {
@@ -100,24 +102,8 @@ public class RedisCounterContainer extends LocalCounterContainer {
 		try {
 			queue.put(new Runnable() {
 
-				@SuppressWarnings({ "unchecked" })
 				@Override
 				public void run() {
-					// 同步计数容器
-					Map<String, String> src = redisTemplate.opsForHash()
-							.entries(slidingWindowProperties.getRedisContainerKey());
-					for (String key : src.keySet()) {
-						if (!counterMap.containsKey(key)) {
-							try {
-								String content = src.get(key);
-								CounterMsg counter = objectMapper.readValue(content, CounterMsg.class);
-								createCounter(counter);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-					}
 
 					// 同步计数
 					for (Entry<String, ICounter<?>> entry : counterMap.entrySet()) {
