@@ -115,6 +115,9 @@ public class Dispatcher implements IDispatcher {
 	
 	@SuppressWarnings("unchecked")
 	protected void scheduler(){
+		if(counterContainer==null){
+			return ;
+		}
 		for(String key:counterContainer.getAllKeys()){
 			Set<IChannel> channelSet = channelContainer.match(key);
 			if(channelSet==null){
