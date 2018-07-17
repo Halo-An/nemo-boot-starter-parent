@@ -20,4 +20,9 @@ public interface ICounter<T> {
 	 */
 	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType);
 	
+	/**
+	 * 计数心跳
+	 */
+	public void heartbeat();
+	
 }

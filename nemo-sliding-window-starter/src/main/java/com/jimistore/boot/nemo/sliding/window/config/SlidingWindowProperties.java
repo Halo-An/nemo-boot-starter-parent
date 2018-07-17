@@ -2,6 +2,12 @@ package com.jimistore.boot.nemo.sliding.window.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * sliding-window配置
+ * @author chenqi
+ * @Date 2018年7月17日
+ *
+ */
 @ConfigurationProperties("nemo.swindow")
 public class SlidingWindowProperties {
 	
@@ -12,9 +18,9 @@ public class SlidingWindowProperties {
 	String cacheModel = CACHE_MODEL_LOCAL;
 	
 	/**
-	 * 同步间隔
+	 * 同步间隔(毫秒)
 	 */
-	int syncInterval = 30000;
+	long syncInterval = 30000;
 	
 	/**
 	 * 失效清除计数器的计数容量
@@ -27,9 +33,14 @@ public class SlidingWindowProperties {
 	int expiredOffset = 60;
 	
 	/**
-	 * redis key的时效时间
+	 * redis key的时效时间(毫秒)
 	 */
-	int redisExpired = 365 * 86400;
+	long redisExpired = 365 * 24 * 60 * 60 * 1000;
+	
+	/**
+	 * redis 容器的key
+	 */
+	String redisContainerKey = "nemo-sliding-window-container";
 
 	public String getCacheModel() {
 		return cacheModel;
@@ -40,11 +51,11 @@ public class SlidingWindowProperties {
 		return this;
 	}
 
-	public int getSyncInterval() {
+	public long getSyncInterval() {
 		return syncInterval;
 	}
 
-	public SlidingWindowProperties setSyncInterval(int syncInterval) {
+	public SlidingWindowProperties setSyncInterval(long syncInterval) {
 		this.syncInterval = syncInterval;
 		return this;
 	}
@@ -67,12 +78,21 @@ public class SlidingWindowProperties {
 		return this;
 	}
 
-	public int getRedisExpired() {
+	public long getRedisExpired() {
 		return redisExpired;
 	}
 
-	public SlidingWindowProperties setRedisExpired(int redisExpired) {
+	public SlidingWindowProperties setRedisExpired(long redisExpired) {
 		this.redisExpired = redisExpired;
+		return this;
+	}
+
+	public String getRedisContainerKey() {
+		return redisContainerKey;
+	}
+
+	public SlidingWindowProperties setRedisContainerKey(String redisContainerKey) {
+		this.redisContainerKey = redisContainerKey;
 		return this;
 	}
 	

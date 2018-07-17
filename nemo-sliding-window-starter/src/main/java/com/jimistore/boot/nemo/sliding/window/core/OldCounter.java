@@ -159,4 +159,10 @@ public class OldCounter<T> extends Thread implements ICounter<T> {
 		throw new TypeCannotSupportException();
 	}
 
+	@Override
+	public void heartbeat() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

@@ -23,11 +23,10 @@ import com.jimistore.boot.nemo.sliding.window.helper.SubscriberHelper;
 @Configuration
 @EnableConfigurationProperties(SlidingWindowProperties.class)
 public class NemoSlidingWindowConfiguration {
-	
+
 	@Bean("redisTemplate")
 	@ConditionalOnMissingBean(value = RedisTemplate.class)
-	public RedisTemplate<String, String> redisTemplate(
-			RedisConnectionFactory connectionFactory) {
+	public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
 		StringRedisTemplate template = new StringRedisTemplate(connectionFactory);
 		Jackson2JsonRedisSerializer<?> nemoJsonRedisSerializer = new Jackson2JsonRedisSerializer<Object>(Object.class);
 		ObjectMapper om = new ObjectMapper();
@@ -41,34 +40,41 @@ public class NemoSlidingWindowConfiguration {
 		return template;
 	}
 
-	
+	@Bean("objectMapper")
+	@ConditionalOnMissingBean(value = ObjectMapper.class)
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
+	}
+
 	@Bean
 	@ConditionalOnMissingBean(SlidingWindowTemplate.class)
-	public SlidingWindowTemplate slidingWindowTemplate(SlidingWindowProperties slidingWindowProperties, @Lazy RedisTemplate<String, String> redisTemplate){
-		return SlidingWindowTemplate.create(slidingWindowProperties, redisTemplate);
+	public SlidingWindowTemplate slidingWindowTemplate(SlidingWindowProperties slidingWindowProperties,
+			@Lazy RedisTemplate<String, String> redisTemplate, @Lazy ObjectMapper objectMapper) {
+		return SlidingWindowTemplate.create(slidingWindowProperties, redisTemplate, objectMapper);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(PublisherHelper.class)
-	public PublisherHelper publisherHelper(SlidingWindowTemplate slidingWindowTemplate){
+	public PublisherHelper publisherHelper(SlidingWindowTemplate slidingWindowTemplate) {
 		return new PublisherHelper().setSlidingWindowTemplate(slidingWindowTemplate);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(SubscriberHelper.class)
-	public SubscriberHelper subscriberHelper(SlidingWindowTemplate slidingWindowTemplate){
+	public SubscriberHelper subscriberHelper(SlidingWindowTemplate slidingWindowTemplate) {
 		return new SubscriberHelper().setSlidingWindowTemplate(slidingWindowTemplate);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(PublishAspect.class)
-	public PublishAspect publishAspect(PublisherHelper publisherHelper){
+	public PublishAspect publishAspect(PublisherHelper publisherHelper) {
 		return new PublishAspect().setPublisherHelper(publisherHelper);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(SlidingWindowClient.class)
-	public SlidingWindowClient slidingWindowClient(@Lazy PublisherHelper publisherHelper, @Lazy SubscriberHelper subscriberHelper){
+	public SlidingWindowClient slidingWindowClient(@Lazy PublisherHelper publisherHelper,
+			@Lazy SubscriberHelper subscriberHelper) {
 		return new SlidingWindowClient().setPublisherHelper(publisherHelper).setSubscriberHelper(subscriberHelper);
 	}
 

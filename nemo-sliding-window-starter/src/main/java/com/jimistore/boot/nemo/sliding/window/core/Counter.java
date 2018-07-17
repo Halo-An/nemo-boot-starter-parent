@@ -16,7 +16,7 @@ import com.jimistore.boot.nemo.sliding.window.helper.NumberUtil;
  *
  * @param <T>
  */
-public class Counter<T> extends Thread implements ICounter<T> {
+public class Counter<T> implements ICounter<T> {
 	
 	public static final Long START_KEY = -1l;
 	
@@ -30,19 +30,13 @@ public class Counter<T> extends Thread implements ICounter<T> {
 	
 	protected Map<Long, Number> valueMap = new HashMap<Long, Number>();
 	
+	private long nextHeartbeatTime=0;
+	
 	protected Counter(){
 	}
 	
 	public static <E> Counter<E> create(String key, TimeUnit timeUnit, Integer capacity, Class<E> valueType){
-		return new Counter<E>().checkType(valueType).setCapacity(capacity).setTimeUnit(timeUnit).setStart(System.currentTimeMillis()).init();
-	}
-	
-	protected Counter<T> init(){
-		
-		this.setName(String.format("sliding-window-counter-heabert-%s", key));
-		this.setDaemon(true);
-		this.start();
-		return this;
+		return new Counter<E>().checkType(valueType).setCapacity(capacity).setTimeUnit(timeUnit).setStart(System.currentTimeMillis());
 	}
 	
 	protected Counter<T> setStart(long start){
@@ -50,23 +44,20 @@ public class Counter<T> extends Thread implements ICounter<T> {
 		valueMap.put(START_KEY, start);
 		return this;
 	}
-	
-	
+
 
 	@Override
-	public void run() {
-		while(true){
-			try {
-				Long index = this.getIndex(valueMap.get(START_KEY).longValue())-capacity;
-				if(valueMap.containsKey(index)){
-					valueMap.remove(index);
-				}
-				Thread.sleep(timeUnit.toMillis(1));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+	public void heartbeat() {
+		long now = System.currentTimeMillis();
+		if(now >= nextHeartbeatTime){
+			nextHeartbeatTime = now + timeUnit.toMillis(1);
+			
+			Long index = this.getIndex(valueMap.get(START_KEY).longValue())-capacity;
+			if(valueMap.containsKey(index)){
+				valueMap.remove(index);
 			}
 		}
+		
 	}
 	
 	protected Long getIndex(long start){

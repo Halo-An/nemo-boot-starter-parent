@@ -36,6 +36,11 @@ public interface ICounterContainer {
 	 * @param length
 	 */
 	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType);
+	
+	/**
+	 * 计数心跳
+	 */
+	public void heartbeat();
 
 	
 }

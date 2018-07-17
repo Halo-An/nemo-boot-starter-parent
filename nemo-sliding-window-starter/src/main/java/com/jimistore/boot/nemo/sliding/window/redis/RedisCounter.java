@@ -27,7 +27,9 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 	@SuppressWarnings("rawtypes")
 	RedisTemplate redisTemplate;
 	
-	private RedisCounter(){}
+	private RedisCounter(){
+		super();
+	}
 	
 	
 	public RedisCounter<T> setValueType(Class<?> valueType) {
@@ -69,59 +71,16 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 	public static <E> RedisCounter<E> create(SlidingWindowProperties slidingWindowProperties, RedisTemplate<?,?> redisTemplate, String key, TimeUnit timeUnit, Integer capacity, Class<E> valueType){
 		return new RedisCounter<E>().setSlidingWindowProperties(slidingWindowProperties).setRedisTemplate(redisTemplate).setKey(key).setTimeUnit(timeUnit).setCapacity(capacity).setValueType(valueType).init();
 	}
-	
-	
-	protected RedisCounter<T> init(){
-		
-		this.initStart();
-		
-		super.init();
-		
-		this.initSync();
-		return this;
-	}
-	
-	/**
-	 * 初始化启动时间
-	 */
+
 	@SuppressWarnings("unchecked")
-	private void initStart(){
+	protected RedisCounter<T> init(){
 		//初始化开始
 		redisTemplate.opsForHash().putIfAbsent(this.getRedisKey(), String.valueOf(START_KEY), String.valueOf(System.currentTimeMillis()));
-		redisTemplate.expire(this.getRedisKey(), slidingWindowProperties.getRedisExpired(), TimeUnit.SECONDS);
+		redisTemplate.expire(this.getRedisKey(), slidingWindowProperties.getRedisExpired(), TimeUnit.MILLISECONDS);
 		long value = Long.parseLong(redisTemplate.opsForHash().get(this.getRedisKey(), String.valueOf(START_KEY)).toString());
 		super.setStart(value);
 		
-	}
-	
-	/**
-	 * 初始化同步线程
-	 */
-	private void initSync(){
-		
-		Thread thread = new Thread(){
-
-			@Override
-			public void run() {
-				while(true){
-					try {
-						sync();
-					} catch (Exception e) {
-						e.printStackTrace();
-						log.warn(e);
-					}
-					try {
-						Thread.sleep(slidingWindowProperties.getSyncInterval());
-					} catch (Exception e) {
-						log.warn(e);
-					}
-				}
-			}
-		};
-		thread.setName("sliding-window-counter-redis-sync");
-		thread.setDaemon(true);
-		thread.start();
-		
+		return this;
 	}
 	
 	/**
@@ -129,6 +88,8 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	protected void sync(){
+		log.debug("request sync");
+		
 		//上传计数
 		Map<Long,Number> cloneValueMap = new HashMap<Long,Number>();
 		synchronized (valueMap) {

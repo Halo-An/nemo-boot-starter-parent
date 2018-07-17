@@ -5,11 +5,13 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.exception.ConfigException;
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
 import com.jimistore.boot.nemo.sliding.window.handler.IPublishHandler;
 import com.jimistore.boot.nemo.sliding.window.redis.RedisCounterContainer;
+import com.jimistore.boot.nemo.sliding.window.redis.RedisDispatcher;
 
 /**
  * 调度中心代理类-主入口
@@ -39,20 +41,27 @@ public class SlidingWindowTemplate implements IDispatcher {
 	}
 	
 	public static final SlidingWindowTemplate create(SlidingWindowProperties slidingWindowProperties){
-		return create(slidingWindowProperties, null);
+		return create(slidingWindowProperties, null, null);
 	}
 
-	public static final SlidingWindowTemplate create(SlidingWindowProperties slidingWindowProperties, RedisTemplate<?,?> redisTemplate){
+	public static final SlidingWindowTemplate create(SlidingWindowProperties slidingWindowProperties, RedisTemplate<?,?> redisTemplate, ObjectMapper objectMapper){
 		if(slidingWindowProperties==null){
 			throw new ConfigException("sliding window properties connot be null");
 		}
-		Dispatcher dispatcher = new Dispatcher().setChannelContainer(new ChannelContainer());
+		Dispatcher dispatcher = null;
 		if(!StringUtils.isEmpty(slidingWindowProperties.getCacheModel())&&slidingWindowProperties.getCacheModel().equals(SlidingWindowProperties.CACHE_MODEL_REDIS)){
-			dispatcher.setCounterContainer(new RedisCounterContainer().setRedisTemplate(redisTemplate).setSlidingWindowProperties(slidingWindowProperties));
+			dispatcher = new RedisDispatcher()
+					.setSlidingWindowProperties(slidingWindowProperties)
+					.setRedisCounterContainer(new RedisCounterContainer()
+							.setObjectMapper(objectMapper)
+							.setRedisTemplate(redisTemplate)
+							.setSlidingWindowProperties(slidingWindowProperties))
+					.setChannelContainer(new ChannelContainer());
 		}else{
-			dispatcher.setCounterContainer(new LocalCounterContainer());
+			dispatcher = new Dispatcher()
+					.setCounterContainer(new LocalCounterContainer())
+					.setChannelContainer(new ChannelContainer());
 		}
-		dispatcher.start();
 		return new SlidingWindowTemplate().setSlidingWindowProperties(slidingWindowProperties).setDispatcher(dispatcher);
 		
 	}
