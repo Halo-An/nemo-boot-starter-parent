@@ -3,14 +3,13 @@ package com.jimistore.boot.nemo.sliding.window.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
 import com.jimistore.boot.nemo.sliding.window.handler.IPublishHandler;
 
@@ -20,17 +19,17 @@ public class Dispatcher implements IDispatcher {
 	
 	public static final Long INTERVAL = 1000l;
 	
-	List<IPublishHandler> publishHandlerList = new ArrayList<IPublishHandler>();
+	protected List<IPublishHandler> publishHandlerList = new ArrayList<IPublishHandler>();
 	
-	List<INoticeHandler> noticeHandlerList = new ArrayList<INoticeHandler>();
+	protected List<INoticeHandler> noticeHandlerList = new ArrayList<INoticeHandler>();
 	
-	ICounterContainer counterContainer;
+	protected ICounterContainer counterContainer;
 	
-	IChannelContainer channelContainer;
+	protected IChannelContainer channelContainer;
 	
-	ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5, 5, 
-			3000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), 
-			Executors.defaultThreadFactory(), new CallerRunsPolicy());;
+	protected SlidingWindowProperties slidingWindowProperties;
+	
+	protected Executor executor;
 	
 	//心跳线程
 	Thread heartbeatThread = new Thread("nemo-sliding-window-heartbeat"){
@@ -39,7 +38,7 @@ public class Dispatcher implements IDispatcher {
 			while(true){
 				try {
 					heartbeat();
-					Thread.sleep(1000l);
+					Thread.sleep(INTERVAL);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -73,10 +72,11 @@ public class Dispatcher implements IDispatcher {
 	};
 	
 	public Dispatcher(){
-		heartbeatThread.setDaemon(true);
-		schedulerThread.setDaemon(true);
-		heartbeatThread.start();
-		schedulerThread.start();
+	}
+
+	public Dispatcher setSlidingWindowProperties(SlidingWindowProperties slidingWindowProperties) {
+		this.slidingWindowProperties = slidingWindowProperties;
+		return this;
 	}
 
 	public Dispatcher setCounterContainer(ICounterContainer counterContainer) {
@@ -86,6 +86,16 @@ public class Dispatcher implements IDispatcher {
 
 	public Dispatcher setChannelContainer(IChannelContainer channelContainer) {
 		this.channelContainer = channelContainer;
+		return this;
+	}
+
+	public Dispatcher init() {
+		heartbeatThread.setDaemon(true);
+		schedulerThread.setDaemon(true);
+		heartbeatThread.start();
+		schedulerThread.start();
+		
+		executor = Executors.newFixedThreadPool(slidingWindowProperties.getMaxNoticeThreadSize());
 		return this;
 	}
 
@@ -135,13 +145,22 @@ public class Dispatcher implements IDispatcher {
 				}
 				channel.setNextTime(channel.getNextTime()+subscriber.getTimeUnit().toMillis(interval));
 				List<Number> value = (List<Number>)counterContainer.window(key, subscriber.getTimeUnit(), subscriber.getLength(), subscriber.getValueType());
-				threadPoolExecutor.execute(new Runnable(){
+				NoticeEvent<Number> event = new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(System.currentTimeMillis());
+				executor.execute(new Runnable(){
 					@Override
 					public void run() {
-						if(log.isDebugEnabled()){
-							log.debug(String.format("call notice of subscriber[%s]", key));
+						long old = System.currentTimeMillis();
+						try{
+							if(log.isDebugEnabled()){
+								log.debug(String.format("call notice of subscriber[%s] start", key));
+							}
+							subscriber.notice(event);
+						}finally{
+							long diff = System.currentTimeMillis() - old;
+							if(log.isDebugEnabled()){
+								log.debug(String.format("call notice of subscriber[%s] end, cost time is %s", key, diff));
+							}
 						}
-						subscriber.notice(new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(System.currentTimeMillis()));
 					}
 					
 				});

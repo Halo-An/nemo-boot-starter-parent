@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
-import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.core.Dispatcher;
 
 /**
@@ -21,8 +20,6 @@ public class RedisDispatcher extends Dispatcher {
 	private static final Logger log = Logger.getLogger(RedisDispatcher.class);
 	
 	RedisCounterContainer redisCounterContainer;
-	
-	SlidingWindowProperties slidingWindowProperties;
 
 	public static final Map<String, TimeUnit> timeUnitMap = new HashMap<String, TimeUnit>();
 
@@ -49,18 +46,11 @@ public class RedisDispatcher extends Dispatcher {
 
 	public RedisDispatcher() {
 		super();
-		syncThread.setDaemon(true);
-		syncThread.start();
 	}
 	
 	public RedisDispatcher setRedisCounterContainer(RedisCounterContainer redisCounterContainer) {
 		this.redisCounterContainer = redisCounterContainer;
 		super.setCounterContainer(redisCounterContainer);
-		return this;
-	}
-
-	public RedisDispatcher setSlidingWindowProperties(SlidingWindowProperties slidingWindowProperties) {
-		this.slidingWindowProperties = slidingWindowProperties;
 		return this;
 	}
 
@@ -79,6 +69,14 @@ public class RedisDispatcher extends Dispatcher {
 			//同步计数
 			redisCounterContainer.sync();
 		}
+	}
+
+	@Override
+	public RedisDispatcher init() {
+		super.init();
+		syncThread.setDaemon(true);
+		syncThread.start();
+		return this;
 	}
 
 }

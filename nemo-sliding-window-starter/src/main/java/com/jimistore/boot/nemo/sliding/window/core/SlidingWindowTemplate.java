@@ -51,16 +51,19 @@ public class SlidingWindowTemplate implements IDispatcher {
 		Dispatcher dispatcher = null;
 		if(!StringUtils.isEmpty(slidingWindowProperties.getCacheModel())&&slidingWindowProperties.getCacheModel().equals(SlidingWindowProperties.CACHE_MODEL_REDIS)){
 			dispatcher = new RedisDispatcher()
-					.setSlidingWindowProperties(slidingWindowProperties)
 					.setRedisCounterContainer(new RedisCounterContainer()
 							.setObjectMapper(objectMapper)
 							.setRedisTemplate(redisTemplate)
 							.setSlidingWindowProperties(slidingWindowProperties))
-					.setChannelContainer(new ChannelContainer());
+					.setChannelContainer(new ChannelContainer())
+					.setSlidingWindowProperties(slidingWindowProperties)
+					.init();
 		}else{
 			dispatcher = new Dispatcher()
 					.setCounterContainer(new LocalCounterContainer())
-					.setChannelContainer(new ChannelContainer());
+					.setChannelContainer(new ChannelContainer())
+					.setSlidingWindowProperties(slidingWindowProperties)
+					.init();
 		}
 		return new SlidingWindowTemplate().setSlidingWindowProperties(slidingWindowProperties).setDispatcher(dispatcher);
 		

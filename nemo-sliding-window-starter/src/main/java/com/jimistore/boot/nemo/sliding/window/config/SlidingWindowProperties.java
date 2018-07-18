@@ -41,6 +41,11 @@ public class SlidingWindowProperties {
 	 * redis 容器的key
 	 */
 	String redisContainerKey = "nemo-sliding-window-container";
+	
+	/**
+	 * 通知线程数大小
+	 */
+	int maxNoticeThreadSize=10;
 
 	public String getCacheModel() {
 		return cacheModel;
@@ -93,6 +98,15 @@ public class SlidingWindowProperties {
 
 	public SlidingWindowProperties setRedisContainerKey(String redisContainerKey) {
 		this.redisContainerKey = redisContainerKey;
+		return this;
+	}
+
+	public int getMaxNoticeThreadSize() {
+		return maxNoticeThreadSize;
+	}
+
+	public SlidingWindowProperties setMaxNoticeThreadSize(int maxNoticeThreadSize) {
+		this.maxNoticeThreadSize = maxNoticeThreadSize;
 		return this;
 	}
 	

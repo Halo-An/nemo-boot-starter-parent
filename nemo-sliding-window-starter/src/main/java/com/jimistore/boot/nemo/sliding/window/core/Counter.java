@@ -89,7 +89,7 @@ public class Counter<T> implements ICounter<T> {
 	protected <E> List<E> window(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType) {
 		this.checkType(valueType);
 		if(dataMap==null||dataMap.size()==0){
-			throw new ValidateException(String.format("dataMap[%s] can not be empty", key));
+			throw new ValidateException(String.format("no data[%s] can be find", key));
 		}
 		
 		long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
