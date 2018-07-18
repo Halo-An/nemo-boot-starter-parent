@@ -1,6 +1,6 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
-import java.util.Set;
+import java.util.List;
 
 public interface IChannelContainer {
 	
@@ -22,6 +22,6 @@ public interface IChannelContainer {
 	 * @param key
 	 * @return
 	 */
-	public Set<IChannel> match(String key);
+	public List<IChannel> match(String key);
 
 }

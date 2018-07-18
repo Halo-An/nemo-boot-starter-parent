@@ -1,10 +1,12 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -30,6 +32,26 @@ public class Dispatcher implements IDispatcher {
 	protected SlidingWindowProperties slidingWindowProperties;
 	
 	protected Executor executor;
+	
+	protected LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+	
+	//队列线程
+	Thread queueThread = new Thread("nemo-sliding-window-counter-container-queue"){
+
+		@Override
+		public void run() {
+			while(true){
+				try {
+					Runnable task = queue.take();
+					task.run();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	};
 	
 	//心跳线程
 	Thread heartbeatThread = new Thread("nemo-sliding-window-heartbeat"){
@@ -92,8 +114,10 @@ public class Dispatcher implements IDispatcher {
 	public Dispatcher init() {
 		heartbeatThread.setDaemon(true);
 		schedulerThread.setDaemon(true);
+		queueThread.setDaemon(true);
 		heartbeatThread.start();
 		schedulerThread.start();
+		queueThread.start();
 		
 		executor = Executors.newFixedThreadPool(slidingWindowProperties.getMaxNoticeThreadSize());
 		return this;
@@ -101,13 +125,23 @@ public class Dispatcher implements IDispatcher {
 
 	@Override
 	public Dispatcher subscribe(ISubscriber subscriber) {
-		channelContainer.put(subscriber);
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				channelContainer.put(subscriber);
+			}
+		});
 		return this;
 	}
 
 	@Override
 	public Dispatcher publish(IPublishEvent<?> event) {
-		counterContainer.put(event);
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				counterContainer.put(event);
+			}
+		});
 		return this;
 	}
 
@@ -129,10 +163,18 @@ public class Dispatcher implements IDispatcher {
 			return ;
 		}
 		for(String key:counterContainer.getAllKeys()){
-			Set<IChannel> channelSet = channelContainer.match(key);
+			List<IChannel> channelSet = channelContainer.match(key);
 			if(channelSet==null){
 				break;
 			}
+			Collections.sort(channelSet, new Comparator<IChannel>(){
+
+				@Override
+				public int compare(IChannel o1, IChannel o2) {
+					return (int)(o1.getNextTime()-o2.getNextTime());
+				}
+				
+			});
 			Long now = System.currentTimeMillis();
 			for(IChannel channel:channelSet){
 				if(channel.getNextTime()>now){
@@ -169,17 +211,35 @@ public class Dispatcher implements IDispatcher {
 	}
 	
 	public void heartbeat(){
-		if(counterContainer!=null){
-			counterContainer.heartbeat();
-		}
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				if(counterContainer!=null){
+					counterContainer.heartbeat();
+				}
+			}
+		});
 	}
 
 	@Override
 	public IDispatcher createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
-		log.debug(String.format("create counter %s", key));
-		counterContainer.createCounter(key, timeUnit, capacity, valueType);
-		channelContainer.put(key);
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				log.debug(String.format("create counter %s", key));
+				counterContainer.createCounter(key, timeUnit, capacity, valueType);
+				channelContainer.put(key);
+			}
+		});
 		return this;
+	}
+	
+	protected void createQueueTask(Runnable runnable){
+		try {
+			queue.put(runnable);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

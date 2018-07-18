@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -24,29 +23,7 @@ public class LocalCounterContainer implements ICounterContainer {
 	
 	protected Map<String, ICounter<?>> counterMap = new HashMap<String, ICounter<?>>();
 		
-	protected LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
-	
-	//队列线程
-	Thread queueThread = new Thread("nemo-sliding-window-counter-container-queue"){
-
-		@Override
-		public void run() {
-			while(true){
-				try {
-					Runnable task = queue.take();
-					task.run();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		
-	};
-		
 	public LocalCounterContainer(){
-		queueThread.setDaemon(true);
-		queueThread.start();
 	}
 
 	@Override
@@ -57,43 +34,19 @@ public class LocalCounterContainer implements ICounterContainer {
 		if(event==null){
 			throw new ValidatedException("event can not be null");
 		}
-		
-		//排队发布数据
-		try {
-			queue.put(new Runnable(){
-
-				@Override
-				public void run() {
-					ICounter<?> counter = getCounterByKey(event.getTopicKey());
-					counter.put(event);
-				}
-				
-			});
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+		ICounter<?> counter = getCounterByKey(event.getTopicKey());
+		counter.put(event);
 		return this;
 	}
 
 	@Override
 	public ICounterContainer createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
-		//排队心跳
-		try {
-			queue.put(new Runnable(){
 
-				@Override
-				public void run() {
-					if(counterMap.containsKey(key)){
-						throw new ValidatedException(String.format("counter[%s] is exist", key));
-					}
-					ICounter<?> counter = Counter.create(key, timeUnit, capacity, valueType);
-					counterMap.put(key, counter);
-				}
-				
-			});
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+		if(counterMap.containsKey(key)){
+			throw new ValidatedException(String.format("counter[%s] is exist", key));
 		}
+		ICounter<?> counter = Counter.create(key, timeUnit, capacity, valueType);
+		counterMap.put(key, counter);
 		
 		return this;
 	}
@@ -117,20 +70,8 @@ public class LocalCounterContainer implements ICounterContainer {
 	}
 	
 	public void heartbeat(){
-		//排队心跳
-		try {
-			queue.put(new Runnable(){
-
-				@Override
-				public void run() {
-					for(Entry<String, ICounter<?>> entry:counterMap.entrySet()){
-						entry.getValue().heartbeat();
-					}
-				}
-				
-			});
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+		for(Entry<String, ICounter<?>> entry:counterMap.entrySet()){
+			entry.getValue().heartbeat();
 		}
 	}
 

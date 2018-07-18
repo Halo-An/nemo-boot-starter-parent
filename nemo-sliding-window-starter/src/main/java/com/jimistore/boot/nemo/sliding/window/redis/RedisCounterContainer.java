@@ -69,6 +69,8 @@ public class RedisCounterContainer extends LocalCounterContainer {
 			if(result){
 				redisTemplate.expire(slidingWindowProperties.getRedisContainerKey(), slidingWindowProperties.getRedisExpired(),
 						TimeUnit.MILLISECONDS);
+			}else{
+				counter.sync();
 			}
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
@@ -98,23 +100,10 @@ public class RedisCounterContainer extends LocalCounterContainer {
 	}
 
 	protected void sync() {
-		// 排队同步
-		try {
-			queue.put(new Runnable() {
-
-				@Override
-				public void run() {
-
-					// 同步计数
-					for (Entry<String, ICounter<?>> entry : counterMap.entrySet()) {
-						RedisCounter<?> counter = (RedisCounter<?>) entry.getValue();
-						counter.sync();
-					}
-				}
-
-			});
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+		// 同步计数
+		for (Entry<String, ICounter<?>> entry : counterMap.entrySet()) {
+			RedisCounter<?> counter = (RedisCounter<?>) entry.getValue();
+			counter.sync();
 		}
 	}
 

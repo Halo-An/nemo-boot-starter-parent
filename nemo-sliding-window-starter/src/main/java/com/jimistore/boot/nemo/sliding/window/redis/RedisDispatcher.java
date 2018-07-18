@@ -55,20 +55,26 @@ public class RedisDispatcher extends Dispatcher {
 	}
 
 	protected void sync(){
-		if(redisCounterContainer!=null){
-			log.debug("request sync");
-			//同步计数容器
-			List<CounterMsg> counterList = redisCounterContainer.getNotExistCounterList();
-			for(CounterMsg counterMsg:counterList){
-				try {
-					this.createCounter(counterMsg.getKey(), timeUnitMap.get(counterMsg.getTimeUnit()), counterMsg.getCapacity(), Class.forName(counterMsg.getClassName()));
-				} catch (ClassNotFoundException e) {
-					throw new RuntimeException(e);
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				if(redisCounterContainer!=null){
+				log.debug("request sync");
+				//同步计数容器
+				List<CounterMsg> counterList = redisCounterContainer.getNotExistCounterList();
+				for(CounterMsg counterMsg:counterList){
+					try {
+						createCounter(counterMsg.getKey(), timeUnitMap.get(counterMsg.getTimeUnit()), counterMsg.getCapacity(), Class.forName(counterMsg.getClassName()));
+					} catch (ClassNotFoundException e) {
+						throw new RuntimeException(e);
+					}
 				}
+				//同步计数
+				redisCounterContainer.sync();
 			}
-			//同步计数
-			redisCounterContainer.sync();
-		}
+			}
+		});
+		
 	}
 
 	@Override

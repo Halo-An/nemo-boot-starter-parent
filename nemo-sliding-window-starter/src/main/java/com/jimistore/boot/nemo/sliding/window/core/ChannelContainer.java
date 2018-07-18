@@ -1,17 +1,18 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.apache.log4j.Logger;
 import org.springframework.util.AntPathMatcher;
 
 public class ChannelContainer implements IChannelContainer {
 	
-	Map<String, Set<IChannel>> channelMap = new HashMap<String, Set<IChannel>>();
+	Map<String, List<IChannel>> channelMap = new HashMap<String, List<IChannel>>();
 	
 	Set<ISubscriber> subscriberSet = new HashSet<ISubscriber>();
 	
@@ -29,10 +30,10 @@ public class ChannelContainer implements IChannelContainer {
 				}
 				
 				if(channelMap.containsKey(key)){
-					channelMap.put(key, new ConcurrentSkipListSet<IChannel>());
+					channelMap.put(key, new ArrayList<IChannel>());
 				}
 				
-				Set<IChannel> channelSet = channelMap.get(key);
+				List<IChannel> channelSet = channelMap.get(key);
 				boolean flag = true;
 				for(IChannel channel:channelSet){
 					if(channel.getSubscriber().equals(subscriber)){
@@ -53,31 +54,36 @@ public class ChannelContainer implements IChannelContainer {
 
 	@Override
 	public IChannelContainer put(String key) {
-		if(channelMap.containsKey(key)){
-			return this;
-		}
-		Set<IChannel> channelSet = new ConcurrentSkipListSet<IChannel>();
-		channelMap.put(key, channelSet);
-		for(ISubscriber subscriber:subscriberSet){
-			if(log.isDebugEnabled()){
-				log.debug(String.format("match subscriber %s:%s", subscriber.getTopicMatch(), key));
+		synchronized (channelMap) {
+			if(channelMap.containsKey(key)){
+				return this;
 			}
-			if(this.match(key, subscriber.getTopicMatch())){
-				channelSet.add(new Channel()
-						.setSubscriber(subscriber)
-						.setTopicKey(key)
-						.setNextTime(System.currentTimeMillis()));
+			List<IChannel> channelSet = new ArrayList<IChannel>();
+			channelMap.put(key, channelSet);
+			for(ISubscriber subscriber:subscriberSet){
 				if(log.isDebugEnabled()){
-					log.debug(String.format("create channel %s:%s ,channelSet:%s", subscriber.getTopicMatch(), key, channelSet));
+					log.debug(String.format("match subscriber %s:%s", subscriber.getTopicMatch(), key));
+				}
+				if(this.match(key, subscriber.getTopicMatch())){
+					Channel channel = new Channel()
+					.setSubscriber(subscriber)
+					.setTopicKey(key)
+					.setNextTime(System.currentTimeMillis());
+					channelSet.add(channel);
+					
+					if(log.isDebugEnabled()){
+						log.debug(String.format("create channel %s:%s , channelList:%s", subscriber.getTopicMatch(), key, channelSet));
+					}
 				}
 			}
+			
 		}
 		
 		return this;
 	}
 
 	@Override
-	public Set<IChannel> match(String key) {
+	public List<IChannel> match(String key) {
 		return channelMap.get(key);
 	}
 	
