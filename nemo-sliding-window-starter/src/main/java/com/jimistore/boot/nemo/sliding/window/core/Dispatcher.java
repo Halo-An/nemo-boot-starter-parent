@@ -1,8 +1,6 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -15,6 +13,12 @@ import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
 import com.jimistore.boot.nemo.sliding.window.handler.IPublishHandler;
 
+/**
+ * 调度器
+ * @author chenqi
+ * @Date 2018年7月19日
+ *
+ */
 public class Dispatcher implements IDispatcher {
 	
 	private static final Logger log = Logger.getLogger(Dispatcher.class);
@@ -167,18 +171,10 @@ public class Dispatcher implements IDispatcher {
 			if(channelSet==null){
 				break;
 			}
-			Collections.sort(channelSet, new Comparator<IChannel>(){
-
-				@Override
-				public int compare(IChannel o1, IChannel o2) {
-					return (int)(o1.getNextTime()-o2.getNextTime());
-				}
-				
-			});
 			Long now = System.currentTimeMillis();
 			for(IChannel channel:channelSet){
 				if(channel.getNextTime()>now){
-					break;
+					continue;
 				}
 				ISubscriber subscriber = channel.getSubscriber();
 				Integer interval = subscriber.getInterval();
