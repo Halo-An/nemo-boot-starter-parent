@@ -29,6 +29,7 @@ public class PublisherHelper {
 			if(!counterSet.contains(key)){
 				counterSet.add(key);
 				try{
+					log.debug(String.format("create counter[%s] when it do not exist", key));
 					slidingWindowTemplate.createCounter(key, timeUnit, capacity, valueType);
 				}catch(ValidatedException e){
 					log.warn(e.getMessage(), e);
