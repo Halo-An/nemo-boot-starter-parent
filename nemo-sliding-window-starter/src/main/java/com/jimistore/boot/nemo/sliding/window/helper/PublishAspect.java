@@ -22,7 +22,7 @@ import com.jimistore.boot.nemo.sliding.window.core.PublishEvent;
 import com.jimistore.util.reflex.AnnotationUtil;
 
 @Aspect
-@Order(13)
+@Order(15)
 public class PublishAspect {
 	
 	private static final Logger log = Logger.getLogger(PublishAspect.class);

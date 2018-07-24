@@ -77,8 +77,9 @@ public class LocalCounterContainer implements ICounterContainer {
 
 	@Override
 	public Set<String> getAllKeys() {
-		
-		return counterMap.keySet();
+		synchronized (counterMap) {
+			return counterMap.keySet();
+		}
 	}
 	
 }
