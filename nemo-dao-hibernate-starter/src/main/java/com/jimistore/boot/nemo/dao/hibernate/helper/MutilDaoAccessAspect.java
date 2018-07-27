@@ -12,6 +12,7 @@ import org.springframework.core.annotation.Order;
 
 import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.jimistore.boot.nemo.dao.hibernate.annotation.DataSource;
+import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 
 @Aspect
 @Order(100)
@@ -46,6 +47,8 @@ public class MutilDaoAccessAspect {
 		}
 		if(dataSource!=null){
 			mutilSessionFactory.setDataSourceKey(dataSource.value());
+		}else{
+			mutilSessionFactory.setDataSourceKey(MutilDataSourceProperties.DEFAULT_DATASOURCE);
 		}
 	}
 	
