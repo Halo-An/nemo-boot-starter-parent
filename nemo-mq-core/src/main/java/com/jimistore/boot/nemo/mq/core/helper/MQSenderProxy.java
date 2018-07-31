@@ -15,6 +15,7 @@ import org.springframework.remoting.support.RemoteAccessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQSender;
+import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
 import com.jimistore.boot.nemo.mq.core.enums.QueueType;
 
 /**
@@ -69,17 +70,17 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	}
 
 	@Override
-	public void send(final String dataSource,final String mqname, final QueueType type, final Object msg) {
+	public void send(MQMessage msg) {
 		log.debug("request send of MQSenderProxy");
 		if(asynExecuter!=null){
 			asynExecuter.execute(new IExecuter(){
 				@Override
 				public void execute() {
-					mQSender.send(dataSource, mqname, type, msg);
+					mQSender.send(msg);
 				}
 			});
 		}else{
-			mQSender.send(dataSource, mqname, type, msg);
+			mQSender.send(msg);
 		}
 	}
 
@@ -90,7 +91,12 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 			msgList.add(objectMapper.writeValueAsString(obj));
 		}
 		String msgStr = objectMapper.writeValueAsString(msgList);
-		this.send(dataSource, this.getMQNameByMethod(invocation.getMethod()), this.type, msgStr);
+		MQMessage msg = new MQMessage()
+				.setDataSource(dataSource)
+				.setQueueType(type)
+				.setmQName(this.getMQNameByMethod(invocation.getMethod()))
+				.setContent(msgStr);
+		this.send(msg);
 		return null;
 	}
 	

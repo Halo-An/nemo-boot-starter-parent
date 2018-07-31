@@ -16,23 +16,23 @@ import com.aliyun.openservices.ons.api.Producer;
 import com.aliyun.openservices.ons.api.PropertyKeyConst;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQAdapter;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQReceiver;
-import com.jimistore.boot.nemo.mq.core.enums.QueueType;
+import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
 
 public class RocketAdapter implements IMQAdapter, DisposableBean {
 	
 	private static final Logger log = Logger.getLogger(RocketAdapter.class);
 	
-	RocketMQProperties rocketMQProperties;
+	RocketMQProp rocketMQProperties;
 	
 	Producer producer;
 	
 	Consumer consumer;
 
-	public RocketMQProperties getRocketMQProperties() {
+	public RocketMQProp getRocketMQProperties() {
 		return rocketMQProperties;
 	}
 
-	public RocketAdapter setRocketMQProperties(RocketMQProperties rocketMQProperties) {
+	public RocketAdapter setRocketMQProperties(RocketMQProp rocketMQProperties) {
 		this.rocketMQProperties = rocketMQProperties;
 		
 		Properties properties = new Properties();
@@ -76,8 +76,11 @@ public class RocketAdapter implements IMQAdapter, DisposableBean {
 	}
 
 	@Override
-	public void send(String dataSource, String mqname, QueueType type, Object message) {
-		Message msg = new Message(mqname, mqname, UUID.randomUUID().toString(), message.toString().getBytes());
+	public void send(MQMessage message) {
+		Message msg = new Message(message.getmQName(), message.getmQName(), UUID.randomUUID().toString(), message.getContent().toString().getBytes());
+		if(message.getDelayTime()>0){
+			msg.setStartDeliverTime(System.currentTimeMillis()+message.getDelayTime());
+		}
 		producer.send(msg);
 	}
 	

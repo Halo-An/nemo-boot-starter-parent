@@ -6,7 +6,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.jimistore.boot.nemo.mq.core.adapter.IMQAdapter;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQReceiver;
-import com.jimistore.boot.nemo.mq.core.enums.QueueType;
+import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
 import com.jimistore.boot.nemo.mq.rabbitmq.helper.RabbitAdapterHelper;
 
 public class RabbitAdapter implements IMQAdapter {
@@ -37,11 +37,11 @@ public class RabbitAdapter implements IMQAdapter {
 
 
 	@Override
-	public void send(String dataSource, String mqname, QueueType type, Object msg) {
+	public void send(MQMessage msg) {
 		if(log.isDebugEnabled()){
-			log.debug(String.format("send a message , maname is [%s]", mqname));
+			log.debug(String.format("send a message , maname is [%s]", msg.getmQName()));
 		}
-		rabbitTemplate.convertAndSend(mqname, msg);
+		rabbitTemplate.convertAndSend(msg.getmQName(), msg.getContent());
 	}
 	
 	@Override
