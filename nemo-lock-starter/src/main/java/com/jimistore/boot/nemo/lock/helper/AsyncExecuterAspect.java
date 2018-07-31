@@ -25,7 +25,7 @@ public class AsyncExecuterAspect {
 		return this;
 	}
 
-	@Pointcut("@annotation(com.jimistore.boot.nemo.high.concurrency.api.annotation.Async)")
+	@Pointcut("@annotation(com.jimistore.boot.nemo.lock.annotation.Async)")
 	public void syn(){
 	}
 	
@@ -49,10 +49,10 @@ public class AsyncExecuterAspect {
 			group = sb.toString();
 		}
 
-		asyncExecuterHelper.execute(group, async.capacity(), new IExecuter() {
+		asyncExecuterHelper.execute(group, async.capacity(), async.maxCapacity(), async.queueCapacity(), new Thread(String.format("%s-%s", group, System.currentTimeMillis())) {
 			
 			@Override
-			public void execute() {
+			public void run() {
 				try {
 					joinPoint.proceed();
 				} catch (Throwable e) {

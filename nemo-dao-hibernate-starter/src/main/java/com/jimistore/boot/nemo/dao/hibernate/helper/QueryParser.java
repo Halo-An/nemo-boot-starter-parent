@@ -33,6 +33,12 @@ public class QueryParser implements IQueryParser {
 		return this;
 	}
 
+	public HibernateNamingStrategy getHibernateNamingStrategy() {
+		return hibernateNamingStrategy;
+	}
+
+
+
 	@Override
 	public Query parse(Session session, IQuery<?> query) {
 		if(query instanceof SqlQuery){
@@ -386,6 +392,10 @@ public class QueryParser implements IQueryParser {
 		
 		if(filterEntry.getCompare().equals(Compare.like)){
 			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("%'").toString();
+		}else if(filterEntry.getCompare().equals(Compare.lelike)){
+			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("'").toString();
+		}else if(filterEntry.getCompare().equals(Compare.rilike)){
+			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '").append(filterEntry.getValue()).append("%'").toString();
 		}else if(filterEntry.getCompare().equals(Compare.nl)){
 			return String.format("%s is null", column);
 		}else if(filterEntry.getCompare().equals(Compare.nnl)){
@@ -438,11 +448,11 @@ public class QueryParser implements IQueryParser {
 	}
 	
 	private String getTableNameByClass(Class<?> clazz){
-		return hibernateNamingStrategy.classToTableName(clazz.getSimpleName());
+		return getHibernateNamingStrategy().classToTableName(clazz.getSimpleName());
 	}
 	
 	private String getColumnByFieldName(String filedName){
-		return hibernateNamingStrategy.propertyToColumnName(filedName);
+		return getHibernateNamingStrategy().propertyToColumnName(filedName);
 	}
 	
 

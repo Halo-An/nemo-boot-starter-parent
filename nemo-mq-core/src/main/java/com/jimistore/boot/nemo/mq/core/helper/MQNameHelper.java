@@ -4,6 +4,10 @@ import java.lang.reflect.Method;
 
 import org.springframework.util.StringUtils;
 
+import com.cq.nemo.util.reflex.AnnotationUtil;
+import com.jimistore.boot.nemo.mq.core.annotation.JsonMQName;
+import com.jimistore.boot.nemo.mq.core.annotation.JsonMQService;
+
 /**
  * 用来处理mq名称等统一的工具类
  * @author chenqi
@@ -26,6 +30,11 @@ public class MQNameHelper {
 	
 	public static String getMQNameByGroupAndMethod(String className, String mQGroup, Method method){
 		
+		JsonMQName jsonMQName = AnnotationUtil.getAnnotation(method, JsonMQName.class);
+		if(jsonMQName!=null){
+			return jsonMQName.value();
+		}
+		
 		StringBuilder methodId = new StringBuilder(method.getName());
 		for(Class<?> clazz:method.getParameterTypes()){
 			methodId.append(PARAM_SPLIT).append(clazz.getSimpleName());
@@ -39,7 +48,19 @@ public class MQNameHelper {
 		if(methodName.indexOf(PARAM_SPLIT)>0){
 			methodName = methodName.substring(0, methodName.indexOf(PARAM_SPLIT));
 		}
+		for(Class<?> clazz:target.getClass().getInterfaces()){
+			JsonMQService jsonMQService = AnnotationUtil.getAnnotation(clazz, JsonMQService.class);
+			if(jsonMQService!=null){
+				for(Method method:clazz.getMethods()){
+					JsonMQName jsonMQName = AnnotationUtil.getAnnotation(method, JsonMQName.class);
+					if(jsonMQName!=null){
+						methodName = method.getName();
+					}
+				}
+			}
+		}
 		return target.getClass().getMethod(methodName, paramClasses);
 	}
+	
 
 }

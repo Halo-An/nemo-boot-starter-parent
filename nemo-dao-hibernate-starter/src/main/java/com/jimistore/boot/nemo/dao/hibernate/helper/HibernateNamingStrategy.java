@@ -4,6 +4,8 @@ import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.internal.util.StringHelper;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.jimistore.boot.nemo.dao.hibernate.config.HibernateProperties;
+
 public class HibernateNamingStrategy extends ImprovedNamingStrategy {
 
 	private static final long serialVersionUID = 1L;

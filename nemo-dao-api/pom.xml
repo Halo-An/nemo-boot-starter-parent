@@ -5,6 +5,7 @@
 
 	<artifactId>nemo-dao-api</artifactId>
 	<packaging>jar</packaging>
+	<version>${nemo.dao.api.version}</version>
 
 	<name>nemo-dao-api</name>
 	<description>Demo project for Spring Boot</description>
@@ -12,8 +13,15 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.1-RELEASE</version>
+		<version>1.7.2-RELEASE</version>
 	</parent>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-core-api</artifactId>
+		</dependency>
+	</dependencies>
 
 
 </project>

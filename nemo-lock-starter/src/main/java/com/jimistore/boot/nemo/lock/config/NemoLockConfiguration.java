@@ -20,7 +20,7 @@ import com.jimistore.boot.nemo.lock.helper.StockAspect;
 import com.jimistore.boot.nemo.lock.helper.StockHelper;
 
 @Configuration
-public class NemoHighConcurrencyConfiguration {
+public class NemoLockConfiguration {
 	
 	@Bean("redisTemplate")
 	@ConditionalOnMissingBean(value = RedisTemplate.class)

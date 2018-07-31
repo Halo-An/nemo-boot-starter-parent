@@ -2,6 +2,7 @@ package com.jimistore.boot.nemo.dao.hibernate.helper;
 
 import org.springframework.beans.factory.FactoryBean;
 
+import com.jimistore.boot.nemo.dao.hibernate.config.DataSourceProperties;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 @SuppressWarnings("rawtypes")

@@ -30,7 +30,7 @@ public class LockAspect {
 		return this;
 	}
 
-	@Pointcut("@annotation(com.jimistore.boot.nemo.high.concurrency.api.annotation.Lock)")
+	@Pointcut("@annotation(com.jimistore.boot.nemo.lock.annotation.Lock)")
 	public void syn(){
 	}
 	
