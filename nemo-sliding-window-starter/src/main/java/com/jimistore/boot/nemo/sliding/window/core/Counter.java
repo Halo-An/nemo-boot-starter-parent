@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.jimistore.boot.nemo.sliding.window.exception.ValidateException;
 import com.jimistore.boot.nemo.sliding.window.helper.NumberUtil;
 
@@ -17,6 +19,8 @@ import com.jimistore.boot.nemo.sliding.window.helper.NumberUtil;
  * @param <T>
  */
 public class Counter<T> implements ICounter<T> {
+	
+	private static final Logger log = Logger.getLogger(Counter.class);
 	
 	public static final Long START_KEY = -1l;
 	
@@ -82,45 +86,55 @@ public class Counter<T> implements ICounter<T> {
 
 	@Override
 	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return this.window(this.valueMap, timeUnit, length, valueType);
+		return this.window(this.valueMap, timeUnit, length, valueType, 0);
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected <E> List<E> window(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		this.checkType(valueType);
-		if(dataMap==null||dataMap.size()==0){
-			throw new ValidateException(String.format("no data[%s] can be find", key));
-		}
-		
-		long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
-		List<E> dataList = new ArrayList<E>();
-		long index = this.getIndex(dataMap.get(START_KEY).longValue());
-		long cursor = index;
-		for(int i=0;i<length;i++){
-			Number value = 0;
-			for(int j=0;j<times;j++){
-				cursor--;
-				if(cursor<0){
-					cursor = capacity - 1;
+	protected <E> List<E> window(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType, long offset) {
+		long time = System.currentTimeMillis();
+		try{
+			this.checkType(valueType);
+			if(dataMap==null||dataMap.size()==0){
+				throw new ValidateException(String.format("no data[%s] can be find", key));
+			}
+			
+			long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
+			List<E> dataList = new ArrayList<E>();
+			long index = this.getIndex(dataMap.get(START_KEY).longValue());
+			//计算偏移值
+			index = index - offset/timeUnit.toMillis(1);
+			long cursor = index;
+			for(int i=0;i<length;i++){
+				Number value = 0;
+				for(int j=0;j<times;j++){
+					cursor--;
+					if(cursor<0){
+						cursor = capacity - 1;
+					}
+					//如果已经覆盖整个计数器，则跳出循环
+					if(cursor==index){
+						break;
+					}
+					value = NumberUtil.add(value, dataMap.get(cursor));
+					if(value==null){
+						value=0;
+					}
 				}
 				//如果已经覆盖整个计数器，则跳出循环
 				if(cursor==index){
 					break;
 				}
-				value = NumberUtil.add(value, dataMap.get(cursor));
-				if(value==null){
-					value=0;
-				}
-			}
-			//如果已经覆盖整个计数器，则跳出循环
-			if(cursor==index){
-				break;
+				
+				dataList.add((E)value);
 			}
 			
-			dataList.add((E)value);
+			return dataList;
+			
+		}finally{
+			if(log.isTraceEnabled()){
+				log.trace(String.format("request window end , key is %s, cost time is %s", this.getKey(), System.currentTimeMillis() - time));
+			}
 		}
-		
-		return dataList;
 	}
 
 	public Counter<T> setTimeUnit(TimeUnit timeUnit) {

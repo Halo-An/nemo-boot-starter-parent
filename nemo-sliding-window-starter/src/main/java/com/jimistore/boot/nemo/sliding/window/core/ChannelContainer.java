@@ -45,7 +45,7 @@ public class ChannelContainer implements IChannelContainer {
 					channelSet.add(new Channel()
 							.setSubscriber(subscriber)
 							.setTopicKey(key)
-							.setNextTime(System.currentTimeMillis()));
+							.setNextTime(this.getNextTime(subscriber)));
 				}
 			}
 		}
@@ -68,7 +68,7 @@ public class ChannelContainer implements IChannelContainer {
 					Channel channel = new Channel()
 					.setSubscriber(subscriber)
 					.setTopicKey(key)
-					.setNextTime(System.currentTimeMillis());
+					.setNextTime(this.getNextTime(subscriber));
 					channelSet.add(channel);
 					
 					if(log.isDebugEnabled()){
@@ -80,6 +80,13 @@ public class ChannelContainer implements IChannelContainer {
 		}
 		
 		return this;
+	}
+	
+	private long getNextTime(ISubscriber subscriber){
+		long time = System.currentTimeMillis();
+		long unitTime = subscriber.getTimeUnit().toMillis(1);
+		
+		return time + unitTime - time % unitTime;
 	}
 
 	@Override

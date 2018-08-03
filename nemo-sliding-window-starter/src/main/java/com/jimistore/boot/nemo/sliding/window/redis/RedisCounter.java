@@ -107,13 +107,21 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 		long curr = this.getIndex(this.getStart());
 		Object[] expiredKeys = new String[slidingWindowProperties.getExpiredCapacity()];
 		for(int i=0;i<slidingWindowProperties.getExpiredCapacity();i++){
-			long index = curr - i - slidingWindowProperties.getExpiredOffset();
-			if(index<0){
-				index = getCapacity();
+			long index = curr + i +slidingWindowProperties.getExpiredOffset();
+			if(index>=getCapacity()){
+				index = index % getCapacity();
 			}
 			expiredKeys[i] = String.valueOf(index);
 		}
 		redisTemplate.opsForHash().delete(this.getRedisKey(), expiredKeys);
+		if(log.isDebugEnabled()){
+			StringBuffer sb = new StringBuffer("[");
+			for(Object str:expiredKeys){
+				sb.append(str).append(",");
+			}
+			sb.append("]");
+			log.debug(String.format("clear invalid counter[%s] key:%s", this.getKey(), sb.toString()));
+		}
 		
 
 		
@@ -144,10 +152,10 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 
 	@Override
 	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return super.window(remoteMap, timeUnit, length, valueType);
+		return super.window(remoteMap, timeUnit, length, valueType, slidingWindowProperties.getSyncInterval());
 	}
 	
 	private String getRedisKey(){
-		return String.format("%s-%s", "sliding-window", super.getKey());
+		return String.format("%s-%s", slidingWindowProperties.getRedisContainerKey(), super.getKey());
 	}
 }

@@ -166,42 +166,49 @@ public class Dispatcher implements IDispatcher {
 		if(counterContainer==null){
 			return ;
 		}
-		for(String key:counterContainer.getAllKeys()){
-			List<IChannel> channelSet = channelContainer.match(key);
-			if(channelSet==null){
-				break;
-			}
-			Long now = System.currentTimeMillis();
-			for(IChannel channel:channelSet){
-				if(channel.getNextTime()>now){
-					continue;
+		long eventTime = System.currentTimeMillis();
+		try{
+			for(String key:counterContainer.getAllKeys()){
+				List<IChannel> channelSet = channelContainer.match(key);
+				if(channelSet==null){
+					break;
 				}
-				ISubscriber subscriber = channel.getSubscriber();
-				Integer interval = subscriber.getInterval();
-				if(interval==null||interval==0){
-					interval = subscriber.getLength();
-				}
-				channel.setNextTime(channel.getNextTime()+subscriber.getTimeUnit().toMillis(interval));
-				List<Number> value = (List<Number>)counterContainer.window(key, subscriber.getTimeUnit(), subscriber.getLength(), subscriber.getValueType());
-				NoticeEvent<Number> event = new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(System.currentTimeMillis());
-				executor.execute(new Runnable(){
-					@Override
-					public void run() {
-						long old = System.currentTimeMillis();
-						try{
-							if(log.isDebugEnabled()){
-								log.debug(String.format("call notice of subscriber[%s] start", key));
-							}
-							subscriber.notice(event);
-						}finally{
-							long diff = System.currentTimeMillis() - old;
-							if(log.isDebugEnabled()){
-								log.debug(String.format("call notice of subscriber[%s] end, cost time is %s", key, diff));
+				Long now = System.currentTimeMillis();
+				for(IChannel channel:channelSet){
+					if(channel.getNextTime()>now){
+						continue;
+					}
+					ISubscriber subscriber = channel.getSubscriber();
+					Integer interval = subscriber.getInterval();
+					if(interval==null||interval==0){
+						interval = subscriber.getLength();
+					}
+					channel.setNextTime(channel.getNextTime()+subscriber.getTimeUnit().toMillis(interval));
+					List<Number> value = (List<Number>)counterContainer.window(key, subscriber.getTimeUnit(), subscriber.getLength(), subscriber.getValueType());
+					NoticeEvent<Number> event = new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(eventTime);
+					executor.execute(new Runnable(){
+						@Override
+						public void run() {
+							long old = System.currentTimeMillis();
+							try{
+								if(log.isDebugEnabled()){
+									log.debug(String.format("call notice of subscriber[%s] start", key));
+								}
+								subscriber.notice(event);
+							}finally{
+								long diff = System.currentTimeMillis() - old;
+								if(log.isDebugEnabled()){
+									log.debug(String.format("call notice of subscriber[%s] end, cost time is %s", key, diff));
+								}
 							}
 						}
-					}
-					
-				});
+						
+					});
+				}
+			}
+		}finally{
+			if(log.isTraceEnabled()){
+				log.trace(String.format("request scheduler end , cost time is %s", System.currentTimeMillis() - eventTime));
 			}
 		}
 	}
