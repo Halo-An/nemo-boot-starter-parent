@@ -27,7 +27,7 @@ public class JMSAdapter implements IMQAdapter {
 	
 	private static final Logger log = Logger.getLogger(JMSAdapter.class);
 
-	ActiveMQProp myActiveMQProperties;
+	MyActiveMQProperties myActiveMQProperties;
 	
 	JmsMessagingTemplate jmsMessagingTemplate;
 	
@@ -42,7 +42,7 @@ public class JMSAdapter implements IMQAdapter {
 
 
 
-	public JMSAdapter setMyActiveMQProperties(ActiveMQProp myActiveMQProperties) {
+	public JMSAdapter setMyActiveMQProperties(MyActiveMQProperties myActiveMQProperties) {
 		this.myActiveMQProperties = myActiveMQProperties;
 		
 		activeMQConnectionFactory = new ActiveMQConnectionFactory(

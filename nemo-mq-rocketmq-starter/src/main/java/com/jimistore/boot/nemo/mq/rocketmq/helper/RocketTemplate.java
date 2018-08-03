@@ -16,11 +16,11 @@ import com.aliyun.openservices.ons.api.ONSFactory;
 import com.aliyun.openservices.ons.api.Producer;
 import com.aliyun.openservices.ons.api.PropertyKeyConst;
 import com.jimistore.boot.nemo.mq.core.enums.QueueType;
-import com.jimistore.boot.nemo.mq.rocketmq.adapter.RocketMQProp;
+import com.jimistore.boot.nemo.mq.rocketmq.adapter.RocketMQProperties;
 
 public class RocketTemplate implements InitializingBean, DisposableBean {
 	
-	RocketMQProp rocketMQProperties;
+	RocketMQProperties rocketMQProperties;
 	
 	Producer producer;
 	
@@ -28,7 +28,7 @@ public class RocketTemplate implements InitializingBean, DisposableBean {
 	
 	Map<String, MessageListener> map = new HashMap<String, MessageListener>();
 
-	public RocketTemplate setRocketMQProperties(RocketMQProp rocketMQProperties) {
+	public RocketTemplate setRocketMQProperties(RocketMQProperties rocketMQProperties) {
 		this.rocketMQProperties = rocketMQProperties;
 		return this;
 	}

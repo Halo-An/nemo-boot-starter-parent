@@ -22,17 +22,17 @@ public class RocketAdapter implements IMQAdapter, DisposableBean {
 	
 	private static final Logger log = Logger.getLogger(RocketAdapter.class);
 	
-	RocketMQProp rocketMQProperties;
+	RocketMQProperties rocketMQProperties;
 	
 	Producer producer;
 	
 	Consumer consumer;
 
-	public RocketMQProp getRocketMQProperties() {
+	public RocketMQProperties getRocketMQProperties() {
 		return rocketMQProperties;
 	}
 
-	public RocketAdapter setRocketMQProperties(RocketMQProp rocketMQProperties) {
+	public RocketAdapter setRocketMQProperties(RocketMQProperties rocketMQProperties) {
 		this.rocketMQProperties = rocketMQProperties;
 		
 		Properties properties = new Properties();
