@@ -16,6 +16,10 @@
 		<version>1.7.9-RELEASE</version>
 	</parent>
 	
+	<properties>
+		<hibernate.version>4.3.11.Final</hibernate.version>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.jimistore.boot</groupId>
