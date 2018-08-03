@@ -21,6 +21,14 @@ public interface IDao {
 	 */
 	public <T> List<T> delete(IQuery<T> query);
 	
+	/**
+	 * 删除一些对象
+	 * @param entityClass
+	 * @param query
+	 * @return
+	 */
+	public <T> T delete(T entity);
+	
 //	/**
 //	 * 更新对象的部分数据
 //	 * @param entityClass 实体类型
