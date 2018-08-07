@@ -71,7 +71,7 @@ public class JMSAdapter implements IMQAdapter {
 			log.debug(String.format("send a message , maname is [%s]", msg.getmQName()));
 		}
 		jmsMessagingTemplate.getJmsTemplate().setPubSubDomain(QueueType.Topic.equals(msg.getQueueType()));
-		jmsMessagingTemplate.convertAndSend(msg.getmQName(), new MessageCreator(){
+		jmsMessagingTemplate.getJmsTemplate().send(msg.getmQName(), new MessageCreator(){
 			
 			@Override
 			public Message createMessage(Session session) throws JMSException {

@@ -128,6 +128,7 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
                             String className = classMetadata.getClassName();
                             String mQGroup = (String) annotationMetadata.getAnnotationAttributes(jsonRpcPathAnnotation).get("value");
                             String dataSource = (String) annotationMetadata.getAnnotationAttributes(jsonRpcPathAnnotation).get("dataSource");
+                            long delay = (long) annotationMetadata.getAnnotationAttributes(jsonRpcPathAnnotation).get("delay");
                             if(StringUtils.isEmpty(mQGroup)){
                             	mQGroup = className;
                             }
@@ -139,6 +140,7 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
                         				.setObjectMapper(objectMapper)
                         				.setmQSender(this.getMQDataSource(dataSource).getMQSender())
                         				.setDataSource(dataSource)
+                        				.setDelay(delay)
                         				.setmQGroup(mQGroup);
                         		mQSenderProxy.setServiceInterface(Class.forName(className));
                         		

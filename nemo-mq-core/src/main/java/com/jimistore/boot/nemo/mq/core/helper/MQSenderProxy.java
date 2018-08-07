@@ -44,6 +44,8 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	
 	AsynExecuter asynExecuter;
 	
+	long delay;
+	
 	public MQSenderProxy setAsynExecuter(AsynExecuter asynExecuter) {
 		this.asynExecuter = asynExecuter;
 		return this;
@@ -95,6 +97,7 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 				.setDataSource(dataSource)
 				.setQueueType(type)
 				.setmQName(this.getMQNameByMethod(invocation.getMethod()))
+				.setDelayTime(delay)
 				.setContent(msgStr);
 		this.send(msg);
 		return null;
@@ -122,6 +125,11 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		proxyObject = ProxyFactory.getProxy(this.getServiceInterface(), this);
+	}
+
+	public MQSenderProxy setDelay(long delay) {
+		this.delay = delay;
+		return this;
 	}
 
 }

@@ -31,4 +31,6 @@ public @interface JsonMQService {
 	String dataSource() default "default";
 	
 	QueueType type() default QueueType.Queue;
+	
+	long delay() default 0;
 }

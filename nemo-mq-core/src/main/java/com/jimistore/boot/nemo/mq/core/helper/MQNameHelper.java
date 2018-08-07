@@ -53,8 +53,9 @@ public class MQNameHelper {
 			if(jsonMQService!=null){
 				for(Method method:clazz.getMethods()){
 					JsonMQName jsonMQName = AnnotationUtil.getAnnotation(method, JsonMQName.class);
-					if(jsonMQName!=null){
+					if(jsonMQName!=null&&jsonMQName.value()!=null&&jsonMQName.value().equals(mQName)){
 						methodName = method.getName();
+						break;
 					}
 				}
 			}
