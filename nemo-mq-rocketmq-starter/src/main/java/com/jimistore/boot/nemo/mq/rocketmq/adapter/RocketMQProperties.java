@@ -1,5 +1,8 @@
 package com.jimistore.boot.nemo.mq.rocketmq.adapter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.jimistore.boot.nemo.mq.core.adapter.IMQProperties;
 
 public class RocketMQProperties implements IMQProperties {
@@ -19,6 +22,8 @@ public class RocketMQProperties implements IMQProperties {
 	String consumerId;
 	
 	Long sendTimeOut=3000l;
+	
+	Map<String, String> topicMap = new HashMap<String, String>();
 
 	public String getUrl() {
 		return url;
@@ -89,6 +94,15 @@ public class RocketMQProperties implements IMQProperties {
 
 	public RocketMQProperties setKey(String key) {
 		this.key = key;
+		return this;
+	}
+
+	public Map<String, String> getTopicMap() {
+		return topicMap;
+	}
+
+	public RocketMQProperties setTopicMap(Map<String, String> topicMap) {
+		this.topicMap = topicMap;
 		return this;
 	}
 	

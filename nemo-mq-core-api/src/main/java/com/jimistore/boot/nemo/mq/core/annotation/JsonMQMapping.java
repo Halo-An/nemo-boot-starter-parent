@@ -6,20 +6,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * 声明mq的名称
- * @author chenqi
- * @Date 2018年5月14日
- *
- */
+import com.jimistore.boot.nemo.mq.core.enums.QueueType;
+
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface JsonMQName {
+public @interface JsonMQMapping {
 	
-	/**
-	 * The actual value expression: e.g. "#p0.getName()".
-	 */
-	String value();
+	QueueType type() default QueueType.Queue;
 	
+	String value() default "";
+	
+	long delay() default 0l;
+
 }

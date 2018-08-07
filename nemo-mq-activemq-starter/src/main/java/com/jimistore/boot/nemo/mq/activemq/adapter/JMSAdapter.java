@@ -8,6 +8,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ScheduledMessage;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.log4j.Logger;
+import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQProperties;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.core.MessageCreator;
 
@@ -44,6 +45,10 @@ public class JMSAdapter implements IMQAdapter {
 
 	public JMSAdapter setMyActiveMQProperties(MyActiveMQProperties myActiveMQProperties) {
 		this.myActiveMQProperties = myActiveMQProperties;
+		return this;
+	}
+	
+	public JMSAdapter init(){
 		
 		activeMQConnectionFactory = new ActiveMQConnectionFactory(
 				myActiveMQProperties.getUser(),
@@ -54,12 +59,26 @@ public class JMSAdapter implements IMQAdapter {
 		
 		PooledConnectionFactory pooledConnectionFactory = new PooledConnectionFactory();
 		pooledConnectionFactory.setConnectionFactory(activeMQConnectionFactory);
-		pooledConnectionFactory.setMaxConnections(100);
+		
+		if(myActiveMQProperties.getPool()!=null){
+			ActiveMQProperties.Pool pool = myActiveMQProperties.getPool();
+			pooledConnectionFactory.setBlockIfSessionPoolIsFull(pool.isBlockIfFull());
+			pooledConnectionFactory.setBlockIfSessionPoolIsFullTimeout(pool.getBlockIfFullTimeout());
+			pooledConnectionFactory.setCreateConnectionOnStartup(pool.isCreateConnectionOnStartup());
+			pooledConnectionFactory.setExpiryTimeout(pool.getExpiryTimeout());
+			pooledConnectionFactory.setIdleTimeout(pool.getIdleTimeout());
+			pooledConnectionFactory.setMaxConnections(pool.getMaxConnections());
+			pooledConnectionFactory.setMaximumActiveSessionPerConnection(pool.getMaximumActiveSessionPerConnection());
+			pooledConnectionFactory.setReconnectOnException(pool.isReconnectOnException());
+			pooledConnectionFactory.setTimeBetweenExpirationCheckMillis(pool.getTimeBetweenExpirationCheck());
+			pooledConnectionFactory.setUseAnonymousProducers(pool.isUseAnonymousProducers());			
+		}
 		
 		jmsMessagingTemplate = new JmsMessagingTemplate();
 		jmsMessagingTemplate.setConnectionFactory(pooledConnectionFactory);
 		
 		log.info(String.format("activemq client [%s] started", myActiveMQProperties.getKey()));
+		
 		return this;
 	}
 

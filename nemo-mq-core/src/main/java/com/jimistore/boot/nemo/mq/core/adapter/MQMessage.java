@@ -10,11 +10,6 @@ public class MQMessage {
 	private String mQName;
 	
 	/**
-	 * 数据源
-	 */
-	private String dataSource;
-	
-	/**
 	 * 消息内容
 	 */
 	private Object content;
@@ -35,15 +30,6 @@ public class MQMessage {
 
 	public MQMessage setmQName(String mQName) {
 		this.mQName = mQName;
-		return this;
-	}
-
-	public String getDataSource() {
-		return dataSource;
-	}
-
-	public MQMessage setDataSource(String dataSource) {
-		this.dataSource = dataSource;
 		return this;
 	}
 

@@ -6,8 +6,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.jimistore.boot.nemo.mq.core.enums.QueueType;
-
 /**
  * 标记某接口是否需要支持异步调用
  * @author chenqi
@@ -20,17 +18,7 @@ import com.jimistore.boot.nemo.mq.core.enums.QueueType;
 public @interface JsonMQService {
 	
 	/**
-	 * The actual value expression: e.g. "#p0.getName()".
+	 * 数据源.
 	 */
-	String value() default "";
-	
-	/**
-	 * 
-	 * @return
-	 */
-	String dataSource() default "default";
-	
-	QueueType type() default QueueType.Queue;
-	
-	long delay() default 0;
+	String value() default "default";
 }

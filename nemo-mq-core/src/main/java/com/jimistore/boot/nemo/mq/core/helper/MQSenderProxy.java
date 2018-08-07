@@ -13,10 +13,11 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.remoting.support.RemoteAccessor;
 
+import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQSender;
 import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
-import com.jimistore.boot.nemo.mq.core.enums.QueueType;
+import com.jimistore.boot.nemo.mq.core.annotation.JsonMQMapping;
 
 /**
  * 每个mq发送端的代理
@@ -30,11 +31,7 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	
 	IMQSender mQSender;
 	
-	String dataSource;
-	
-	String mQGroup;
-	
-	QueueType type;
+	MQNameHelper mQNameHelper;
 		
 	Object proxyObject;
 	
@@ -44,10 +41,13 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	
 	AsynExecuter asynExecuter;
 	
-	long delay;
-	
 	public MQSenderProxy setAsynExecuter(AsynExecuter asynExecuter) {
 		this.asynExecuter = asynExecuter;
+		return this;
+	}
+
+	public MQSenderProxy setmQNameHelper(MQNameHelper mQNameHelper) {
+		this.mQNameHelper = mQNameHelper;
 		return this;
 	}
 
@@ -58,16 +58,6 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 
 	public MQSenderProxy setmQSender(IMQSender mQSender) {
 		this.mQSender = mQSender;
-		return this;
-	}
-
-	public MQSenderProxy setDataSource(String dataSource) {
-		this.dataSource = dataSource;
-		return this;
-	}
-
-	public MQSenderProxy setmQGroup(String mQGroup) {
-		this.mQGroup = mQGroup;
 		return this;
 	}
 
@@ -93,18 +83,20 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 			msgList.add(objectMapper.writeValueAsString(obj));
 		}
 		String msgStr = objectMapper.writeValueAsString(msgList);
+		
+		JsonMQMapping destination = AnnotationUtil.getAnnotation(invocation.getMethod(), JsonMQMapping.class);
+		String mQName = this.getMQNameByMethod(invocation.getMethod());
 		MQMessage msg = new MQMessage()
-				.setDataSource(dataSource)
-				.setQueueType(type)
-				.setmQName(this.getMQNameByMethod(invocation.getMethod()))
-				.setDelayTime(delay)
+				.setQueueType(destination.type())
+				.setmQName(mQName)
+				.setDelayTime(destination.delay())
 				.setContent(msgStr);
 		this.send(msg);
 		return null;
 	}
 	
 	private String getMQNameByMethod(Method method){
-		return MQNameHelper.getMQNameByGroupAndMethod(this.getServiceInterface().getName(), mQGroup, method);
+		return mQNameHelper.getMQNameClassAndMethod(this.getServiceInterface(), method);
 	}
 
 	@Override
@@ -125,11 +117,6 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		proxyObject = ProxyFactory.getProxy(this.getServiceInterface(), this);
-	}
-
-	public MQSenderProxy setDelay(long delay) {
-		this.delay = delay;
-		return this;
 	}
 
 }

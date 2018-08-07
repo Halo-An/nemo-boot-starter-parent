@@ -2,6 +2,8 @@ package com.jimistore.boot.nemo.mq.core.adapter;
 
 public interface IMQDataSource {
 	
+	public static final String DEFAULT = "default";
+	
 	/**
 	 * 获取MQ数据源类型
 	 * @return

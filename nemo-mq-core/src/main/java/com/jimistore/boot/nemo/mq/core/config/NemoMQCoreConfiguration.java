@@ -13,6 +13,7 @@ import com.jimistore.boot.nemo.mq.core.adapter.IMQDataSource;
 import com.jimistore.boot.nemo.mq.core.helper.AsynExecuter;
 import com.jimistore.boot.nemo.mq.core.helper.MQCoreClient;
 import com.jimistore.boot.nemo.mq.core.helper.MQDataSourceGroup;
+import com.jimistore.boot.nemo.mq.core.helper.MQNameHelper;
 
 @Configuration
 public class NemoMQCoreConfiguration {
@@ -28,19 +29,30 @@ public class NemoMQCoreConfiguration {
 	public AsynExecuter AsynExecuter(){
 		return new AsynExecuter().setCapacity(5);
 	}
+
+	
+	@Bean
+	@ConditionalOnMissingBean(MQNameHelper.class)
+	public MQNameHelper MQNameHelper(){
+		return new MQNameHelper();
+	}
 	
 	
 	@Bean
 	@ConditionalOnMissingBean(MQCoreClient.class)
 	@ConditionalOnBean({IMQDataSource.class, ObjectMapper.class, AsynExecuter.class})
-	public MQCoreClient MQClient(List<MQDataSourceGroup> mQDataSourceGroupList, ObjectMapper objectMapper, AsynExecuter asynExecuter){
+	public MQCoreClient MQClient(List<MQDataSourceGroup> mQDataSourceGroupList, ObjectMapper objectMapper, AsynExecuter asynExecuter, MQNameHelper mQNameHelper){
 		List<IMQDataSource> mQDataSourceList = new ArrayList<IMQDataSource>();
 		for(MQDataSourceGroup mQDataSourceGroup:mQDataSourceGroupList){
 			if(mQDataSourceGroup.getDataSourceList()!=null){
 				mQDataSourceList.addAll(mQDataSourceGroup.getDataSourceList());
 			}
 		}
-		return new MQCoreClient().setmQDataSourceList(mQDataSourceList).setObjectMapper(objectMapper).setAsynExecuter(asynExecuter);
+		return new MQCoreClient()
+				.setmQNameHelper(mQNameHelper)
+				.setmQDataSourceList(mQDataSourceList)
+				.setObjectMapper(objectMapper)
+				.setAsynExecuter(asynExecuter);
 	}
 
 }

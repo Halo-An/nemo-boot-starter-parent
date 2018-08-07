@@ -30,13 +30,15 @@ public class MQReceiverProxy implements IMQReceiver {
 	private Class<?>[] msgClass;
 	
 	ObjectMapper objectMapper;
+	
+	MQNameHelper mQNameHelper;
 
 	@Override
 	public void receive(Object msg) throws Throwable {
 		String msgStr = (String) msg;
 		JavaType javaType = objectMapper.getTypeFactory().constructParametricType(List.class, String.class); 
 		List<String> sourceList = objectMapper.readValue(msgStr, javaType);
-		Method method = MQNameHelper.getMethodByMQNameAndTarget(mQName, msgClass, target);
+		Method method = mQNameHelper.getMethodByMQNameAndTarget(mQName, msgClass, target);
 		Type[] types = method.getGenericParameterTypes();
 		
 		Object[] dest = new Object[sourceList.size()];
@@ -102,6 +104,11 @@ public class MQReceiverProxy implements IMQReceiver {
 
 	public MQReceiverProxy setmQDataSource(String mQDataSource) {
 		this.mQDataSource = mQDataSource;
+		return this;
+	}
+
+	public MQReceiverProxy setmQNameHelper(MQNameHelper mQNameHelper) {
+		this.mQNameHelper = mQNameHelper;
 		return this;
 	}
 
