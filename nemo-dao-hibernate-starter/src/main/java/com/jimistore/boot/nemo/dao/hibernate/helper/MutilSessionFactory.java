@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
+import org.apache.log4j.Logger;
 import org.hibernate.Cache;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -51,6 +52,8 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 	private MutilDataSourceProperties mutilDataSourceProperties;
 	
 	ApplicationContext applicationContext;
+	
+	private static final Logger log = Logger.getLogger(MutilSessionFactory.class);
 	
 	
 	public MutilSessionFactory(){}
@@ -140,9 +143,13 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 
 	public SessionFactory getSessionFactory(){
 		String key = threadLocal.get();
+		if(log.isDebugEnabled()){
+			log.debug(String.format("request getSessionFactory by datasource[%s]", key));
+		}
 		if(key==null){
 			key = MutilDataSourceProperties.DEFAULT_DATASOURCE;
 		}
+		
 		SessionFactory sessionFactory = sessionFactoryMap.get(key);
 		if(sessionFactory==null){
 			throw new RuntimeException(String.format("can not find datasource[%s] in configuration", key));

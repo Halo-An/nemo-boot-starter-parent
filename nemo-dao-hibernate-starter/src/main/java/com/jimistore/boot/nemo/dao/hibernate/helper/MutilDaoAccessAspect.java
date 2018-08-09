@@ -30,7 +30,7 @@ public class MutilDaoAccessAspect {
 		return this;
 	}
 
-	@Pointcut("@within(com.jimistore.boot.nemo.dao.hibernate.annotation.DataSource)")
+	@Pointcut("@within(com.jimistore.boot.nemo.dao.hibernate.annotation.DataSource) || @within(org.springframework.stereotype.Repository)")
 	public void dao(){
 	}
 	

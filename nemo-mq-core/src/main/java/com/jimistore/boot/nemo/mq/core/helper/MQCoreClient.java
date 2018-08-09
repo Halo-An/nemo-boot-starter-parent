@@ -106,20 +106,17 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
         	}
 			JsonMQService jsonMQService = beanFactory.findAnnotationOnBean(beanName, JsonMQService.class);
 			if(jsonMQService!=null){
-				try {
-					annoMap.put(beanName, jsonMQService);
-					Class<?> clazz = this.getClass(beanFactory, beanName);
-					clazzMap.put(beanName, clazz);
-				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				annoMap.put(beanName, jsonMQService);
+				Class<?> clazz = this.getClass(beanFactory, beanName);
+				clazzMap.put(beanName, clazz);
 			}
         }
         
         for(String scanPackage:scanPackages){
             String resolvedPath = resolvePackageToScan(scanPackage);
-            log.debug(String.format("Scanning '%s' for JSON-MQ service interfaces.", resolvedPath));
+            if(log.isDebugEnabled()){
+                log.debug(String.format("Scanning '%s' for JSON-MQ service interfaces.", resolvedPath));
+            }
             try {
                 for (Resource resource : applicationContext.getResources(resolvedPath)) {
                     if (resource.isReadable()) {
@@ -142,7 +139,9 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
                         		
                         		senderMap.put(beanName, mQSenderProxy);
                         	}else{
-                                log.debug(String.format("Found JSON-MQ service to proxy [%s].", className));
+                        		if(log.isDebugEnabled()){
+                                    log.debug(String.format("Found JSON-MQ service to proxy [%s].", className));
+                        		}
                                 //本地重新注册一个调用代理
                                 registerJsonProxyBean(dlbf, className, dataSource);
                         	}
@@ -181,8 +180,7 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 	                .addPropertyValue("mQSender", this.getMQDataSource(dataSource).getMQSender());
 			dlbf.registerBeanDefinition(className+ "-clientProxy", beanDefinitionBuilder.getBeanDefinition());
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -213,11 +211,7 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 			FactoryBean<?> f = (FactoryBean<?>)target;
 			clazz = f.getObjectType();
 		}else{
-			try {
-				clazz = this.getClass(beanFactory, beanName);
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
+			clazz = this.getClass(beanFactory, beanName);
 		}
 			        
 		List<Method> methodList = this.listMethodByAnnotaion(clazz);
@@ -266,10 +260,14 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 	 * @return
 	 * @throws ClassNotFoundException
 	 */
-	private Class<?> getClass(ConfigurableListableBeanFactory beanFactory, String serviceBeanName) throws ClassNotFoundException{
+	private Class<?> getClass(ConfigurableListableBeanFactory beanFactory, String serviceBeanName){
 		BeanDefinition beanDefinition = this.findBeanDefintion(beanFactory, serviceBeanName);
  		String className = beanDefinition.getBeanClassName();
-		return Class.forName(className);
+		try {
+			return Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private List<Method> listMethodByAnnotaion(Class<?> clazz){
