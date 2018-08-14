@@ -230,7 +230,8 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 					.setMsgClass(method.getParameterTypes())
 					.setObjectMapper(objectMapper)
 					.setmQDataSource(jsonMQService.value())
-					.setmQName(mQName));
+					.setmQName(mQName)
+					.setTag(destination.tag()));
 		}
 	}
 	

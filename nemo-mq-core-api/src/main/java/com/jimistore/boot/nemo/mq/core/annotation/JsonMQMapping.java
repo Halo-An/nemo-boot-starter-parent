@@ -13,9 +13,13 @@ import com.jimistore.boot.nemo.mq.core.enums.QueueType;
 @Documented
 public @interface JsonMQMapping {
 	
+	public static final String DEFAULT_TAG="*";
+	
 	QueueType type() default QueueType.Queue;
 	
 	String value() default "";
+	
+	String tag() default DEFAULT_TAG;
 	
 	long delay() default 0l;
 

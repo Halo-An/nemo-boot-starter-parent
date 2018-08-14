@@ -10,6 +10,11 @@ public class MQMessage {
 	private String mQName;
 	
 	/**
+	 * 队列标签
+	 */
+	private String tag;
+	
+	/**
 	 * 消息内容
 	 */
 	private Object content;
@@ -57,6 +62,15 @@ public class MQMessage {
 
 	public MQMessage setDelayTime(long delayTime) {
 		this.delayTime = delayTime;
+		return this;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public MQMessage setTag(String tag) {
+		this.tag = tag;
 		return this;
 	}
 

@@ -78,6 +78,7 @@ public class RocketAdapter implements IMQAdapter, DisposableBean {
 	@Override
 	public void send(MQMessage message) {
 		Message msg = new Message(message.getmQName(), message.getmQName(), UUID.randomUUID().toString(), message.getContent().toString().getBytes());
+		msg.setTag(message.getTag());
 		if(message.getDelayTime()>0){
 			msg.setStartDeliverTime(System.currentTimeMillis()+message.getDelayTime());
 		}
@@ -87,7 +88,7 @@ public class RocketAdapter implements IMQAdapter, DisposableBean {
 	@Override
 	public void listener(final IMQReceiver mQReceiver) {
 		
-		consumer.subscribe(mQReceiver.getmQName(), "*",new MessageListener(){
+		consumer.subscribe(mQReceiver.getmQName(), mQReceiver.getTag(),new MessageListener(){
 			@Override
 			public Action consume(Message message, ConsumeContext context) {
 				// TODO Auto-generated method stub

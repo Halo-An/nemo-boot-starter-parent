@@ -89,6 +89,7 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 		MQMessage msg = new MQMessage()
 				.setQueueType(destination.type())
 				.setmQName(mQName)
+				.setTag(destination.tag())
 				.setDelayTime(destination.delay())
 				.setContent(msgStr);
 		this.send(msg);

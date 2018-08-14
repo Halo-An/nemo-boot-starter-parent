@@ -55,13 +55,14 @@ public class MQNameHelper {
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
 	 */
-	public Method getMethodByMQNameAndTarget(String mQName, Class<?>[] paramClasses, Object target) throws NoSuchMethodException, SecurityException {
+	public Method getMethodByMQNameAndTarget(String mQName, String tag, Class<?>[] paramClasses, Object target) throws NoSuchMethodException, SecurityException {
 		String methodName = null;
 		for(Class<?> clazz:target.getClass().getInterfaces()){
 			if(clazz.isAnnotationPresent(JsonMQService.class)){
 				for(Method method:clazz.getMethods()){
 					String destName = this.getDestinationName(clazz, method);
-					if(destName!=null&&destName.equals(mQName)){
+					JsonMQMapping destination = AnnotationUtil.getAnnotation(method, JsonMQMapping.class);
+					if(destName!=null&&destName.equals(mQName)&&tag!=null&&tag.equals(destination.tag())){
 						methodName = method.getName();
 						break;
 					}
