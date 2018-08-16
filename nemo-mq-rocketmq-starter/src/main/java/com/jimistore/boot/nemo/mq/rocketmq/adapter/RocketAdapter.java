@@ -40,47 +40,53 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 		this.rocketMQProperties = rocketMQProperties;
 		
 		Properties properties = new Properties();
-        // 您在控制台创建的 Consumer ID
-        properties.put(PropertyKeyConst.ConsumerId, rocketMQProperties.getConsumerId());
-		//您在控制台创建的 Producer ID
-        properties.put(PropertyKeyConst.ProducerId, rocketMQProperties.getProducerId());
         // AccessKey 阿里云身份验证，在阿里云服务器管理控制台创建
         properties.put(PropertyKeyConst.AccessKey,rocketMQProperties.getUser());
         // SecretKey 阿里云身份验证，在阿里云服务器管理控制台创建
         properties.put(PropertyKeyConst.SecretKey, rocketMQProperties.getPassword());
-        //设置发送超时时间，单位毫秒
-        properties.setProperty(PropertyKeyConst.SendMsgTimeoutMillis, rocketMQProperties.getSendTimeOut().toString());
         // 设置 TCP 接入域名（此处以公共云生产环境为例）
         properties.put(PropertyKeyConst.ONSAddr, rocketMQProperties.getUrl());
 
-		log.debug("create rocketmq producer");
-        producer = ONSFactory.createProducer(properties);
-		log.debug("rocketmq producer created");
+        if(rocketMQProperties.getProducerId()!=null){
+    		log.debug("create rocketmq producer");
+    		//您在控制台创建的 Producer ID
+            properties.put(PropertyKeyConst.ProducerId, rocketMQProperties.getProducerId());
+            //设置发送超时时间，单位毫秒
+            properties.setProperty(PropertyKeyConst.SendMsgTimeoutMillis, rocketMQProperties.getSendTimeOut().toString());
+            producer = ONSFactory.createProducer(properties);
+			producer.start();
+    		log.debug("rocketmq producer created");
+        }
 
-		log.debug("create rocketmq consumer");
-        consumer = ONSFactory.createConsumer(properties);
-		
-		
-		log.debug("rocketmq client starting");
-		
-		producer.start();
-		consumer.start();
-		
-		log.info(String.format("rocketmq client [%s] started", rocketMQProperties.getKey()));
-		
-		Runtime.getRuntime().addShutdownHook(new Thread(){
-
-			@Override
-			public void run() {
-				shutdown();
-			}
+		if(rocketMQProperties.getConsumerId()!=null){
+			log.debug("create rocketmq consumer");
+	        // 您在控制台创建的 Consumer ID
+	        properties.put(PropertyKeyConst.ConsumerId, rocketMQProperties.getConsumerId());
+	        consumer = ONSFactory.createConsumer(properties);
+			consumer.start();
+			log.debug("rocketmq rocketmq created");
 			
-		});
+			log.info(String.format("rocketmq client [%s] started", rocketMQProperties.getKey()));
+			
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+
+				@Override
+				public void run() {
+					shutdown();
+				}
+				
+			});
+		}
+		
 		return this;
 	}
 
 	@Override
 	public void send(MQMessage message) {
+		if(producer==null){
+			throw new RuntimeException(String.format("can not find producer id for topic[%s]", message.getmQName()));
+		}
+		
 		Message msg = new Message(message.getmQName(), message.getmQName(), UUID.randomUUID().toString(), message.getContent().toString().getBytes());
 		msg.setTag(message.getTag());
 		if(message.getDelayTime()>0){
@@ -91,6 +97,10 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 	
 	@Override
 	public void listener(final IMQReceiver mQReceiver) {
+		if(consumer==null){
+			throw new RuntimeException(String.format("can not find consumer id for topic[%s]", mQReceiver.getmQName()));
+		}
+		
 		String key = mQReceiver.getmQName();
 		if(!receiverMap.containsKey(key)){
 			receiverMap.put(key, new HashMap<String, IMQReceiver>());
@@ -104,7 +114,6 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 			}
 			tags.append(tag);
 		}
-		
 		consumer.subscribe(mQReceiver.getmQName(), tags.toString(), this);
 	}
 	
