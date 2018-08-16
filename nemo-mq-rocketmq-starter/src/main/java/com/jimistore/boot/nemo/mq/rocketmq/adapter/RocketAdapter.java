@@ -1,5 +1,7 @@
 package com.jimistore.boot.nemo.mq.rocketmq.adapter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -18,7 +20,7 @@ import com.jimistore.boot.nemo.mq.core.adapter.IMQAdapter;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQReceiver;
 import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
 
-public class RocketAdapter implements IMQAdapter, DisposableBean {
+public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener {
 	
 	private static final Logger log = Logger.getLogger(RocketAdapter.class);
 	
@@ -27,6 +29,8 @@ public class RocketAdapter implements IMQAdapter, DisposableBean {
 	Producer producer;
 	
 	Consumer consumer;
+	
+	Map<String, Map<String, IMQReceiver>> receiverMap = new HashMap<String, Map<String, IMQReceiver>>();
 
 	public RocketMQProperties getRocketMQProperties() {
 		return rocketMQProperties;
@@ -87,22 +91,21 @@ public class RocketAdapter implements IMQAdapter, DisposableBean {
 	
 	@Override
 	public void listener(final IMQReceiver mQReceiver) {
-		
-		consumer.subscribe(mQReceiver.getmQName(), mQReceiver.getTag(),new MessageListener(){
-			@Override
-			public Action consume(Message message, ConsumeContext context) {
-				// TODO Auto-generated method stub
-				try {
-					mQReceiver.receive(new String(message.getBody()));
-					return Action.CommitMessage;
-				} catch (Throwable e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return Action.ReconsumeLater;
+		String key = mQReceiver.getmQName();
+		if(!receiverMap.containsKey(key)){
+			receiverMap.put(key, new HashMap<String, IMQReceiver>());
+		}
+		Map<String, IMQReceiver> tagMap = receiverMap.get(key);
+		tagMap.put(mQReceiver.getTag(), mQReceiver);
+		StringBuilder tags = new StringBuilder();
+		for(String tag:tagMap.keySet()){
+			if(tags.length()>0){
+				tags.append(" || ");
 			}
-			
-		});
+			tags.append(tag);
+		}
+		
+		consumer.subscribe(mQReceiver.getmQName(), tags.toString(), this);
 	}
 	
 	@Override
@@ -117,5 +120,18 @@ public class RocketAdapter implements IMQAdapter, DisposableBean {
 		consumer.shutdown();
 		
 		log.debug("rocketmq client shutdowned");
+	}
+
+	@Override
+	public Action consume(Message message, ConsumeContext context) {
+		try {
+			IMQReceiver mQReceiver = receiverMap.get(message.getTopic()).get(message.getTag());
+			mQReceiver.receive(new String(message.getBody()));
+			return Action.CommitMessage;
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return Action.ReconsumeLater;
 	}
 }
