@@ -45,9 +45,9 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 	
 	Map<String, SessionFactory> sessionFactoryMap = new HashMap<String, SessionFactory>();
 	
-	Map<String, HibernateNamingStrategy> hibernateNamingStrategyMap = new HashMap<String, HibernateNamingStrategy>();
+	static Map<String, HibernateNamingStrategy> hibernateNamingStrategyMap = new HashMap<String, HibernateNamingStrategy>();
 	
-	ThreadLocal<String> threadLocal = new ThreadLocal<String>();
+	static ThreadLocal<String> threadLocal = new ThreadLocal<String>();
 	
 	private MutilDataSourceProperties mutilDataSourceProperties;
 	
@@ -157,7 +157,7 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 		return sessionFactory;
 	}
 	
-	public HibernateNamingStrategy getHibernateNamingStrategy(){
+	public static HibernateNamingStrategy getHibernateNamingStrategy(){
 		String key = threadLocal.get();
 		if(key==null){
 			key = MutilDataSourceProperties.DEFAULT_DATASOURCE;

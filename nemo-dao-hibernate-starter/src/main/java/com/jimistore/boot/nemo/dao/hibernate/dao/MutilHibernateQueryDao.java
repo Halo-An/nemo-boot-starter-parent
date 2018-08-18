@@ -3,9 +3,13 @@ package com.jimistore.boot.nemo.dao.hibernate.dao;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Entity;
+
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.transform.Transformers;
+
+import com.jimistore.boot.nemo.dao.hibernate.helper.AliasToEntityResultTransformer;
 
 public class MutilHibernateQueryDao extends MutilHibernateDao {
 	
@@ -23,6 +27,8 @@ public class MutilHibernateQueryDao extends MutilHibernateDao {
 		query.setMaxResults(pageSize);
 		if(clazz!=null && Map.class.isAssignableFrom(clazz)){
 			query.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+		}else if(clazz.isAnnotationPresent(Entity.class)){
+			query.setResultTransformer(AliasToEntityResultTransformer.create(clazz));
 		}
 		return query.list();
 	}
