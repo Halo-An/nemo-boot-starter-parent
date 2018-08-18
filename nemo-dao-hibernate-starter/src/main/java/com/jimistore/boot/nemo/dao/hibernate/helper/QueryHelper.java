@@ -63,7 +63,14 @@ public class QueryHelper {
 				entityClass = (Class<?>)((ParameterizedType)types[0]).getRawType();
 			}
 		}
+		
 		if(!List.class.isAssignableFrom(returnType)){throw new RuntimeException("return type must be List.class");}
+		
+		for(Object param:params){
+			if(param!=null&&param.equals(hql)){
+				throw new RuntimeException("the sql expression cannot be the same as the param");
+			}
+		}
 		
 		//sql注入校验
 		String[] items = query.value().split("\\+");

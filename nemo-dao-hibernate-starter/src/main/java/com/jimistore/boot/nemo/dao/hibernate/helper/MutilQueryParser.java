@@ -10,7 +10,7 @@ public class MutilQueryParser extends QueryParser {
 	}
 	
 	public HibernateNamingStrategy getHibernateNamingStrategy(){
-		return mutilSessionFactory.getHibernateNamingStrategy();
+		return MutilSessionFactory.getHibernateNamingStrategy();
 	}
 	
 
