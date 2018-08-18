@@ -12,13 +12,14 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.jimistore.boot.nemo.dao.api.dao.IDao;
 import com.jimistore.boot.nemo.dao.api.validator.IQueryValidator;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
-import com.jimistore.boot.nemo.dao.hibernate.dao.HibernateDao;
-import com.jimistore.boot.nemo.dao.hibernate.dao.MutilHibernateDao;
+import com.jimistore.boot.nemo.dao.hibernate.dao.MutilHibernateQueryDao;
 import com.jimistore.boot.nemo.dao.hibernate.helper.IQueryParser;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilDaoAccessAspect;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilQueryParser;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactory;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactoryHelper;
+import com.jimistore.boot.nemo.dao.hibernate.helper.QueryAspect;
+import com.jimistore.boot.nemo.dao.hibernate.helper.QueryHelper;
 import com.jimistore.boot.nemo.dao.hibernate.validator.IInjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.InjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.XSSValidator;
@@ -86,7 +87,21 @@ public class NemoDaoHibernateAutoConfiguration {
 	
 	@Bean("hibernate")
 	@ConditionalOnMissingBean(IDao.class)
-	public HibernateDao HibernateDao(MutilSessionFactory sessionFactory, IQueryParser queryParser, List<IXSSValidator> xssValidatorList, List<IInjectSqlValidator> queryValidatorList){
-		return new MutilHibernateDao().setMutilSessionFactory(sessionFactory).setQueryParser(queryParser).setXssValidatorList(xssValidatorList).setQueryValidatorList(queryValidatorList);
+	public MutilHibernateQueryDao MutilHibernateQueryDao(MutilSessionFactory sessionFactory, IQueryParser queryParser, List<IXSSValidator> xssValidatorList, List<IInjectSqlValidator> queryValidatorList){
+		MutilHibernateQueryDao mutilHibernateQueryDao = new MutilHibernateQueryDao();
+		mutilHibernateQueryDao.setMutilSessionFactory(sessionFactory).setQueryParser(queryParser).setXssValidatorList(xssValidatorList).setQueryValidatorList(queryValidatorList);
+		return mutilHibernateQueryDao;
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean(QueryHelper.class)
+	public QueryHelper QueryHelper(MutilHibernateQueryDao mutilHibernateQueryDao, IInjectSqlValidator injectSqlValidator){
+		return new QueryHelper().setInjectSqlValidator(injectSqlValidator).setMutilHibernateQueryDao(mutilHibernateQueryDao);
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean(QueryAspect.class)
+	public QueryAspect QueryAspect(QueryHelper queryHelper){
+		return new QueryAspect().setQueryHelper(queryHelper);
 	}
 }
