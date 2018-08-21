@@ -3,10 +3,14 @@ package com.jimistore.boot.nemo.dao.hibernate.helper;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.util.StringUtils;
@@ -18,9 +22,28 @@ import com.jimistore.boot.nemo.dao.hibernate.validator.IInjectSqlValidator;
 
 public class QueryHelper {
 	
+	private static final Logger log = Logger.getLogger(QueryHelper.class);
+	
 	MutilHibernateQueryDao mutilHibernateQueryDao;
 	
 	IInjectSqlValidator injectSqlValidator;
+	
+	public static final char[] NORMAL_CHAR = {
+			'0','1','2','3','4','5','6','7','8','9',
+			'a','b','c','d','e','f','g',
+			'h','i','j','k','l','m','n',
+			'o','p','q','r','s','t',
+			'u','v','w','x','y','z',
+			'_','(',')','.'
+	};
+	
+	public static final Set<Character> NORMAL_CHAR_SET= new HashSet<Character>();
+	
+	static {
+		for(Character str:NORMAL_CHAR){
+			NORMAL_CHAR_SET.add(str);
+		}
+	}
 	
 	
 	
@@ -49,7 +72,11 @@ public class QueryHelper {
 			context.setVariable(String.format("%s%s", "p", i), params[i]);
 			context.setVariable(parameterNames[i], params[i]);
 		}
-		String hql = spel.parseExpression(query.value()).getValue(context, String.class);
+		StringBuilder hqlSpel = new StringBuilder();
+		for(String hqlItem:query.value()){
+			hqlSpel.append(hqlItem);
+		}
+		String hql = spel.parseExpression(hqlSpel.toString()).getValue(context, String.class);
 		int pageSize = spel.parseExpression(query.pageSize()).getValue(context, Integer.class);
 		int pageNum = spel.parseExpression(query.pageNum()).getValue(context, Integer.class);
 		Class<?> returnType = method.getReturnType();
@@ -66,18 +93,15 @@ public class QueryHelper {
 		
 		if(!List.class.isAssignableFrom(returnType)){throw new RuntimeException("return type must be List.class");}
 		
-		for(Object param:params){
-			if(param!=null&&param.equals(hql)){
-				throw new RuntimeException("the sql expression cannot be the same as the param");
-			}
-		}
-		
 		//sql注入校验
-		String[] items = query.value().split("\\+");
-		for(int i=0;i<items.length;i++){
-			if(i%2==1){
-				String item = spel.parseExpression(items[i]).getValue(context, String.class);
-				injectSqlValidator.check(item);
+		for(String paramSpel:this.parseParamKeys(hqlSpel.toString())){
+			try{
+				String param = spel.parseExpression(paramSpel).getValue(context, String.class);
+				injectSqlValidator.check(param);
+			}catch(SpelEvaluationException e){
+				if(log.isDebugEnabled()){
+					log.warn(String.format("spel parse error, the el is \"%s\" , the error msg is \"%s\"", paramSpel, e.getMessage()));
+				}
 			}
 		}
 		
@@ -91,6 +115,25 @@ public class QueryHelper {
 		return mutilHibernateQueryDao.queryBySql(hql, pageNum, pageSize, entityClass);
 	}
 	
+	private Set<String> parseParamKeys(String str){
+		Set<String> set = new HashSet<>();
+		int start=0,end=0;
+		while(true){
+			start = str.indexOf("#", end);
+			if(start<0||start>str.length()){
+				break;
+			}
+			for(end=start+1;end<str.length();end++){
+				Character cha= str.charAt(end);
+				if(!NORMAL_CHAR_SET.contains(cha)){
+					set.add(str.substring(start, end));
+					start = end;
+					break;
+				}
+			}
+		}
+		return set;
+	}
 	
 
 }

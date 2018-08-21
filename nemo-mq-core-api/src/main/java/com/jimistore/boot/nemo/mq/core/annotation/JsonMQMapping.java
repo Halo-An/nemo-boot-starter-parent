@@ -21,6 +21,6 @@ public @interface JsonMQMapping {
 	
 	String tag() default DEFAULT_TAG;
 	
-	long delay() default 0l;
+	String delay() default "0";
 
 }

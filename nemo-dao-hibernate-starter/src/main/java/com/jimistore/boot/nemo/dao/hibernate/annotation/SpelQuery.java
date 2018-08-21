@@ -13,7 +13,7 @@ import com.jimistore.boot.nemo.dao.hibernate.enums.QueryType;
 @Documented
 public @interface SpelQuery {
 	
-	String value() default "\"\"";
+	String[] value() default "\"\"";
 	
 	String pageSize() default "#pageSize==null?10:#pageSize";
 	

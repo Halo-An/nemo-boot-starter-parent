@@ -11,6 +11,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.remoting.support.RemoteAccessor;
 
 import com.cq.nemo.util.reflex.AnnotationUtil;
@@ -86,11 +87,14 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 		
 		JsonMQMapping destination = AnnotationUtil.getAnnotation(invocation.getMethod(), JsonMQMapping.class);
 		String mQName = this.getMQNameByMethod(invocation.getMethod());
+		
+		StandardEvaluationContext context = SpelUtil.getContextByProceedingJoinPoint(invocation);
+		Long delayTime = SpelUtil.parseExpression(context, destination.delay(), Long.class);
 		MQMessage msg = new MQMessage()
 				.setQueueType(destination.type())
 				.setmQName(mQName)
 				.setTag(destination.tag())
-				.setDelayTime(destination.delay())
+				.setDelayTime(delayTime)
 				.setContent(msgStr);
 		this.send(msg);
 		return null;
