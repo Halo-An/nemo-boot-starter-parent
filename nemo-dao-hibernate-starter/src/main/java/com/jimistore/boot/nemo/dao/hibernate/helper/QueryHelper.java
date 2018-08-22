@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +27,9 @@ public class QueryHelper {
 	
 	MutilHibernateQueryDao mutilHibernateQueryDao;
 	
-	IInjectSqlValidator injectSqlValidator;
+	List<IInjectSqlValidator> queryValidatorList;
+	
+	private List<ISpelExtendFunc> spelExtendFuncList;
 	
 	public static final char[] NORMAL_CHAR = {
 			'0','1','2','3','4','5','6','7','8','9',
@@ -34,10 +37,21 @@ public class QueryHelper {
 			'h','i','j','k','l','m','n',
 			'o','p','q','r','s','t',
 			'u','v','w','x','y','z',
-			'_','(',')','.'
+			'_','.'
+			
 	};
 	
-	public static final Set<Character> NORMAL_CHAR_SET= new HashSet<Character>();
+	public static final char[] INC_CHAR={
+		'(',')'
+	};
+	
+	public static final char[] SENCOND_CHAR = {
+			'#','"','\'','$','%',',',' '
+	};
+	
+	private static final Set<Character> NORMAL_CHAR_SET= new HashSet<Character>();
+	
+	Set<String> funcSet= new HashSet<String>();
 	
 	static {
 		for(Character str:NORMAL_CHAR){
@@ -47,6 +61,18 @@ public class QueryHelper {
 	
 	
 	
+	public QueryHelper setSpelExtendFuncList(List<ISpelExtendFunc> spelExtendFuncList) {
+		this.spelExtendFuncList = spelExtendFuncList;
+		if(spelExtendFuncList!=null){
+			for(ISpelExtendFunc func:spelExtendFuncList){
+				funcSet.add(String.format("#%s", func.getKey()));
+			}
+		}
+		return this;
+	}
+
+
+
 	public QueryHelper setMutilHibernateQueryDao(MutilHibernateQueryDao mutilHibernateQueryDao) {
 		this.mutilHibernateQueryDao = mutilHibernateQueryDao;
 		return this;
@@ -54,8 +80,8 @@ public class QueryHelper {
 
 
 
-	public QueryHelper setInjectSqlValidator(IInjectSqlValidator injectSqlValidator) {
-		this.injectSqlValidator = injectSqlValidator;
+	public QueryHelper setQueryValidatorList(List<IInjectSqlValidator> queryValidatorList) {
+		this.queryValidatorList = queryValidatorList;
 		return this;
 	}
 
@@ -63,25 +89,33 @@ public class QueryHelper {
 
 	public Object query(SpelQuery query, Method method, Object... params){
 		
-		
+		//初始化spel的context
 		SpelExpressionParser spel = new SpelExpressionParser();
 		StandardEvaluationContext context = new StandardEvaluationContext();
 		ParameterNameDiscoverer parameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 		String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
+		if(spelExtendFuncList!=null){
+			for(ISpelExtendFunc func:spelExtendFuncList){
+				context.setVariable(func.getKey(), func);
+			}
+		}
 		for(int i=0;i<params.length;i++){
 			context.setVariable(String.format("%s%s", "p", i), params[i]);
 			context.setVariable(parameterNames[i], params[i]);
 		}
+		//拼装参数
 		StringBuilder hqlSpel = new StringBuilder();
 		for(String hqlItem:query.value()){
 			hqlSpel.append(hqlItem);
 		}
+		//解析spel的参数
 		String hql = spel.parseExpression(hqlSpel.toString()).getValue(context, String.class);
 		int pageSize = spel.parseExpression(query.pageSize()).getValue(context, Integer.class);
 		int pageNum = spel.parseExpression(query.pageNum()).getValue(context, Integer.class);
 		Class<?> returnType = method.getReturnType();
 		ParameterizedType pt = (ParameterizedType) method.getGenericReturnType();
 		Type[] types = pt.getActualTypeArguments();
+		//试图解析差查询的实体类
 		Class<?> entityClass = null;
 		if(types!=null&&types.length==1){
 			if(types[0] instanceof Class){
@@ -91,13 +125,22 @@ public class QueryHelper {
 			}
 		}
 		
+		
+		//如果返回值不是List类型抛异常
 		if(!List.class.isAssignableFrom(returnType)){throw new RuntimeException("return type must be List.class");}
 		
-		//sql注入校验
+		
 		for(String paramSpel:this.parseParamKeys(hqlSpel.toString())){
 			try{
 				String param = spel.parseExpression(paramSpel).getValue(context, String.class);
-				injectSqlValidator.check(param);
+				//非自带扩展的表达式要进行sql注入校验
+				String[] items = paramSpel.split("\\.");
+				if(!funcSet.contains(items[0])){
+					for(IInjectSqlValidator injectSqlValidator:queryValidatorList){
+						injectSqlValidator.check(param);
+						
+					}
+				}
 			}catch(SpelEvaluationException e){
 				if(log.isDebugEnabled()){
 					log.warn(String.format("spel parse error, the el is \"%s\" , the error msg is \"%s\"", paramSpel, e.getMessage()));
@@ -115,6 +158,11 @@ public class QueryHelper {
 		return mutilHibernateQueryDao.queryBySql(hql, pageNum, pageSize, entityClass);
 	}
 	
+	/**
+	 * 分词获取所有的spel的参数
+	 * @param str
+	 * @return
+	 */
 	private Set<String> parseParamKeys(String str){
 		Set<String> set = new HashSet<>();
 		int start=0,end=0;
@@ -123,10 +171,27 @@ public class QueryHelper {
 			if(start<0||start>str.length()){
 				break;
 			}
+			LinkedList<String> list = new LinkedList<String>();
 			for(end=start+1;end<str.length();end++){
 				Character cha= str.charAt(end);
-				if(!NORMAL_CHAR_SET.contains(cha)){
-					set.add(str.substring(start, end));
+				if(list.size()==0){
+					if(cha.equals(INC_CHAR[0])){
+						list.addLast("(");
+					}else if(!NORMAL_CHAR_SET.contains(Character.toLowerCase(cha))){
+						set.add(str.substring(start, end));
+						start = end;
+						break;
+					}
+				}else{
+					if(cha.equals(INC_CHAR[0])){
+						list.addLast("(");
+					}else if(cha.equals(INC_CHAR[1])){
+						list.removeLast();
+					}
+				}
+				
+				if(end==str.length()-1){
+					set.add(str.substring(start));
 					start = end;
 					break;
 				}

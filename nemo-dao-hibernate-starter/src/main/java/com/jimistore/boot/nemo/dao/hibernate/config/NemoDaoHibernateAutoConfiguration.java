@@ -14,12 +14,15 @@ import com.jimistore.boot.nemo.dao.api.validator.IQueryValidator;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 import com.jimistore.boot.nemo.dao.hibernate.dao.MutilHibernateQueryDao;
 import com.jimistore.boot.nemo.dao.hibernate.helper.IQueryParser;
+import com.jimistore.boot.nemo.dao.hibernate.helper.ISpelExtendFunc;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilDaoAccessAspect;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilQueryParser;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactory;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactoryHelper;
+import com.jimistore.boot.nemo.dao.hibernate.helper.NotEmptySpelFunc;
 import com.jimistore.boot.nemo.dao.hibernate.helper.QueryAspect;
 import com.jimistore.boot.nemo.dao.hibernate.helper.QueryHelper;
+import com.jimistore.boot.nemo.dao.hibernate.helper.SpelExtendFuncAspect;
 import com.jimistore.boot.nemo.dao.hibernate.validator.IInjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.InjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.XSSValidator;
@@ -93,10 +96,22 @@ public class NemoDaoHibernateAutoConfiguration {
 		return mutilHibernateQueryDao;
 	}
 	
+	@Bean()
+	@ConditionalOnMissingBean(NotEmptySpelFunc.class)
+	public NotEmptySpelFunc spelExtendFunc(){
+		return new NotEmptySpelFunc();
+	}
+	
+	@Bean()
+	@ConditionalOnMissingBean(SpelExtendFuncAspect.class)
+	public SpelExtendFuncAspect spelExtendFuncAspect(List<IInjectSqlValidator> queryValidatorList){
+		return new SpelExtendFuncAspect().setQueryValidatorList(queryValidatorList);
+	}
+	
 	@Bean
 	@ConditionalOnMissingBean(QueryHelper.class)
-	public QueryHelper QueryHelper(MutilHibernateQueryDao mutilHibernateQueryDao, IInjectSqlValidator injectSqlValidator){
-		return new QueryHelper().setInjectSqlValidator(injectSqlValidator).setMutilHibernateQueryDao(mutilHibernateQueryDao);
+	public QueryHelper QueryHelper(MutilHibernateQueryDao mutilHibernateQueryDao, List<IInjectSqlValidator> queryValidatorList, List<ISpelExtendFunc> spelExtendFuncList){
+		return new QueryHelper().setQueryValidatorList(queryValidatorList).setMutilHibernateQueryDao(mutilHibernateQueryDao).setSpelExtendFuncList(spelExtendFuncList);
 	}
 	
 	@Bean
