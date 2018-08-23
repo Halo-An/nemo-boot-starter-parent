@@ -44,7 +44,7 @@ public class AliasToEntityResultTransformer<T> extends AliasedTupleSubsetResultT
 				String fieldName = field.getName();
 				String columnName = strategy.propertyToColumnName(fieldName);
 				for(int i=0;i<aliases.length;i++){
-					if(columnName.equals(aliases[i])){
+					if(columnName.equals(aliases[i])||fieldName.equals(aliases[i])){
 						try{
 							this.fillValue(target, field, tuple[i]);
 						}catch(Exception e){
