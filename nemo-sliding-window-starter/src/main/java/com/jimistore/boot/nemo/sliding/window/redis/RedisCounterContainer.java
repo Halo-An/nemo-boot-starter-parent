@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
 
+import com.cq.nemo.core.exception.ValidatedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
@@ -22,7 +23,7 @@ import com.jimistore.boot.nemo.sliding.window.core.LocalCounterContainer;
  * @Date 2018年7月17日
  *
  */
-public class RedisCounterContainer extends LocalCounterContainer {
+public class RedisCounterContainer extends LocalCounterContainer implements IRedisSyncTask {
 
 	@SuppressWarnings("rawtypes")
 	private RedisTemplate redisTemplate;
@@ -54,7 +55,9 @@ public class RedisCounterContainer extends LocalCounterContainer {
 	@SuppressWarnings("unchecked")
 	@Override
 	public ICounterContainer createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
-
+		if(counterMap.containsKey(key)){
+			throw new ValidatedException(String.format("counter[%s] is exist", key));
+		}
 		RedisCounter<?> counter = RedisCounter.create(slidingWindowProperties, redisTemplate, key, timeUnit, capacity,
 				valueType);
 		counterMap.put(key, counter);
@@ -78,6 +81,16 @@ public class RedisCounterContainer extends LocalCounterContainer {
 		return this;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public ICounterContainer deleteCounter(String key) {
+		if(counterMap.containsKey(key)){
+			redisTemplate.opsForHash().delete(slidingWindowProperties.getRedisContainerKey(), key);
+		}
+		super.deleteCounter(key);
+		return this;
+	}
+
 	@SuppressWarnings({ "unchecked" })
 	protected List<CounterMsg> getNotExistCounterList(){
 		List<CounterMsg> counterMsgList = new ArrayList<CounterMsg>();
@@ -98,8 +111,24 @@ public class RedisCounterContainer extends LocalCounterContainer {
 		return counterMsgList;
 		
 	}
+	
+	@SuppressWarnings({ "unchecked" })
+	protected List<ICounter<?>> getOverflowCounterList(){
+		List<ICounter<?>> counterMsgList = new ArrayList<ICounter<?>>();
+		// 同步计数容器
+		Map<String, String> src = redisTemplate.opsForHash()
+				.entries(slidingWindowProperties.getRedisContainerKey());
+		
+		for (String key : counterMap.keySet()) {
+			if (!src.containsKey(key)) {
+				counterMsgList.add(counterMap.get(key));
+			}
+		}
+		return counterMsgList;
+		
+	}
 
-	protected void sync() {
+	public void sync() {
 		// 同步计数
 		for (Entry<String, ICounter<?>> entry : counterMap.entrySet()) {
 			RedisCounter<?> counter = (RedisCounter<?>) entry.getValue();

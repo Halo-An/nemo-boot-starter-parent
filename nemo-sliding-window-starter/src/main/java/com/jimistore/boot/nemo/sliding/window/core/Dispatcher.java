@@ -1,6 +1,7 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -33,6 +34,10 @@ public class Dispatcher implements IDispatcher {
 	
 	protected IChannelContainer channelContainer;
 	
+	protected IPublisherContainer publisherContainer;
+	
+	protected ITopicContainer topicContainer;
+	
 	protected SlidingWindowProperties slidingWindowProperties;
 	
 	protected Executor executor;
@@ -49,7 +54,6 @@ public class Dispatcher implements IDispatcher {
 					Runnable task = queue.take();
 					task.run();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -66,7 +70,6 @@ public class Dispatcher implements IDispatcher {
 					heartbeat();
 					Thread.sleep(INTERVAL);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -88,7 +91,6 @@ public class Dispatcher implements IDispatcher {
 					try {
 						Thread.sleep(INTERVAL);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -112,6 +114,16 @@ public class Dispatcher implements IDispatcher {
 
 	public Dispatcher setChannelContainer(IChannelContainer channelContainer) {
 		this.channelContainer = channelContainer;
+		return this;
+	}
+
+	public Dispatcher setPublisherContainer(IPublisherContainer publisherContainer) {
+		this.publisherContainer = publisherContainer;
+		return this;
+	}
+
+	public Dispatcher setTopicContainer(ITopicContainer topicContainer) {
+		this.topicContainer = topicContainer;
 		return this;
 	}
 
@@ -243,6 +255,52 @@ public class Dispatcher implements IDispatcher {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public IDispatcher createPublisher(Publisher publisher) {
+		publisherContainer.create(publisher);
+		return this;
+	}
+
+	@Override
+	public Collection<Publisher> listPublisher() {
+		return publisherContainer.list();
+	}
+
+	@Override
+	public IDispatcher deletePublisher(String publisher) {
+		publisherContainer.delete(publisher);
+		return this;
+	}
+
+	@Override
+	public IDispatcher createTopic(Topic topic) {
+		topicContainer.create(topic);
+		return this;
+	}
+
+	@Override
+	public Collection<Topic> listTopic() {
+		return topicContainer.list();
+	}
+
+	@Override
+	public IDispatcher deleteTopic(String topic) {
+		topicContainer.delete(topic);
+		counterContainer.deleteCounter(topic);
+		channelContainer.delete(topic);
+		return this;
+	}
+
+	@Override
+	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
+		return counterContainer.window(key, timeUnit, length, valueType);
+	}
+
+	@Override
+	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
+		return counterContainer.listWindow(key, timeUnit, length, valueType);
 	}
 
 }

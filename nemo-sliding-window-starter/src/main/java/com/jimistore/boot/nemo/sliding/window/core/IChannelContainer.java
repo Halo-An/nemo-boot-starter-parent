@@ -12,6 +12,13 @@ public interface IChannelContainer {
 	public IChannelContainer put(String key);
 	
 	/**
+	 * 放入发布的主题
+	 * @param key
+	 * @return
+	 */
+	public IChannelContainer delete(String key);
+	
+	/**
 	 * 放入订阅的订阅者
 	 * @param subscribe 订阅者
 	 */

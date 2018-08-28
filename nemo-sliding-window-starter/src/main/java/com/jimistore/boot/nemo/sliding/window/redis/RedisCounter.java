@@ -14,7 +14,7 @@ import com.jimistore.boot.nemo.sliding.window.core.Counter;
 import com.jimistore.boot.nemo.sliding.window.core.ICounter;
 import com.jimistore.boot.nemo.sliding.window.helper.NumberUtil;
 
-public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
+public class RedisCounter<T> extends Counter<T> implements ICounter<T>, IRedisSyncTask {
 		
 	private static final Logger log = Logger.getLogger(RedisCounter.class);
 	
@@ -80,6 +80,9 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 		long value = Long.parseLong(redisTemplate.opsForHash().get(this.getRedisKey(), String.valueOf(START_KEY)).toString());
 		super.setStart(value);
 		
+		//增加冗余空间
+		super.setCapacity(this.getCapacity()+slidingWindowProperties.getExpiredCapacity()+slidingWindowProperties.getExpiredOffset());
+		
 		return this;
 	}
 	
@@ -87,7 +90,7 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T> {
 	 * 同步到redis
 	 */
 	@SuppressWarnings("unchecked")
-	protected void sync(){
+	public void sync(){
 		log.debug("request sync");
 		
 		//上传计数

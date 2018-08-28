@@ -2,6 +2,8 @@ package com.jimistore.boot.nemo.sliding.window.helper;
 
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -17,8 +19,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import com.jimistore.boot.nemo.sliding.window.annotation.Publish;
-import com.jimistore.boot.nemo.sliding.window.annotation.Topic;
 import com.jimistore.boot.nemo.sliding.window.core.PublishEvent;
+import com.jimistore.boot.nemo.sliding.window.core.Topic;
 import com.jimistore.util.reflex.AnnotationUtil;
 
 @Aspect
@@ -41,40 +43,43 @@ public class PublishAspect {
 	
 	@Around("publish()")
 	public Object aroundProduce(ProceedingJoinPoint joinPoint) throws Throwable{
-		Signature signature = joinPoint.getSignature();
-		MethodSignature methodSignature = (MethodSignature) signature;
-		Method method = methodSignature.getMethod();
-		
 		Throwable throwable = null;
 		Object result = null;
 		try{
-			result=joinPoint.proceed(joinPoint.getArgs());
-		}catch(Throwable e){
-			throwable = e;
-		}
-		
-		Publish publish = AnnotationUtil.getAnnotation(method, Publish.class);
-		
-		
-		for(Topic topic:publish.value()){
+			Signature signature = joinPoint.getSignature();
+			MethodSignature methodSignature = (MethodSignature) signature;
+			Method method = methodSignature.getMethod();
 			
-			StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, result, throwable);
-			String key = this.parseExpression(context, topic.value(), String.class);
-			boolean condition = this.parseExpression(context, topic.condition(), Boolean.class);
-			int num = this.parseExpression(context, topic.num(), Integer.class);
-			
-			log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.condition(), condition, result, throwable));
-			publisherHelper.createCounter(key, topic.timeUnit(), topic.capacity(), topic.valueType());
-			if(condition){
-				log.debug(String.format("publish counter %s", key));
-				publisherHelper.publish(new PublishEvent<Integer>()
-						.setTime(System.currentTimeMillis())
-						.setTopicKey(key)
-						.setValue(num)
-						);
+			try{
+				result=joinPoint.proceed(joinPoint.getArgs());
+			}catch(Throwable e){
+				throwable = e;
 			}
+			List<Topic> topicList = this.getTopicList(method);
+			
+			for(Topic topic:topicList){
+				
+				StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, result, throwable);
+				String key = this.parseExpression(context, topic.getKey(), String.class);
+				boolean condition = this.parseExpression(context, topic.getCondition(), Boolean.class);
+				int num = this.parseExpression(context, topic.getNum(), Integer.class);
+				Class<?> valueType = Class.forName(topic.getClassName());
+				
+				log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.getCondition(), condition, result, throwable));
+				publisherHelper.createCounter(key, TimeUnitParser.parse(topic.getTimeUnit()), topic.getCapacity(), valueType);
+				if(condition){
+					log.debug(String.format("publish counter %s", key));
+					publisherHelper.publish(new PublishEvent<Integer>()
+							.setTime(System.currentTimeMillis())
+							.setTopicKey(key)
+							.setValue(num)
+							);
+				}
+			}
+		}catch(Throwable t){
+			log.warn(t.getMessage(), t);
 		}
-		
+			
 		if(throwable!=null){
 			throw throwable;
 		}
@@ -117,6 +122,32 @@ public class PublishAspect {
 
 		return context;
 	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	protected List<Topic> getTopicList(Method method){
+		List<Topic> topicList = new ArrayList<Topic>();
+		Publish publish = AnnotationUtil.getAnnotation(method, Publish.class);
+		for(com.jimistore.boot.nemo.sliding.window.annotation.Topic topic:publish.value()){
+			topicList.add(new Topic()
+					.setKey(topic.value())
+					.setTimeUnit(TimeUnitParser.parse(topic.timeUnit()))
+					.setCapacity(topic.capacity())
+					.setCondition(topic.condition())
+					.setNum(topic.num())
+					.setClassName(topic.valueType().getName())
+					);
+		}
+		
+		if(publisherHelper!=null){
+			topicList.addAll(publisherHelper.listTopicByPublisher(PublisherUtil.getPublisherKeyByMethod(method)));
+		}
+		return topicList;
+	}
+	
+	
 	
 }
 

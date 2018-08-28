@@ -17,6 +17,16 @@ public interface ICounterContainer {
 	public ICounterContainer createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType);
 	
 	/**
+	 * 删除计数器
+	 * @param key 容器名称
+	 * @param timeUnit 时间单位
+	 * @param capacity 容量
+	 * @param 数据类型
+	 * @return
+	 */
+	public ICounterContainer deleteCounter(String key);
+	
+	/**
 	 * 发布数据
 	 * @param event
 	 * @return
@@ -41,6 +51,16 @@ public interface ICounterContainer {
 	 * 计数心跳
 	 */
 	public void heartbeat();
+
+	/**
+	 * 
+	 * @param key
+	 * @param timeUnit
+	 * @param length
+	 * @param valueType
+	 * @return
+	 */
+	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType);
 
 	
 }

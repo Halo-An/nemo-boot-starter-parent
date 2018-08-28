@@ -50,6 +50,12 @@ public class LocalCounterContainer implements ICounterContainer {
 		
 		return this;
 	}
+
+	@Override
+	public ICounterContainer deleteCounter(String key) {
+		counterMap.remove(key);
+		return this;
+	}
 	
 	protected ICounter<?> getCounterByKey(String key){
 		if(key==null){
@@ -80,6 +86,12 @@ public class LocalCounterContainer implements ICounterContainer {
 		synchronized (counterMap) {
 			return counterMap.keySet();
 		}
+	}
+
+	@Override
+	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
+		ICounter<?> counter = this.getCounterByKey(key);
+		return counter.listWindow(timeUnit, length, valueType);
 	}
 	
 }

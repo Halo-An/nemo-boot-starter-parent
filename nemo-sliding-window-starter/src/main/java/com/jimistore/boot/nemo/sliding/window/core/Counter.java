@@ -97,12 +97,14 @@ public class Counter<T> implements ICounter<T> {
 			if(dataMap==null||dataMap.size()==0){
 				throw new ValidateException(String.format("no data[%s] can be find", key));
 			}
-			
-			long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
+			if(timeUnit.toMillis(1)>this.timeUnit.toMillis(1)){
+				throw new RuntimeException("window's timeUnit can not exceed counter's timeUnit ");
+			}
 			List<E> dataList = new ArrayList<E>();
+			long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
 			long index = this.getIndex(dataMap.get(START_KEY).longValue());
 			//计算偏移值
-			index = index - offset/timeUnit.toMillis(1);
+			index = index - offset/times;
 			long cursor = index;
 			for(int i=0;i<length;i++){
 				Number value = 0;
@@ -173,4 +175,26 @@ public class Counter<T> implements ICounter<T> {
 		return this;
 	}
 
+	@Override
+	public <E> List<List<E>> listWindow(TimeUnit timeUnit, Integer length, Class<E> valueType) {
+		return this.listWindow(this.valueMap, timeUnit, length, valueType);
+	}
+	
+	public <E> List<List<E>> listWindow(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType) {
+		this.checkType(valueType);
+		if(timeUnit.toMillis(1)>this.timeUnit.toMillis(1)){
+			throw new RuntimeException("window's timeUnit can not exceed counter's timeUnit");
+		}
+		long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
+		long windowLength = ( this.getCapacity() - times * length  ) / times + 1;
+		if(windowLength<=1){
+			throw new RuntimeException("window's length must be less than counter's capacity");
+		}
+		List<List<E>> dataList = new ArrayList<List<E>>();
+		for(int i=0;i<windowLength;i++){
+			long offset = i*times;
+			dataList.add(this.window(dataMap, timeUnit, length, valueType, offset));
+		}
+		return dataList;
+	}
 }

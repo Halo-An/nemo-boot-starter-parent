@@ -14,6 +14,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import com.jimistore.boot.nemo.sliding.window.annotation.Publish;
+import com.jimistore.boot.nemo.sliding.window.annotation.Publisher;
 import com.jimistore.boot.nemo.sliding.window.annotation.Subscribe;
 import com.jimistore.boot.nemo.sliding.window.annotation.Subscriber;
 import com.jimistore.util.reflex.AnnotationUtil;
@@ -31,7 +33,7 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
 	SubscriberHelper subscriberHelper;
 	
 	Map<String, Subscriber> subscriberMap = new HashMap<String, Subscriber>();
-//	Map<String, Publisher> publisherMap = new HashMap<String, Publisher>();
+	Map<String, Publisher> publisherMap = new HashMap<String, Publisher>();
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -59,10 +61,10 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
         		subscriberMap.put(beanName, subscriber);
         	}
         	
-//        	Publisher publisher = beanFactory.findAnnotationOnBean(beanName, Publisher.class);
-//        	if(publisher!=null){
-//        		publisherMap.put(beanName, publisher);
-//        	}
+        	Publisher publisher = beanFactory.findAnnotationOnBean(beanName, Publisher.class);
+        	if(publisher!=null){
+        		publisherMap.put(beanName, publisher);
+        	}
             
         }
 	}
@@ -86,20 +88,20 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		Class<?> clazz = null;
     	
-//    	//处理发布注解
-//    	Publisher publisher = publisherMap.get(beanName);
-//    	if(publisher!=null){
-//    		if(clazz==null){
-//    			clazz = this.getClass(beanName);
-//    		}
-//    		Map<Publish, Method> methodMap = this.parseAnnotationList(clazz, Publish.class);
-//			for(Map.Entry<Publish, Method> entry:methodMap.entrySet()){
-//				if(log.isDebugEnabled()){
-//					log.debug(String.format("create publisher[%s]", entry.getValue().getName()));
-//				}
-//        		publisherHelper.createCounter(entry.getKey());
-//        	}
-//    	}
+    	//处理发布注解
+    	Publisher publisher = publisherMap.get(beanName);
+    	if(publisher!=null){
+    		if(clazz==null){
+    			clazz = this.getClass(beanName);
+    		}
+    		Map<Publish, Method> methodMap = this.parseAnnotationList(clazz, Publish.class);
+			for(Map.Entry<Publish, Method> entry:methodMap.entrySet()){
+				if(log.isDebugEnabled()){
+					log.debug(String.format("create publisher[%s]", entry.getValue().getName()));
+				}
+        		publisherHelper.createPublisher(entry.getValue());
+        	}
+    	}
     	
     	//处理订阅注解
 		Subscriber subscriber = subscriberMap.get(beanName);

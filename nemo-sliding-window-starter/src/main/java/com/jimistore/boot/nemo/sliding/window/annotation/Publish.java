@@ -11,6 +11,8 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Publish {
 	
-	Topic[] value();
+	Topic[] value() default {};
+	
+	String alias() default "";
 
 }

@@ -1,11 +1,77 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
 import com.jimistore.boot.nemo.sliding.window.handler.IPublishHandler;
 
 public interface IDispatcher {
+	
+	/**
+	 * 创建监控点
+	 * @param publisher
+	 * @return
+	 */
+	public IDispatcher createPublisher(Publisher publisher);
+	
+	/**
+	 * 取一个窗口的数据
+	 * @param key
+	 * @param timeUnit
+	 * @param length
+	 */
+	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType);
+	
+
+	
+	/**
+	 * 
+	 * @param key
+	 * @param timeUnit
+	 * @param length
+	 */
+	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType);
+	
+	
+	/**
+	 * 获取监控点集合
+	 * @return 
+	 */
+	public Collection<Publisher> listPublisher();
+	
+	
+	/**
+	 * 删除监控点
+	 * @param publisherKey
+	 * @return 
+	 */
+	public IDispatcher deletePublisher(String publisherKey);
+	
+	
+	/**
+	 * 创建topic
+	 * @param topic
+	 * @return 
+	 */
+	public IDispatcher createTopic(Topic topic);
+	
+	
+	/**
+	 * 获取topic集合
+	 * @param publisherKey
+	 * @return 
+	 */
+	public Collection<Topic> listTopic();
+	
+	
+	/**
+	 * 删除topic
+	 * @param topicKey
+	 * @return 
+	 */
+	public IDispatcher deleteTopic(String topicKey);
 	
 	/**
 	 * 发布订阅

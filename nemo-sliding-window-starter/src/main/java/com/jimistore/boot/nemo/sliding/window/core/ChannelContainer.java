@@ -98,4 +98,10 @@ public class ChannelContainer implements IChannelContainer {
 		return matcher.match(topicMatch, key);
 	}
 
+	@Override
+	public IChannelContainer delete(String key) {
+		channelMap.remove(key);
+		return this;
+	}
+
 }

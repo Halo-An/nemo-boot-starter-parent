@@ -42,6 +42,10 @@ public class SlidingWindowProperties {
 	 */
 	String redisContainerKey = "nemo-sliding-window-container";
 	
+	String redisPublisherKey = "nemo-sliding-window-publisher";
+	
+	String redisTopicKey = "nemo-sliding-window-topic";
+	
 	/**
 	 * 通知线程数大小
 	 */
@@ -107,6 +111,24 @@ public class SlidingWindowProperties {
 
 	public SlidingWindowProperties setMaxNoticeThreadSize(int maxNoticeThreadSize) {
 		this.maxNoticeThreadSize = maxNoticeThreadSize;
+		return this;
+	}
+
+	public String getRedisPublisherKey() {
+		return redisPublisherKey;
+	}
+
+	public SlidingWindowProperties setRedisPublisherKey(String redisPublisherKey) {
+		this.redisPublisherKey = redisPublisherKey;
+		return this;
+	}
+
+	public String getRedisTopicKey() {
+		return redisTopicKey;
+	}
+
+	public SlidingWindowProperties setRedisTopicKey(String redisTopicKey) {
+		this.redisTopicKey = redisTopicKey;
 		return this;
 	}
 	

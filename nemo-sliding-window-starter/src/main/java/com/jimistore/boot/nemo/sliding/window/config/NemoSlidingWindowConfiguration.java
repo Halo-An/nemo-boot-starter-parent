@@ -1,5 +1,6 @@
 package com.jimistore.boot.nemo.sliding.window.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -55,8 +56,8 @@ public class NemoSlidingWindowConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(PublisherHelper.class)
-	public PublisherHelper publisherHelper(SlidingWindowTemplate slidingWindowTemplate) {
-		return new PublisherHelper().setSlidingWindowTemplate(slidingWindowTemplate);
+	public PublisherHelper publisherHelper(SlidingWindowTemplate slidingWindowTemplate, @Value("${spring.application.group}") String service) {
+		return new PublisherHelper().setSlidingWindowTemplate(slidingWindowTemplate).setService(service);
 	}
 
 	@Bean
