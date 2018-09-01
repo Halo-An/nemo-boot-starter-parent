@@ -27,7 +27,7 @@ public class LocalCounterContainer implements ICounterContainer {
 	}
 
 	@Override
-	public ICounterContainer put(IPublishEvent<?> event) {
+	public ICounterContainer publish(IPublishEvent<?> event) {
 		if(log.isDebugEnabled()){
 			log.debug(String.format("request put[%s]", event.getTopicKey()));
 		}
@@ -68,12 +68,6 @@ public class LocalCounterContainer implements ICounterContainer {
 		}
 		return counter;
 	}
-
-	@Override
-	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		ICounter<?> counter = this.getCounterByKey(key);
-		return counter.window(timeUnit, length, valueType);
-	}
 	
 	public void heartbeat(){
 		for(Entry<String, ICounter<?>> entry:counterMap.entrySet()){
@@ -82,16 +76,35 @@ public class LocalCounterContainer implements ICounterContainer {
 	}
 
 	@Override
-	public Set<String> getAllKeys() {
+	public Set<String> getAllCounterKeys() {
 		synchronized (counterMap) {
 			return counterMap.keySet();
 		}
 	}
 
 	@Override
+	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
+		ICounter<?> counter = this.getCounterByKey(key);
+		return counter.window(timeUnit, length, valueType);
+	}
+
+	@Override
 	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
 		ICounter<?> counter = this.getCounterByKey(key);
 		return counter.listWindow(timeUnit, length, valueType);
+	}
+
+	@Override
+	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
+		ICounter<?> counter = this.getCounterByKey(key);
+		return counter.window(timeUnit, length, valueType, timestamp);
+	}
+
+	@Override
+	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType,
+			long timestamp) {
+		ICounter<?> counter = this.getCounterByKey(key);
+		return counter.listWindow(timeUnit, length, valueType, timestamp);
 	}
 	
 }

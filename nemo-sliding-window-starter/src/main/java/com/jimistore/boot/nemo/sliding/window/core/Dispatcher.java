@@ -1,7 +1,6 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -155,7 +154,7 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				counterContainer.put(event);
+				counterContainer.publish(event);
 			}
 		});
 		return this;
@@ -180,7 +179,7 @@ public class Dispatcher implements IDispatcher {
 		}
 		long eventTime = System.currentTimeMillis();
 		try{
-			for(String key:counterContainer.getAllKeys()){
+			for(String key:counterContainer.getAllCounterKeys()){
 				List<IChannel> channelSet = channelContainer.match(key);
 				if(channelSet==null){
 					break;
@@ -258,49 +257,24 @@ public class Dispatcher implements IDispatcher {
 	}
 
 	@Override
-	public IDispatcher createPublisher(Publisher publisher) {
-		publisherContainer.create(publisher);
-		return this;
-	}
-
-	@Override
-	public Collection<Publisher> listPublisher() {
-		return publisherContainer.list();
-	}
-
-	@Override
-	public IDispatcher deletePublisher(String publisher) {
-		publisherContainer.delete(publisher);
-		return this;
-	}
-
-	@Override
-	public IDispatcher createTopic(Topic topic) {
-		topicContainer.create(topic);
-		return this;
-	}
-
-	@Override
-	public Collection<Topic> listTopic() {
-		return topicContainer.list();
-	}
-
-	@Override
 	public IDispatcher deleteTopic(String topic) {
-		topicContainer.delete(topic);
+		topicContainer.deleteTopic(topic);
 		counterContainer.deleteCounter(topic);
 		channelContainer.delete(topic);
 		return this;
 	}
 
 	@Override
-	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return counterContainer.window(key, timeUnit, length, valueType);
-	}
-
-	@Override
-	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return counterContainer.listWindow(key, timeUnit, length, valueType);
+	public IDispatcher deleteCounter(String key) {
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				if(counterContainer!=null){
+					counterContainer.deleteCounter(key);
+				}
+			}
+		});
+		return this;
 	}
 
 }

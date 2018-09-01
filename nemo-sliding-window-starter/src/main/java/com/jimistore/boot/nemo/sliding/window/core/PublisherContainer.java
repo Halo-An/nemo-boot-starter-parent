@@ -9,25 +9,26 @@ public class PublisherContainer implements IPublisherContainer {
 	protected Map<String, Publisher> publisherMap = new HashMap<String, Publisher>();
 
 	@Override
-	public Collection<Publisher> list() {
+	public Collection<Publisher> listPublisher() {
 		return publisherMap.values();
 	}
 
 	@Override
-	public void create(Publisher publisher) {
+	public IPublisherContainer createPublisher(Publisher publisher) {
 		if(publisherMap.containsKey(publisher.getKey())){
 			throw new RuntimeException(String.format("publisher[%s] exist", publisher.getKey()));
 		}
 		publisherMap.put(publisher.getKey(), publisher);
+		return this;
 	}
 
 	@Override
-	public void delete(String publisher) {
+	public IPublisherContainer deletePublisher(String publisher) {
 		if(!publisherMap.containsKey(publisher)){
 			throw new RuntimeException(String.format("publisher[%s] not exist", publisher));
 		}
 		publisherMap.remove(publisher);
-
+		return this;
 	}
 
 }

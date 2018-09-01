@@ -7,6 +7,11 @@ import java.util.concurrent.TimeUnit;
 public interface ICounterContainer {
 	
 	/**
+	 * 计数心跳
+	 */
+	public default void heartbeat() {}
+	
+	/**
 	 * 创建计数器
 	 * @param key 容器名称
 	 * @param timeUnit 时间单位
@@ -31,16 +36,16 @@ public interface ICounterContainer {
 	 * @param event
 	 * @return
 	 */
-	public ICounterContainer put(IPublishEvent<?> event);
+	public ICounterContainer publish(IPublishEvent<?> event);
 	
 	/**
 	 * 获取所有key
 	 * @return
 	 */
-	public Set<String> getAllKeys();
+	public Set<String> getAllCounterKeys();
 	
 	/**
-	 * 
+	 * 获取窗口的数据
 	 * @param key
 	 * @param timeUnit
 	 * @param length
@@ -48,12 +53,16 @@ public interface ICounterContainer {
 	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType);
 	
 	/**
-	 * 计数心跳
+	 * 根据指定时间获取窗口的数据
+	 * @param timeUnit 窗口长度单位
+	 * @param length 窗口长度
+	 * @param valueType 数据类型
+	 * @param timestamp 时间戳(ms)
 	 */
-	public void heartbeat();
+	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp);
 
 	/**
-	 * 
+	 * 获取所有窗口的数据
 	 * @param key
 	 * @param timeUnit
 	 * @param length
@@ -61,6 +70,17 @@ public interface ICounterContainer {
 	 * @return
 	 */
 	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType);
+
+	/**
+	 * 根据时间获取所有窗口的数据
+	 * @param key
+	 * @param timeUnit
+	 * @param length
+	 * @param valueType
+	 * @param timestamp
+	 * @return
+	 */
+	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp);
 
 	
 }

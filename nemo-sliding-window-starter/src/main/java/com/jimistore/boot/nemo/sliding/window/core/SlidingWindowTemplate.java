@@ -2,6 +2,7 @@ package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,11 +24,17 @@ import com.jimistore.boot.nemo.sliding.window.redis.RedisTopicContainer;
  * @Date 2018年6月6日
  *
  */
-public class SlidingWindowTemplate implements IDispatcher {
+public class SlidingWindowTemplate implements IDispatcher, IPublisherContainer, ITopicContainer, ICounterContainer {
 	
 	SlidingWindowProperties slidingWindowProperties;
 	
 	IDispatcher dispatcher;
+	
+	IPublisherContainer publisherContainer;
+	
+	ITopicContainer topicContainer;
+	
+	ICounterContainer counterContainer;
 	
 	private SlidingWindowTemplate(){
 		
@@ -38,12 +45,30 @@ public class SlidingWindowTemplate implements IDispatcher {
 		return this;
 	}
 
+	public SlidingWindowProperties getSlidingWindowProperties() {
+		return slidingWindowProperties;
+	}
 
 	private SlidingWindowTemplate setDispatcher(IDispatcher dispatcher) {
 		this.dispatcher = dispatcher;
 		return this;
 	}
 	
+	private SlidingWindowTemplate setPublisherContainer(IPublisherContainer publisherContainer) {
+		this.publisherContainer = publisherContainer;
+		return this;
+	}
+
+	private SlidingWindowTemplate setTopicContainer(ITopicContainer topicContainer) {
+		this.topicContainer = topicContainer;
+		return this;
+	}
+
+	private SlidingWindowTemplate setCounterContainer(ICounterContainer counterContainer) {
+		this.counterContainer = counterContainer;
+		return this;
+	}
+
 	public static final SlidingWindowTemplate create(SlidingWindowProperties slidingWindowProperties){
 		return create(slidingWindowProperties, null, null);
 	}
@@ -53,33 +78,42 @@ public class SlidingWindowTemplate implements IDispatcher {
 			throw new ConfigException("sliding window properties connot be null");
 		}
 		Dispatcher dispatcher = null;
+		IPublisherContainer publisherContainer = null;
+		ITopicContainer topicContainer = null;
+		ICounterContainer counterContainer = null;
+		
 		if(!StringUtils.isEmpty(slidingWindowProperties.getCacheModel())&&slidingWindowProperties.getCacheModel().equals(SlidingWindowProperties.CACHE_MODEL_REDIS)){
-			dispatcher = new RedisDispatcher()
-					.setCounterContainer(new RedisCounterContainer()
-							.setObjectMapper(objectMapper)
-							.setRedisTemplate(redisTemplate)
-							.setSlidingWindowProperties(slidingWindowProperties))
-					.setChannelContainer(new ChannelContainer())
-					.setPublisherContainer(new RedisPublisherContainer()
-							.setObjectMapper(objectMapper)
-							.setRedisTemplate(redisTemplate)
-							.setSlidingWindowProperties(slidingWindowProperties))
-					.setTopicContainer(new RedisTopicContainer()
-							.setObjectMapper(objectMapper)
-							.setRedisTemplate(redisTemplate)
-							.setSlidingWindowProperties(slidingWindowProperties))
-					.setSlidingWindowProperties(slidingWindowProperties)
-					.init();
+			dispatcher = new RedisDispatcher();
+			counterContainer = new RedisCounterContainer()
+					.setObjectMapper(objectMapper)
+					.setRedisTemplate(redisTemplate)
+					.setSlidingWindowProperties(slidingWindowProperties);
+			publisherContainer = new RedisPublisherContainer()
+					.setObjectMapper(objectMapper)
+					.setRedisTemplate(redisTemplate)
+					.setSlidingWindowProperties(slidingWindowProperties);
+			topicContainer = new RedisTopicContainer()
+					.setObjectMapper(objectMapper)
+					.setRedisTemplate(redisTemplate)
+					.setSlidingWindowProperties(slidingWindowProperties);
 		}else{
-			dispatcher = new Dispatcher()
-					.setCounterContainer(new LocalCounterContainer())
-					.setChannelContainer(new ChannelContainer())
-					.setPublisherContainer(new PublisherContainer())
-					.setTopicContainer(new TopicContainer())
-					.setSlidingWindowProperties(slidingWindowProperties)
-					.init();
+			publisherContainer = new PublisherContainer();
+			counterContainer = new LocalCounterContainer();
+			topicContainer = new TopicContainer();
+			dispatcher = new Dispatcher();
 		}
-		return new SlidingWindowTemplate().setSlidingWindowProperties(slidingWindowProperties).setDispatcher(dispatcher);
+		return new SlidingWindowTemplate()
+				.setSlidingWindowProperties(slidingWindowProperties)
+				.setDispatcher(dispatcher
+						.setCounterContainer(counterContainer)
+						.setChannelContainer(new ChannelContainer())
+						.setPublisherContainer(publisherContainer)
+						.setTopicContainer(topicContainer)
+						.setSlidingWindowProperties(slidingWindowProperties)
+						.init())
+				.setTopicContainer(topicContainer)
+				.setCounterContainer(counterContainer)
+				.setPublisherContainer(publisherContainer);
 		
 	}
 
@@ -115,45 +149,68 @@ public class SlidingWindowTemplate implements IDispatcher {
 	}
 
 	@Override
-	public IDispatcher createPublisher(Publisher publisher) {
-		return dispatcher.createPublisher(publisher);
-	}
-
-	@Override
 	public Collection<Topic> listTopic() {
-		return dispatcher.listTopic();
+		return topicContainer.listTopic();
 	}
 
 	@Override
-	public Collection<Publisher> listPublisher() {
-		return dispatcher.listPublisher();
-	}
-
-	@Override
-	public IDispatcher deletePublisher(String publisher) {
-		dispatcher.deletePublisher(publisher);
+	public SlidingWindowTemplate createTopic(Topic topic) {
+		topicContainer.createTopic(topic);
 		return this;
 	}
-
-	@Override
-	public IDispatcher createTopic(Topic topic) {
-		dispatcher.createTopic(topic);
-		return this;
-	}
-
-	@Override
-	public IDispatcher deleteTopic(String topic) {
-		dispatcher.deleteTopic(topic);
-		return this;
-	}
-
+	
 	@Override
 	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return dispatcher.window(key, timeUnit, length, valueType);
+		return counterContainer.window(key, timeUnit, length, valueType);
 	}
 
 	@Override
 	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return dispatcher.listWindow(key, timeUnit, length, valueType);
+		return counterContainer.listWindow(key, timeUnit, length, valueType);
+	}
+
+	@Override
+	public Collection<Publisher> listPublisher() {
+		return publisherContainer.listPublisher();
+	}
+
+	@Override
+	public SlidingWindowTemplate createPublisher(Publisher publisher) {
+		publisherContainer.createPublisher(publisher);
+		return this;
+	}
+
+	@Override
+	public SlidingWindowTemplate deletePublisher(String publisherKey) {
+		publisherContainer.deletePublisher(publisherKey);
+		return this;
+	}
+
+	@Override
+	public SlidingWindowTemplate deleteTopic(String topicKey) {
+		dispatcher.deleteTopic(topicKey);
+		return this;
+	}
+
+	@Override
+	public SlidingWindowTemplate deleteCounter(String key) {
+		dispatcher.deleteCounter(key);
+		return this;
+	}
+
+	@Override
+	public Set<String> getAllCounterKeys() {
+		return counterContainer.getAllCounterKeys();
+	}
+
+	@Override
+	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
+		return counterContainer.window(key, timeUnit, length, valueType, timestamp);
+	}
+
+	@Override
+	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType,
+			long timestamp) {
+		return counterContainer.listWindow(key, timeUnit, length, valueType, timestamp);
 	}
 }

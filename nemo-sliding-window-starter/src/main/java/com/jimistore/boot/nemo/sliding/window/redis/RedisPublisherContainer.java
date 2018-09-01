@@ -44,7 +44,7 @@ public class RedisPublisherContainer extends PublisherContainer implements IPubl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void create(Publisher publisher) {
+	public IPublisherContainer createPublisher(Publisher publisher) {
 		log.debug("request create");
 		if(!publisherMap.containsKey(publisher.getKey())){
 			try {
@@ -53,17 +53,19 @@ public class RedisPublisherContainer extends PublisherContainer implements IPubl
 				throw new RuntimeException(e);
 			}
 		}
-		super.create(publisher);
+		super.createPublisher(publisher);
+		return this;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void delete(String publisher) {
+	public IPublisherContainer deletePublisher(String publisher) {
 		log.debug("request delete");
 		if(publisherMap.containsKey(publisher)){
 			redisTemplate.opsForHash().delete(slidingWindowProperties.getRedisPublisherKey(), publisher);
 		}
-		super.delete(publisher);
+		super.deletePublisher(publisher);
+		return this;
 	}
 
 	@SuppressWarnings("unchecked")

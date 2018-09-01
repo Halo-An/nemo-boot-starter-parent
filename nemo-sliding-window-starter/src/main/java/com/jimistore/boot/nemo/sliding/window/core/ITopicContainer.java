@@ -10,19 +10,19 @@ public interface ITopicContainer {
 	 * @param targetClass
 	 * @return
 	 */
-	public Collection<Topic> list();
+	public Collection<Topic> listTopic();
 	
 	/**
 	 * 创建一个topic
 	 * @param topic
 	 */
-	public void create(Topic topic);
+	public ITopicContainer createTopic(Topic topic);
 	
 	/**
 	 * 删除一个topic
 	 * @param topicKey
 	 */
-	public void delete(String topicKey);
+	public ITopicContainer deleteTopic(String topicKey);
 	
 	
 

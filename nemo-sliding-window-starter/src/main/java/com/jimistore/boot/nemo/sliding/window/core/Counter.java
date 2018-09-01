@@ -56,7 +56,7 @@ public class Counter<T> implements ICounter<T> {
 		if(now >= nextHeartbeatTime){
 			nextHeartbeatTime = now + timeUnit.toMillis(1);
 			
-			Long index = this.getIndex(valueMap.get(START_KEY).longValue())-capacity;
+			Long index = this.getIndex(valueMap.get(START_KEY).longValue(), now)-capacity;
 			if(valueMap.containsKey(index)){
 				valueMap.remove(index);
 			}
@@ -64,16 +64,15 @@ public class Counter<T> implements ICounter<T> {
 		
 	}
 	
-	protected Long getIndex(long start){
-		long now = System.currentTimeMillis();
-		Long index = (now / timeUnit.toMillis(1) - start / timeUnit.toMillis(1)) % capacity;
-		return index;
+	protected Long getIndex(long start, long now){
+		return (now / timeUnit.toMillis(1) - start / timeUnit.toMillis(1)) % capacity;
 	}
 
 	@Override
 	public Counter<T> put(IPublishEvent<?> event) {
+		long now = System.currentTimeMillis();
 		
-		Long index = this.getIndex(valueMap.get(START_KEY).longValue());
+		Long index = this.getIndex(valueMap.get(START_KEY).longValue(), now);
 		Number value = valueMap.get(index);
 		valueMap.put(index, NumberUtil.add(value, event.getValue()));
 		
@@ -86,11 +85,16 @@ public class Counter<T> implements ICounter<T> {
 
 	@Override
 	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return this.window(this.valueMap, timeUnit, length, valueType, 0);
+		return this.window(this.valueMap, timeUnit, length, valueType, System.currentTimeMillis(), 0);
+	}
+
+	@Override
+	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
+		return this.window(this.valueMap, timeUnit, length, valueType, timestamp, 0);
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected <E> List<E> window(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType, long offset) {
+	protected <E> List<E> window(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType, long now, long offset) {
 		long time = System.currentTimeMillis();
 		try{
 			this.checkType(valueType);
@@ -102,7 +106,7 @@ public class Counter<T> implements ICounter<T> {
 			}
 			List<E> dataList = new ArrayList<E>();
 			long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
-			long index = this.getIndex(dataMap.get(START_KEY).longValue());
+			long index = this.getIndex(dataMap.get(START_KEY).longValue(), now);
 			//计算偏移值
 			index = index - offset/times;
 			long cursor = index;
@@ -177,10 +181,10 @@ public class Counter<T> implements ICounter<T> {
 
 	@Override
 	public <E> List<List<E>> listWindow(TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return this.listWindow(this.valueMap, timeUnit, length, valueType);
+		return this.listWindow(this.valueMap, timeUnit, length, valueType, System.currentTimeMillis());
 	}
 	
-	public <E> List<List<E>> listWindow(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType) {
+	public <E> List<List<E>> listWindow(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
 		this.checkType(valueType);
 		if(timeUnit.toMillis(1)>this.timeUnit.toMillis(1)){
 			throw new RuntimeException("window's timeUnit can not exceed counter's timeUnit");
@@ -193,8 +197,13 @@ public class Counter<T> implements ICounter<T> {
 		List<List<E>> dataList = new ArrayList<List<E>>();
 		for(int i=0;i<windowLength;i++){
 			long offset = i*times;
-			dataList.add(this.window(dataMap, timeUnit, length, valueType, offset));
+			dataList.add(this.window(dataMap, timeUnit, length, valueType, timestamp, offset));
 		}
 		return dataList;
+	}
+	
+	public <E> List<List<E>> listWindow(TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
+		
+		return this.listWindow(this.valueMap, timeUnit, length, valueType, timestamp);
 	}
 }

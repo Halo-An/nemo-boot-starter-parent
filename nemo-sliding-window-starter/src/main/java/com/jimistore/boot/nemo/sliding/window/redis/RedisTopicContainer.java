@@ -45,7 +45,7 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void create(Topic topic) {
+	public ITopicContainer createTopic(Topic topic) {
 		log.debug("request create");
 		if(!topicMap.containsKey(topic)){
 			try {
@@ -54,17 +54,19 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 				throw new RuntimeException(e);
 			}
 		}
-		super.create(topic);
+		super.createTopic(topic);
+		return this;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void delete(String topic) {
+	public ITopicContainer deleteTopic(String topic) {
 		log.debug("request delete");
 		if(topicMap.containsKey(topic)){
 			redisTemplate.opsForHash().delete(slidingWindowProperties.getRedisTopicKey(), topic);
 		}
-		super.delete(topic);
+		super.deleteTopic(topic);
+		return this;
 	}
 
 	@SuppressWarnings("unchecked")

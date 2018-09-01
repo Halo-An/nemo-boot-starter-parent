@@ -9,10 +9,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.cq.nemo.core.exception.ValidatedException;
+import com.jimistore.boot.nemo.sliding.window.annotation.Publish;
 import com.jimistore.boot.nemo.sliding.window.core.IPublishEvent;
 import com.jimistore.boot.nemo.sliding.window.core.Publisher;
 import com.jimistore.boot.nemo.sliding.window.core.SlidingWindowTemplate;
 import com.jimistore.boot.nemo.sliding.window.core.Topic;
+import com.jimistore.util.reflex.AnnotationUtil;
 
 public class PublisherHelper {
 	
@@ -37,7 +39,9 @@ public class PublisherHelper {
 	}
 	
 	public void createPublisher(Method method){
+		Publish publish = AnnotationUtil.getAnnotation(method, Publish.class);
 		slidingWindowTemplate.createPublisher(new Publisher()
+				.setAlias(publish.alias())
 				.setKey(PublisherUtil.getPublisherKeyByMethod(method))
 				.setService(service));
 	}

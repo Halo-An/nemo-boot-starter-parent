@@ -10,19 +10,19 @@ public interface IPublisherContainer {
 	 * @param targetClass
 	 * @return
 	 */
-	public Collection<Publisher> list();
+	public Collection<Publisher> listPublisher();
 	
 	/**
 	 * 创建一个publisher
 	 * @param publisher
 	 */
-	public void create(Publisher publisher);
+	public IPublisherContainer createPublisher(Publisher publisher);
 	
 	/**
 	 * 删除publisher
 	 * @param publisher
 	 */
-	public void delete(String publisherKey);
+	public IPublisherContainer deletePublisher(String publisherKey);
 	
 	
 

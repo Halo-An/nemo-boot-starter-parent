@@ -107,7 +107,8 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T>, IRedisSy
 		}
 		
 		//清除失效计数
-		long curr = this.getIndex(this.getStart());
+		long now = System.currentTimeMillis();
+		long curr = this.getIndex(this.getStart(), now);
 		Object[] expiredKeys = new String[slidingWindowProperties.getExpiredCapacity()];
 		for(int i=0;i<slidingWindowProperties.getExpiredCapacity();i++){
 			long index = curr + i +slidingWindowProperties.getExpiredOffset();
@@ -155,7 +156,8 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T>, IRedisSy
 
 	@Override
 	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return super.window(remoteMap, timeUnit, length, valueType, slidingWindowProperties.getSyncInterval());
+		long now = System.currentTimeMillis();
+		return super.window(remoteMap, timeUnit, length, valueType, now, slidingWindowProperties.getSyncInterval());
 	}
 	
 	private String getRedisKey(){

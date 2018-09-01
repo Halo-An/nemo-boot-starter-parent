@@ -5,6 +5,8 @@ public class Publisher {
 	String service;
 	
 	String key;
+	
+	String alias;
 
 	public String getKey() {
 		return key;
@@ -23,4 +25,15 @@ public class Publisher {
 		this.service = service;
 		return this;
 	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public Publisher setAlias(String alias) {
+		this.alias = alias;
+		return this;
+	}
+	
+	
 }
