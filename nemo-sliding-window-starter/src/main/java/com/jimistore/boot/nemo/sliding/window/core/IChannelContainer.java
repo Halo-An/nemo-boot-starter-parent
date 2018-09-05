@@ -6,17 +6,24 @@ public interface IChannelContainer {
 	
 	/**
 	 * 放入发布的主题
-	 * @param key
+	 * @param topic
 	 * @return
 	 */
-	public IChannelContainer put(String key);
+	public IChannelContainer put(String topic);
 	
 	/**
-	 * 放入发布的主题
+	 * 删除发布的主题
 	 * @param key
 	 * @return
 	 */
 	public IChannelContainer delete(String key);
+	
+	/**
+	 * 删除订阅者
+	 * @param key
+	 * @return
+	 */
+	public IChannelContainer delete(ISubscriber subscriber);
 	
 	/**
 	 * 放入订阅的订阅者
@@ -25,10 +32,9 @@ public interface IChannelContainer {
 	public IChannelContainer put(ISubscriber subscriber);
 	
 	/**
-	 * 获取匹配的通道
-	 * @param key
+	 * 获取所有通道
 	 * @return
 	 */
-	public List<IChannel> match(String key);
+	public List<Channel> listAllChannel();
 
 }

@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -47,10 +46,10 @@ public class PublisherHelper {
 	}
 
 	
-	public void createCounter(String key, TimeUnit timeUnit, int capacity, Class<?> valueType){
+	public void createCounter(Topic topic){
 		try{
-			log.debug(String.format("create counter[%s] when it do not exist", key));
-			slidingWindowTemplate.createCounter(key, timeUnit, capacity, valueType);
+			log.debug(String.format("create counter[%s] when it do not exist", topic.getKey()));
+			slidingWindowTemplate.createCounter(topic);
 		}catch(ValidatedException e){
 			log.warn(e.getMessage(), e);
 		}

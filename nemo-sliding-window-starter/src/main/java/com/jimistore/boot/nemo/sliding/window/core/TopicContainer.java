@@ -31,4 +31,9 @@ public class TopicContainer implements ITopicContainer {
 		return this;
 	}
 
+	@Override
+	public Topic getTopic(String topicKey) {
+		return topicMap.get(topicKey);
+	}
+
 }

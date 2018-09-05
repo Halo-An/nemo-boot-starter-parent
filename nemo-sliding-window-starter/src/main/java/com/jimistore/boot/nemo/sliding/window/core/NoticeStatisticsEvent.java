@@ -8,7 +8,7 @@ public class NoticeStatisticsEvent<T extends Number> implements INoticeStatistic
 	
 	private INoticeEvent<T> noticeEvent;
 	
-	private T min,max,sum,avg;
+	private T min,max,sum,avg,cur;
 	
 	@SuppressWarnings("unchecked")
 	public NoticeStatisticsEvent(INoticeEvent<T> noticeEvent){
@@ -30,6 +30,7 @@ public class NoticeStatisticsEvent<T extends Number> implements INoticeStatistic
 				sum = (T) NumberUtil.add(sum, t);
 			}
 		}
+		cur = list.get(0);
 		avg = (T) NumberUtil.except(sum, list.size());
 	}
 
@@ -53,26 +54,35 @@ public class NoticeStatisticsEvent<T extends Number> implements INoticeStatistic
 
 	@Override
 	public T getMin() {
-		// TODO Auto-generated method stub
+		
 		return min;
 	}
 
 	@Override
 	public T getMax() {
-		// TODO Auto-generated method stub
+		
 		return max;
 	}
 
 	@Override
 	public T getSum() {
-		// TODO Auto-generated method stub
+		
 		return sum;
 	}
 
 	@Override
 	public T getAvg() {
-		// TODO Auto-generated method stub
+		
 		return avg;
+	}
+
+	public T getCur() {
+		return cur;
+	}
+
+	@Override
+	public ISubscriber getSubscriber() {
+		return noticeEvent.getSubscriber();
 	}
 	
 	 

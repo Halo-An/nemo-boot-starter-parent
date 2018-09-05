@@ -1,26 +1,25 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
+import java.util.List;
+
 public interface IChannel {
 	
 	/**
 	 * 获取订阅的标识
 	 * @return
 	 */
-	public String getTopicKey();
+	public List<String> getTopicList();
 	
 	/**
-	 * 设置订阅的标识
-	 * @param topicKey
+	 * 获取订阅的主题
 	 * @return
 	 */
-	public IChannel setTopicKey(String topicKey);
-	
-	public Long getNextTime();
-	
-	public IChannel setNextTime(Long time);
-	
 	public ISubscriber getSubscriber();
 	
-	public IChannel setSubscriber(ISubscriber subscriber);
+	/**
+	 * 准备(成功为true,失败false)
+	 * @return
+	 */
+	public boolean ready();
 
 }

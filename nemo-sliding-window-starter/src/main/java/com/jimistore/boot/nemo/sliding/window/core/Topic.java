@@ -1,5 +1,9 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
+import java.util.concurrent.TimeUnit;
+
+import com.jimistore.boot.nemo.sliding.window.helper.TimeUnitParser;
+
 public class Topic {
 	
 	String publisherKey;
@@ -10,11 +14,28 @@ public class Topic {
 	
 	String key;
 	
-	int capacity;
+	Integer capacity;
 	
-	String timeUnit;
+	String timeUnitStr;
 	
 	String className;
+	
+	Class<?> valueType;
+	
+	TimeUnit timeUnit;
+	
+	boolean fixed;
+	
+	public static Topic from(com.jimistore.boot.nemo.sliding.window.annotation.Topic topic){
+		return new Topic()
+		.setFixed(true)
+		.setKey(topic.value())
+		.setTimeUnit(topic.timeUnit())
+		.setCapacity(topic.capacity())
+		.setCondition(topic.condition())
+		.setNum(topic.num())
+		.setValueType(topic.valueType());
+	}
 
 	public String getKey() {
 		return key;
@@ -25,31 +46,17 @@ public class Topic {
 		return this;
 	}
 
-	public int getCapacity() {
+	public Integer getCapacity() {
 		return capacity;
 	}
 
-	public Topic setCapacity(int capacity) {
+	public Topic setCapacity(Integer capacity) {
 		this.capacity = capacity;
-		return this;
-	}
-
-	public String getTimeUnit() {
-		return timeUnit;
-	}
-
-	public Topic setTimeUnit(String timeUnit) {
-		this.timeUnit = timeUnit;
 		return this;
 	}
 
 	public String getClassName() {
 		return className;
-	}
-
-	public Topic setClassName(String className) {
-		this.className = className;
-		return this;
 	}
 
 	public String getPublisherKey() {
@@ -78,5 +85,64 @@ public class Topic {
 		this.num = num;
 		return this;
 	}
+
+	public Class<?> getValueType() {
+		return valueType;
+	}
+
+	public String getTimeUnitStr() {
+		return timeUnitStr;
+	}
+
+	public TimeUnit getTimeUnit() {
+		return timeUnit;
+	}
+
+	public Topic setClassName(String className) {
+		this.className = className;
+		if(className!=null){
+			try {
+				valueType = Class.forName(className);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return this;
+	}
+
+	public Topic setTimeUnitStr(String timeUnitStr) {
+		this.timeUnitStr = timeUnitStr;
+		if(timeUnitStr!=null){
+			this.timeUnit = TimeUnitParser.parse(timeUnitStr);
+		}
+		return this;
+	}
+
+	public Topic setValueType(Class<?> valueType) {
+		this.valueType = valueType;
+		if(valueType!=null){
+			this.className = valueType.getName();
+		}
+		return this;
+	}
+
+	public Topic setTimeUnit(TimeUnit timeUnit) {
+		this.timeUnit = timeUnit;
+		if(timeUnit!=null){
+			this.timeUnitStr = TimeUnitParser.parse(timeUnit);
+		}
+		return this;
+	}
+
+	public boolean isFixed() {
+		return fixed;
+	}
+
+	public Topic setFixed(boolean fixed) {
+		this.fixed = fixed;
+		return this;
+	}
+	
+	
 
 }

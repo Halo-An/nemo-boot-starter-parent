@@ -8,6 +8,9 @@ package com.jimistore.boot.nemo.sliding.window.redis;
  */
 public interface IRedisSyncTask {
 	
-	public void sync();
+	/**
+	 * 同步任务接口
+	 */
+	public default void sync(){};
 
 }

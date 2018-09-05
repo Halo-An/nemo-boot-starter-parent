@@ -14,10 +14,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.jimistore.boot.NemoSlidingWindowStarterApplication;
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
+import com.jimistore.boot.nemo.sliding.window.core.INotice;
 import com.jimistore.boot.nemo.sliding.window.core.INoticeEvent;
-import com.jimistore.boot.nemo.sliding.window.core.ISubscriber;
+import com.jimistore.boot.nemo.sliding.window.core.IWarnSubscriber;
 import com.jimistore.boot.nemo.sliding.window.core.PublishEvent;
 import com.jimistore.boot.nemo.sliding.window.core.SlidingWindowTemplate;
+import com.jimistore.boot.nemo.sliding.window.core.Topic;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes=NemoSlidingWindowStarterApplication.class)
@@ -27,26 +29,42 @@ public class SlidingWindowTest {
 
 	@Test
 	public void test() {
-		String topic = "heabert";
+		String topicKey = "heabert";
 		SlidingWindowTemplate sw = SlidingWindowTemplate
-				.create(new SlidingWindowProperties().setCacheModel(SlidingWindowProperties.CACHE_MODEL_REDIS));
-		sw.createCounter(topic, TimeUnit.SECONDS, 3600, Integer.class);
-		sw.subscribe(new ISubscriber(){
-
-			@Override
-			public void notice(INoticeEvent<?> event) {
-				log.info(String.format("notice %s:%s", event.getTopicKey(), event.getValue()));
-			}
+				.create(new SlidingWindowProperties().setCacheModel(SlidingWindowProperties.CACHE_MODEL_LOCAL));
+		sw.createCounter(new Topic()
+				.setKey(topicKey)
+				.setTimeUnit(TimeUnit.SECONDS)
+				.setCapacity(3600)
+				.setValueType(Integer.class));
+		sw.subscribe(new IWarnSubscriber(){
 
 			@Override
 			public String getTopicMatch() {
-				return "*-order-nums";
+				return "*";
 			}
 
 			@Override
 			public Integer getLength() {
-				return 10;
+				return 1440;
 			}
+
+			@Override
+			public INotice getNotice() {
+				return new INotice(){
+
+					@Override
+					public void notice(INoticeEvent<?> event) {
+						log.info(String.format("notice %s:%s", event.getTopicKey(), event.getValue()));
+					}
+				};
+			}
+
+			@Override
+			public String getCondition() {
+				return "#cur>10";
+			}
+			
 			
 		});
 		
@@ -54,10 +72,10 @@ public class SlidingWindowTest {
 		for(int i=0;i<10000;i++){
 			try {
 				Integer value = 1+new Random().nextInt(9);
-				sw.publish(new PublishEvent<Integer>().setTime(System.currentTimeMillis()).setTopicKey(topic).setValue(value));
-				log.info(String.format("publish %s[%s]", topic, value));
+				sw.publish(new PublishEvent<Integer>().setTime(System.currentTimeMillis()).setTopicKey(topicKey).setValue(value));
+				log.info(String.format("publish %s[%s]", topicKey, value));
 				if(i%10==0){
-					List<List<Integer>> dataList = sw.listWindow(topic, TimeUnit.SECONDS, 3600, Integer.class);
+					List<List<Integer>> dataList = sw.listWindow(topicKey, TimeUnit.SECONDS, 3600, Integer.class);
 					log.info(String.format("window list:%s", dataList));
 				}
 				Thread.sleep(500);

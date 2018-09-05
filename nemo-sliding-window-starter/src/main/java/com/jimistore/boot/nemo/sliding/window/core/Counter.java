@@ -191,7 +191,7 @@ public class Counter<T> implements ICounter<T> {
 		}
 		long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
 		long windowLength = ( this.getCapacity() - times * length  ) / times + 1;
-		if(windowLength<=1){
+		if(windowLength<1){
 			throw new RuntimeException("window's length must be less than counter's capacity");
 		}
 		List<List<E>> dataList = new ArrayList<List<E>>();

@@ -1,7 +1,5 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
-import java.util.concurrent.TimeUnit;
-
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
 import com.jimistore.boot.nemo.sliding.window.handler.IPublishHandler;
 
@@ -19,6 +17,13 @@ public interface IDispatcher {
 	 * @param subscriber
 	 */
 	public IDispatcher subscribe(ISubscriber subscriber);
+	
+	/**
+	 * 退订
+	 * @param subscriber
+	 * @return
+	 */
+	public IDispatcher unsubscribe(ISubscriber subscriber);
 	
 	/**
 	 * 发布计数
@@ -40,13 +45,10 @@ public interface IDispatcher {
 	
 	/**
 	 * 创建计数器
-	 * @param key 容器名称
-	 * @param timeUnit 时间单位
-	 * @param capacity 容量
-	 * @param 数据类型
+	 * @param topic 主题
 	 * @return
 	 */
-	public IDispatcher createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType);
+	public IDispatcher createCounter(Topic topic);
 
 	/**
 	 * 删除计数器

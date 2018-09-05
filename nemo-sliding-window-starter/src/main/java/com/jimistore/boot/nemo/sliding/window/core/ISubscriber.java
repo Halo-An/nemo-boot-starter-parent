@@ -5,10 +5,10 @@ import java.util.concurrent.TimeUnit;
 public interface ISubscriber {
 	
 	/**
-	 * 订阅通知
-	 * @param event
+	 * 获取通知回调
+	 * @return
 	 */
-	public void notice(INoticeEvent<?> event);
+	public INotice getNotice();
 	
 	/**
 	 * 订阅主题的通配符
@@ -24,6 +24,10 @@ public interface ISubscriber {
 		return TimeUnit.SECONDS;
 	}
 	
+	/**
+	 * 值类型
+	 * @return
+	 */
 	public default Class<?> getValueType(){
 		return Integer.class;
 	}

@@ -15,6 +15,7 @@ import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.core.ICounter;
 import com.jimistore.boot.nemo.sliding.window.core.ICounterContainer;
 import com.jimistore.boot.nemo.sliding.window.core.LocalCounterContainer;
+import com.jimistore.boot.nemo.sliding.window.core.Topic;
 
 /**
  * 处理计数器容器的同步
@@ -54,20 +55,24 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ICounterContainer createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
-		if(counterMap.containsKey(key)){
-			throw new ValidatedException(String.format("counter[%s] is exist", key));
+	public ICounterContainer createCounter(Topic topic) {
+		if(counterMap.containsKey(topic.getKey())){
+			throw new ValidatedException(String.format("counter[%s] is exist", topic.getKey()));
 		}
-		RedisCounter<?> counter = RedisCounter.create(slidingWindowProperties, redisTemplate, key, timeUnit, capacity,
-				valueType);
-		counterMap.put(key, counter);
+		RedisCounter<?> counter = RedisCounter.create(slidingWindowProperties, 
+				redisTemplate, 
+				topic.getKey(), 
+				topic.getTimeUnit(), 
+				topic.getCapacity(),
+				topic.getValueType());
+		counterMap.put(topic.getKey(), counter);
 
 		// 同步给redis
-		CounterMsg counterMsg = new CounterMsg().setCapacity(capacity).setKey(key).setClassName(valueType.getName())
-				.setTimeUnit(timeUnit.toString());
+		CounterMsg counterMsg = new CounterMsg().setCapacity(topic.getCapacity()).setKey(topic.getKey()).setClassName(topic.getClassName())
+				.setTimeUnit(topic.getTimeUnitStr());
 
 		try {
-			boolean result = redisTemplate.opsForHash().putIfAbsent(slidingWindowProperties.getRedisContainerKey(), key,
+			boolean result = redisTemplate.opsForHash().putIfAbsent(slidingWindowProperties.getRedisContainerKey(), topic.getKey(),
 					objectMapper.writeValueAsString(counterMsg));
 			if(result){
 				redisTemplate.expire(slidingWindowProperties.getRedisContainerKey(), slidingWindowProperties.getRedisExpired(),

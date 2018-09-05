@@ -2,7 +2,6 @@ package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -143,8 +142,8 @@ public class SlidingWindowTemplate implements IDispatcher, IPublisherContainer, 
 	}
 
 	@Override
-	public SlidingWindowTemplate createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
-		dispatcher.createCounter(key, timeUnit, capacity, valueType);
+	public SlidingWindowTemplate createCounter(Topic topic) {
+		dispatcher.createCounter(topic);
 		return this;
 	}
 
@@ -199,11 +198,6 @@ public class SlidingWindowTemplate implements IDispatcher, IPublisherContainer, 
 	}
 
 	@Override
-	public Set<String> getAllCounterKeys() {
-		return counterContainer.getAllCounterKeys();
-	}
-
-	@Override
 	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
 		return counterContainer.window(key, timeUnit, length, valueType, timestamp);
 	}
@@ -212,5 +206,16 @@ public class SlidingWindowTemplate implements IDispatcher, IPublisherContainer, 
 	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType,
 			long timestamp) {
 		return counterContainer.listWindow(key, timeUnit, length, valueType, timestamp);
+	}
+
+	@Override
+	public Topic getTopic(String topicKey) {
+		return topicContainer.getTopic(topicKey);
+	}
+
+	@Override
+	public IDispatcher unsubscribe(ISubscriber subscriber) {
+		dispatcher.unsubscribe(subscriber);
+		return this;
 	}
 }

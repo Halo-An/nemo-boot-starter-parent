@@ -23,5 +23,11 @@ public interface INoticeStatisticsEvent<T extends Number> extends INoticeEvent<T
 	 * @return
 	 */
 	public T getAvg();
+	
+	/**
+	 * 获取瞬时值
+	 * @return
+	 */
+	public T getCur();
 
 }

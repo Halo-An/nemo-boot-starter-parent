@@ -9,5 +9,11 @@ public interface INoticeEvent<T extends Number> extends IEvent<T> {
 	 * @return
 	 */
 	public List<T> getValue();
+	
+	/**
+	 * 获取事件发生的订阅元数据
+	 * @return
+	 */
+	public ISubscriber getSubscriber();
 
 }

@@ -9,6 +9,8 @@ public class NoticeEvent<T extends Number> implements INoticeEvent<T> {
 	Long time;
 	
 	List<T> value;
+	
+	ISubscriber subscriber;
 
 	public String getTopicKey() {
 		return topicKey;
@@ -36,6 +38,16 @@ public class NoticeEvent<T extends Number> implements INoticeEvent<T> {
 		this.value = value;
 		return this;
 	}
+
+	public ISubscriber getSubscriber() {
+		return subscriber;
+	}
+
+	public NoticeEvent<T> setSubscriber(ISubscriber subscriber) {
+		this.subscriber = subscriber;
+		return this;
+	}
+	
 	
 	
 

@@ -2,6 +2,12 @@ package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.Collection;
 
+/**
+ * topic容器
+ * @author chenqi
+ * @Date 2018年9月4日
+ *
+ */
 public interface ITopicContainer {
 	
 	/**
@@ -23,6 +29,13 @@ public interface ITopicContainer {
 	 * @param topicKey
 	 */
 	public ITopicContainer deleteTopic(String topicKey);
+	
+	/**
+	 * 获取一个topic
+	 * @param topicKey
+	 * @return
+	 */
+	public Topic getTopic(String topicKey);
 	
 	
 

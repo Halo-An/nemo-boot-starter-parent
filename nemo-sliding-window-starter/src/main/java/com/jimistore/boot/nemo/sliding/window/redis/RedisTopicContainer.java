@@ -47,7 +47,7 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 	@Override
 	public ITopicContainer createTopic(Topic topic) {
 		log.debug("request create");
-		if(!topicMap.containsKey(topic)){
+		if(!topicMap.containsKey(topic)&&!topic.isFixed()){
 			try {
 				redisTemplate.opsForHash().put(slidingWindowProperties.getRedisTopicKey(), topic.getKey(), objectMapper.writeValueAsString(topic));
 			} catch (JsonProcessingException e) {
@@ -63,7 +63,9 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 	public ITopicContainer deleteTopic(String topic) {
 		log.debug("request delete");
 		if(topicMap.containsKey(topic)){
-			redisTemplate.opsForHash().delete(slidingWindowProperties.getRedisTopicKey(), topic);
+			if(!topicMap.get(topic).isFixed()){
+				redisTemplate.opsForHash().delete(slidingWindowProperties.getRedisTopicKey(), topic);
+			}
 		}
 		super.deleteTopic(topic);
 		return this;

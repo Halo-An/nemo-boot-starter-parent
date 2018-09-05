@@ -1,13 +1,18 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
@@ -172,50 +177,20 @@ public class Dispatcher implements IDispatcher {
 		return this;
 	}
 	
-	@SuppressWarnings("unchecked")
+	/**
+	 * 核心驱动线程实现
+	 */
 	protected void scheduler(){
 		if(counterContainer==null){
 			return ;
 		}
 		long eventTime = System.currentTimeMillis();
 		try{
-			for(String key:counterContainer.getAllCounterKeys()){
-				List<IChannel> channelSet = channelContainer.match(key);
-				if(channelSet==null){
-					break;
+			for(IChannel channel:channelContainer.listAllChannel()){
+				if(!channel.ready()){
+					continue;
 				}
-				Long now = System.currentTimeMillis();
-				for(IChannel channel:channelSet){
-					if(channel.getNextTime()>now){
-						continue;
-					}
-					ISubscriber subscriber = channel.getSubscriber();
-					Integer interval = subscriber.getInterval();
-					if(interval==null||interval==0){
-						interval = subscriber.getLength();
-					}
-					channel.setNextTime(channel.getNextTime()+subscriber.getTimeUnit().toMillis(interval));
-					List<Number> value = (List<Number>)counterContainer.window(key, subscriber.getTimeUnit(), subscriber.getLength(), subscriber.getValueType());
-					NoticeEvent<Number> event = new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(eventTime);
-					executor.execute(new Runnable(){
-						@Override
-						public void run() {
-							long old = System.currentTimeMillis();
-							try{
-								if(log.isDebugEnabled()){
-									log.debug(String.format("call notice of subscriber[%s] start", key));
-								}
-								subscriber.notice(event);
-							}finally{
-								long diff = System.currentTimeMillis() - old;
-								if(log.isDebugEnabled()){
-									log.debug(String.format("call notice of subscriber[%s] end, cost time is %s", key, diff));
-								}
-							}
-						}
-						
-					});
-				}
+				this.execute(eventTime, channel);
 			}
 		}finally{
 			if(log.isTraceEnabled()){
@@ -224,6 +199,162 @@ public class Dispatcher implements IDispatcher {
 		}
 	}
 	
+	/**
+	 * 解析事件数据
+	 * @param channel
+	 * @param time
+	 * @return
+	 */	
+	protected INoticeEvent<?> parseValue(IChannel channel, Long time){
+		ISubscriber subscriber = channel.getSubscriber();
+		String key = null;
+		List<Number> value = null;
+		
+		//是否是逻辑主体订阅
+		if(subscriber instanceof ILogicSubscriber){
+			ILogicSubscriber logicSubscriber = (ILogicSubscriber) subscriber;
+			key = logicSubscriber.getTopicMatch();
+			value = this.getLogicValue(logicSubscriber);
+		}else{
+			key = channel.getTopicList().get(0);
+			value = this.getValueByBuffered(key, subscriber.getTimeUnit(), subscriber.getLength(), subscriber.getValueType());
+		}
+		NoticeEvent<Number> event = new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(time);
+		//是否是预警订阅
+		if(subscriber instanceof IWarnSubscriber){
+			return new NoticeStatisticsEvent<Number>(event);
+		}
+		return event;
+	}
+
+	/**
+	 * 数据缓冲处理
+	 * @param key
+	 * @param timeUnit
+	 * @param length
+	 * @param valueType
+	 * @param bufferedValueMap
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	protected List<Number> getValueByBuffered(String key, TimeUnit timeUnit, Integer length, Class<?> valueType){
+		//TODO 缺缓冲实现
+		return (List<Number>)counterContainer.window(key, timeUnit, length, valueType);
+	}
+	
+	/**
+	 * 获取逻辑主体的数据处理
+	 * @param logicSubscriber
+	 * @return
+	 */
+	protected List<Number> getLogicValue(ILogicSubscriber logicSubscriber){
+		long old = System.currentTimeMillis();
+		List<Number> valueList = new ArrayList<Number>();
+		try{
+			
+			List<Number> min = null;
+			TimeUnit timeUnit = logicSubscriber.getTimeUnit();
+			Integer length = logicSubscriber.getLength();
+			Class<?> valueType = logicSubscriber.getValueType();
+			Map<String, String> variableMap = logicSubscriber.getTopicVariableMap();
+			Map<String, List<Number>> dataMap = new HashMap<String, List<Number>>();
+			Map<String, Topic> topicMap = new HashMap<String, Topic>();
+			
+			for(Entry<String, String> entry:variableMap.entrySet()){
+				Topic topic = topicContainer.getTopic(entry.getKey());
+				topicMap.put(entry.getKey(), topic);
+				//找出最大的时间单位(小的兼容大的时间单位)
+				if(timeUnit==null || timeUnit.toMillis(1) < topic.getTimeUnit().toMillis(1)){
+					timeUnit = topic.getTimeUnit();
+				}
+			}
+			//读取所有需要参与计算的数据，并找出最少的的数据集，以最小数据集的长度为逻辑数据集的长度
+			for(Entry<String, String> entry:variableMap.entrySet()){
+				List<Number> temp = this.getValueByBuffered(entry.getKey(), timeUnit, length, valueType);
+				if(temp==null){
+					//如果其中有一个数据集是空的，那么返回空的
+					return valueList;
+				}
+				if(min==null||temp.size()<min.size()){
+					min = temp;
+				}
+				dataMap.put(entry.getKey(), temp);
+			}
+			//计算逻辑的
+			for(int i=0;i<min.size();i++){
+				StandardEvaluationContext context = new StandardEvaluationContext();
+				for(Entry<String, String> entry:variableMap.entrySet()){
+					context.setVariable(entry.getValue(), dataMap.get(entry.getKey()).get(i));
+				}
+				Number value = 0;
+				try{
+					value = (Number) this.parseExpression(context, logicSubscriber.getTopicMatch(), valueType);
+				}catch(Exception e){
+					log.error(e.getMessage(), e);
+				}
+				valueList.add(value);
+			}
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			
+		}finally {
+
+			if(log.isTraceEnabled()){
+				log.trace(String.format("get logic topic value , cost time is %s", System.currentTimeMillis() - old));
+			}
+		}
+		
+		return valueList;
+	}
+	
+	
+	/**
+	 * 执行任务
+	 * @param event
+	 * @param subscriber
+	 */
+	protected void execute(Long eventTime, IChannel channel){
+		
+		executor.execute(new Runnable(){
+			@Override
+			public void run() {
+				long old = System.currentTimeMillis();
+				
+				ISubscriber subscriber = channel.getSubscriber();
+				String key = subscriber.getTopicMatch();
+				try{
+					if(log.isDebugEnabled()){
+						log.debug(String.format("call notice of subscriber[%s] start", key));
+					}
+					INoticeEvent<?> event = parseValue(channel, eventTime);
+					
+					//是否做预警判断
+					if(subscriber instanceof IWarnSubscriber){
+						IWarnSubscriber wsub = (IWarnSubscriber) subscriber;
+						StandardEvaluationContext context = getContextByEvent(event);
+						boolean result = parseExpression(context, wsub.getCondition() , Boolean.class);
+						if(!result){
+							return ;
+						}
+					}
+					
+					subscriber.getNotice().notice(event);
+				}catch(Exception e){
+					log.error(e.getMessage(), e);
+				}finally{
+					long diff = System.currentTimeMillis() - old;
+					if(log.isDebugEnabled()){
+						log.debug(String.format("call notice of subscriber[%s] end, cost time is %sms", key, diff));
+					}
+				}
+			}
+			
+		});
+	}
+	
+	/**
+	 * 计数心跳
+	 */
 	public void heartbeat(){
 		this.createQueueTask(new Runnable() {
 			@Override
@@ -236,13 +367,16 @@ public class Dispatcher implements IDispatcher {
 	}
 
 	@Override
-	public IDispatcher createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
+	public IDispatcher createCounter(Topic topic) {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				log.debug(String.format("create counter %s", key));
-				counterContainer.createCounter(key, timeUnit, capacity, valueType);
-				channelContainer.put(key);
+				if(log.isDebugEnabled()){
+					log.debug(String.format("create counter %s", topic.getKey()));
+				}
+				counterContainer.createCounter(topic);
+				topicContainer.createTopic(topic);
+				channelContainer.put(topic.getKey());
 			}
 		});
 		return this;
@@ -274,6 +408,43 @@ public class Dispatcher implements IDispatcher {
 				}
 			}
 		});
+		return this;
+	}
+	
+	/**
+	 * 获取函数spel对应初始化的上下文
+	 * @param joinPoint
+	 * @return
+	 */
+	protected StandardEvaluationContext getContextByEvent(INoticeEvent<?> event){
+		
+		StandardEvaluationContext context = new StandardEvaluationContext();
+		context.setVariable("event", event);
+		if(event instanceof INoticeStatisticsEvent){
+			INoticeStatisticsEvent<?> sevent = (INoticeStatisticsEvent<?>) event;
+			context.setVariable("max", sevent.getMax());
+			context.setVariable("min", sevent.getMin());
+			context.setVariable("sum", sevent.getSum());
+			context.setVariable("avg", sevent.getAvg());			
+			context.setVariable("cur", sevent.getCur());
+		}
+
+		return context;
+	}
+	
+	/**
+	 * spel格式化
+	 * @param context
+	 * @param str
+	 * @return
+	 */
+	protected <T> T parseExpression(StandardEvaluationContext context,String str, Class<T> clazz){
+		return new SpelExpressionParser().parseExpression(str).getValue(context, clazz);
+	}
+
+	@Override
+	public IDispatcher unsubscribe(ISubscriber subscriber) {
+		channelContainer.delete(subscriber);
 		return this;
 	}
 

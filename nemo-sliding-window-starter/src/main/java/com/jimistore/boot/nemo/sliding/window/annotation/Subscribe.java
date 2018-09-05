@@ -19,5 +19,9 @@ public @interface Subscribe {
 	int length() default 300;
 	
 	int interval() default 0;
+	
+	String condition() default "true";
+	
+	Class<?> valueType() default Integer.class;
 
 }

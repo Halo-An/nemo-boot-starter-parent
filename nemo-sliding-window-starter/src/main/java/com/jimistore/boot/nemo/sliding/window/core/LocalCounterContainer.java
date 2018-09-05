@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -40,13 +39,13 @@ public class LocalCounterContainer implements ICounterContainer {
 	}
 
 	@Override
-	public ICounterContainer createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType) {
+	public ICounterContainer createCounter(Topic topic) {
 
-		if(counterMap.containsKey(key)){
-			throw new ValidatedException(String.format("counter[%s] is exist", key));
+		if(counterMap.containsKey(topic.getKey())){
+			throw new ValidatedException(String.format("counter[%s] is exist", topic.getKey()));
 		}
-		ICounter<?> counter = Counter.create(key, timeUnit, capacity, valueType);
-		counterMap.put(key, counter);
+		ICounter<?> counter = Counter.create(topic.getKey(), topic.getTimeUnit(), topic.getCapacity(), topic.getValueType());
+		counterMap.put(topic.getKey(), counter);
 		
 		return this;
 	}
@@ -72,13 +71,6 @@ public class LocalCounterContainer implements ICounterContainer {
 	public void heartbeat(){
 		for(Entry<String, ICounter<?>> entry:counterMap.entrySet()){
 			entry.getValue().heartbeat();
-		}
-	}
-
-	@Override
-	public Set<String> getAllCounterKeys() {
-		synchronized (counterMap) {
-			return counterMap.keySet();
 		}
 	}
 

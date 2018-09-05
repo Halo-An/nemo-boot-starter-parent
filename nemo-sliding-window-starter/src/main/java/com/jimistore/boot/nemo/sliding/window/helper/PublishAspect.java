@@ -63,10 +63,9 @@ public class PublishAspect {
 				String key = this.parseExpression(context, topic.getKey(), String.class);
 				boolean condition = this.parseExpression(context, topic.getCondition(), Boolean.class);
 				int num = this.parseExpression(context, topic.getNum(), Integer.class);
-				Class<?> valueType = Class.forName(topic.getClassName());
 				
 				log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.getCondition(), condition, result, throwable));
-				publisherHelper.createCounter(key, TimeUnitParser.parse(topic.getTimeUnit()), topic.getCapacity(), valueType);
+				publisherHelper.createCounter(topic);
 				if(condition){
 					log.debug(String.format("publish counter %s", key));
 					publisherHelper.publish(new PublishEvent<Integer>()
@@ -131,14 +130,7 @@ public class PublishAspect {
 		List<Topic> topicList = new ArrayList<Topic>();
 		Publish publish = AnnotationUtil.getAnnotation(method, Publish.class);
 		for(com.jimistore.boot.nemo.sliding.window.annotation.Topic topic:publish.value()){
-			topicList.add(new Topic()
-					.setKey(topic.value())
-					.setTimeUnit(TimeUnitParser.parse(topic.timeUnit()))
-					.setCapacity(topic.capacity())
-					.setCondition(topic.condition())
-					.setNum(topic.num())
-					.setClassName(topic.valueType().getName())
-					);
+			topicList.add(Topic.from(topic));
 		}
 		
 		if(publisherHelper!=null){

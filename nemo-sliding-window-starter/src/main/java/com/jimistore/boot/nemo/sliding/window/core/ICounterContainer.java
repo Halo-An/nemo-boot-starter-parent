@@ -1,7 +1,6 @@
 package com.jimistore.boot.nemo.sliding.window.core;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public interface ICounterContainer {
@@ -13,13 +12,10 @@ public interface ICounterContainer {
 	
 	/**
 	 * 创建计数器
-	 * @param key 容器名称
-	 * @param timeUnit 时间单位
-	 * @param capacity 容量
-	 * @param 数据类型
+	 * @param topic 主题
 	 * @return
 	 */
-	public ICounterContainer createCounter(String key, TimeUnit timeUnit, Integer capacity, Class<?> valueType);
+	public ICounterContainer createCounter(Topic topic);
 	
 	/**
 	 * 删除计数器
@@ -37,12 +33,6 @@ public interface ICounterContainer {
 	 * @return
 	 */
 	public ICounterContainer publish(IPublishEvent<?> event);
-	
-	/**
-	 * 获取所有key
-	 * @return
-	 */
-	public Set<String> getAllCounterKeys();
 	
 	/**
 	 * 获取窗口的数据
