@@ -8,6 +8,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQDataSource;
 import com.jimistore.boot.nemo.mq.core.helper.AsynExecuter;
@@ -21,7 +24,11 @@ public class NemoMQCoreConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(ObjectMapper.class)
 	public ObjectMapper ObjectMapper(){
-		return new ObjectMapper();
+		ObjectMapper om = new ObjectMapper();
+		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+		return om;
 	}
 	
 	@Bean
