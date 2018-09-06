@@ -333,7 +333,7 @@ public class Dispatcher implements IDispatcher {
 						IWarnSubscriber wsub = (IWarnSubscriber) subscriber;
 						StandardEvaluationContext context = getContextByEvent(event);
 						boolean result = parseExpression(context, wsub.getCondition() , Boolean.class);
-						if(!result){
+						if(wsub.isOnlyNoticeWarn()&&!result){
 							return ;
 						}
 					}

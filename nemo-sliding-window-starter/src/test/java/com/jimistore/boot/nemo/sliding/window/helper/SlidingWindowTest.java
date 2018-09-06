@@ -75,7 +75,7 @@ public class SlidingWindowTest {
 				sw.publish(new PublishEvent<Integer>().setTime(System.currentTimeMillis()).setTopicKey(topicKey).setValue(value));
 				log.info(String.format("publish %s[%s]", topicKey, value));
 				if(i%10==0){
-					List<List<Integer>> dataList = sw.listWindow(topicKey, TimeUnit.SECONDS, 3600, Integer.class);
+					List<Integer> dataList = sw.window(topicKey, TimeUnit.SECONDS, 3600, Integer.class);
 					log.info(String.format("window list:%s", dataList));
 				}
 				Thread.sleep(500);

@@ -4,16 +4,22 @@ import java.util.List;
 
 import com.jimistore.boot.nemo.sliding.window.helper.NumberUtil;
 
-public class NoticeStatisticsEvent<T extends Number> implements INoticeStatisticsEvent<T> {
-	
-	private INoticeEvent<T> noticeEvent;
-	
+public class NoticeStatisticsEvent<T extends Number> extends NoticeEvent<T> implements INoticeStatisticsEvent<T>, INoticeWarnEvent<T> {
+		
 	private T min,max,sum,avg,cur;
+	
+	private boolean warn;
 	
 	@SuppressWarnings("unchecked")
 	public NoticeStatisticsEvent(INoticeEvent<T> noticeEvent){
-		this.noticeEvent = noticeEvent;
+		NoticeEvent<T> event = (NoticeEvent<T>) noticeEvent;
+		
+		this.setSubscriber(event.getSubscriber())
+		.setTopicKey(event.getTopicKey())
+		.setValue(event.getValue())
+		.setTime(event.getTime());
 		List<T> list = noticeEvent.getValue();
+		
 		for(T t:list){
 			if(min==null){
 				min=t;
@@ -32,24 +38,6 @@ public class NoticeStatisticsEvent<T extends Number> implements INoticeStatistic
 		}
 		cur = list.get(0);
 		avg = (T) NumberUtil.except(sum, list.size());
-	}
-
-	@Override
-	public String getTopicKey() {
-		
-		return noticeEvent.getTopicKey();
-	}
-
-	@Override
-	public Long getTime() {
-		
-		return noticeEvent.getTime();
-	}
-
-	@Override
-	public List<T> getValue() {
-		
-		return noticeEvent.getValue();
 	}
 
 	@Override
@@ -80,9 +68,13 @@ public class NoticeStatisticsEvent<T extends Number> implements INoticeStatistic
 		return cur;
 	}
 
-	@Override
-	public ISubscriber getSubscriber() {
-		return noticeEvent.getSubscriber();
+	public boolean isWarn() {
+		return warn;
+	}
+
+	public NoticeStatisticsEvent<T> setWarn(boolean warn) {
+		this.warn = warn;
+		return this;
 	}
 	
 	 

@@ -51,26 +51,5 @@ public interface ICounterContainer {
 	 */
 	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp);
 
-	/**
-	 * 获取所有窗口的数据
-	 * @param key
-	 * @param timeUnit
-	 * @param length
-	 * @param valueType
-	 * @return
-	 */
-	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType);
-
-	/**
-	 * 根据时间获取所有窗口的数据
-	 * @param key
-	 * @param timeUnit
-	 * @param length
-	 * @param valueType
-	 * @param timestamp
-	 * @return
-	 */
-	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp);
-
 	
 }

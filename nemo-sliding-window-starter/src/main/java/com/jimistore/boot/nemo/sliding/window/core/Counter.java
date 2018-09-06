@@ -178,32 +178,4 @@ public class Counter<T> implements ICounter<T> {
 		NumberUtil.checkType(valueType);
 		return this;
 	}
-
-	@Override
-	public <E> List<List<E>> listWindow(TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return this.listWindow(this.valueMap, timeUnit, length, valueType, System.currentTimeMillis());
-	}
-	
-	public <E> List<List<E>> listWindow(Map<Long, Number> dataMap, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
-		this.checkType(valueType);
-		if(timeUnit.toMillis(1)>this.timeUnit.toMillis(1)){
-			throw new RuntimeException("window's timeUnit can not exceed counter's timeUnit");
-		}
-		long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
-		long windowLength = ( this.getCapacity() - times * length  ) / times + 1;
-		if(windowLength<1){
-			throw new RuntimeException("window's length must be less than counter's capacity");
-		}
-		List<List<E>> dataList = new ArrayList<List<E>>();
-		for(int i=0;i<windowLength;i++){
-			long offset = i*times;
-			dataList.add(this.window(dataMap, timeUnit, length, valueType, timestamp, offset));
-		}
-		return dataList;
-	}
-	
-	public <E> List<List<E>> listWindow(TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
-		
-		return this.listWindow(this.valueMap, timeUnit, length, valueType, timestamp);
-	}
 }

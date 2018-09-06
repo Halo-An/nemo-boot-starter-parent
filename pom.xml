@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.8.13-RELEASE</version>
+	<version>1.8.14-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -62,7 +62,7 @@
 		<nemo.monitor.server.version>1.4.0-RELEASE</nemo.monitor.server.version>
 		<nemo.rpc.eureka.server.version>1.4.0-RELEASE</nemo.rpc.eureka.server.version>
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
-		<nemo.sliding.window.version>1.8.10-RELEASE</nemo.sliding.window.version>
+		<nemo.sliding.window.version>1.8.14-RELEASE</nemo.sliding.window.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>

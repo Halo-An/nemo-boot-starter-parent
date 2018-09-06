@@ -81,22 +81,9 @@ public class LocalCounterContainer implements ICounterContainer {
 	}
 
 	@Override
-	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		ICounter<?> counter = this.getCounterByKey(key);
-		return counter.listWindow(timeUnit, length, valueType);
-	}
-
-	@Override
 	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
 		ICounter<?> counter = this.getCounterByKey(key);
 		return counter.window(timeUnit, length, valueType, timestamp);
-	}
-
-	@Override
-	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType,
-			long timestamp) {
-		ICounter<?> counter = this.getCounterByKey(key);
-		return counter.listWindow(timeUnit, length, valueType, timestamp);
 	}
 	
 }

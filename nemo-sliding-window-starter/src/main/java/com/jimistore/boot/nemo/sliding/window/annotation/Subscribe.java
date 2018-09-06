@@ -18,7 +18,9 @@ public @interface Subscribe {
 	
 	int length() default 300;
 	
-	int interval() default 0;
+	long interval() default 0;
+	
+	long start() default 0;
 	
 	String condition() default "true";
 	

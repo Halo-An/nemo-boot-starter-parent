@@ -164,11 +164,6 @@ public class SlidingWindowTemplate implements IDispatcher, IPublisherContainer, 
 	}
 
 	@Override
-	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType) {
-		return counterContainer.listWindow(key, timeUnit, length, valueType);
-	}
-
-	@Override
 	public Collection<Publisher> listPublisher() {
 		return publisherContainer.listPublisher();
 	}
@@ -200,12 +195,6 @@ public class SlidingWindowTemplate implements IDispatcher, IPublisherContainer, 
 	@Override
 	public <E> List<E> window(String key, TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
 		return counterContainer.window(key, timeUnit, length, valueType, timestamp);
-	}
-
-	@Override
-	public <E> List<List<E>> listWindow(String key, TimeUnit timeUnit, Integer length, Class<E> valueType,
-			long timestamp) {
-		return counterContainer.listWindow(key, timeUnit, length, valueType, timestamp);
 	}
 
 	@Override

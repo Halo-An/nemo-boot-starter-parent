@@ -39,11 +39,19 @@ public interface ISubscriber {
 	public Integer getLength();
 	
 	/**
-	 * 订阅间隔
+	 * 订阅间隔(单位为毫秒)
 	 * @return
 	 */
-	public default Integer getInterval(){
-		return 0;
+	public default Long getInterval(){
+		return 0l;
+	}
+	
+	/**
+	 * 订阅开始时间(单位为毫秒)
+	 * @return
+	 */
+	public default Long getStart(){
+		return 0l;
 	}
 	
 

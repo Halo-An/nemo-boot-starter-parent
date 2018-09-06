@@ -14,11 +14,6 @@ public class Channel implements IChannel, Comparable<Channel> {
 		return nextTime;
 	}
 
-	public Channel setNextTime(Long nextTime) {
-		this.nextTime = nextTime;
-		return this;
-	}
-
 	@Override
 	public int compareTo(Channel o) {
 		if(nextTime>o.getNextTime()){
@@ -33,14 +28,24 @@ public class Channel implements IChannel, Comparable<Channel> {
 	public boolean ready() {
 		Long now = System.currentTimeMillis();
 		if(now>nextTime){
-			Integer interval = subscriber.getInterval();
-			if(interval==null||interval==0){
-				interval = subscriber.getLength();
-			}
-			nextTime = nextTime + subscriber.getTimeUnit().toMillis(interval);
+			Long interval = this.getInterval();
+			nextTime = nextTime + interval;
 			return true;
 		}
-		return false;
+ 		return false;
+	}
+	
+	/**
+	 * 通道执行间隔
+	 * @return
+	 */
+	public Long getInterval(){
+		Long interval = subscriber.getInterval();
+		if(interval==null||interval<=0){
+			interval = subscriber.getLength() * subscriber.getTimeUnit().toMillis(1);
+		}
+		return interval;
+		
 	}
 
 	public ISubscriber getSubscriber() {
@@ -49,6 +54,7 @@ public class Channel implements IChannel, Comparable<Channel> {
 
 	public Channel setSubscriber(ISubscriber subscriber) {
 		this.subscriber = subscriber;
+		this.nextTime = this.getStartTime();
 		return this;
 	}
 
@@ -60,6 +66,25 @@ public class Channel implements IChannel, Comparable<Channel> {
 		this.topicList = topicList;
 		return this;
 	}
-
+	
+	/**
+	 * 获取通道的开始时间
+	 * @param subscriber
+	 * @return
+	 */
+	protected long getStartTime(){
+		if(subscriber.getStart()!=null&&subscriber.getStart()>0){
+			return subscriber.getStart();
+		}
+		long now = System.currentTimeMillis();
+		long unitTime = subscriber.getTimeUnit().toMillis(1);
+		
+		long time = now - now % unitTime;
+		while(time < now){
+			time = time + this.getInterval();
+		}
+		
+		return time;
+	}
 	
 }

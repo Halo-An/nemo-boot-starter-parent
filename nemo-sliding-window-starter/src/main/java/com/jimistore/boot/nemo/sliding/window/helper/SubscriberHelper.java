@@ -39,8 +39,13 @@ public class SubscriberHelper {
 			}
 
 			@Override
-			public Integer getInterval() {
+			public Long getInterval() {
 				return subscribe.interval();
+			}
+
+			@Override
+			public Long getStart() {
+				return subscribe.start();
 			}
 
 			@Override

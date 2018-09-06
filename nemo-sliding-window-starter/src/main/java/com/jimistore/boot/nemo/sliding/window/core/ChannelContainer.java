@@ -35,8 +35,7 @@ public class ChannelContainer implements IChannelContainer {
 				topicKeyList.addAll(logicSubscriber.getTopicVariableMap().keySet());
 				channelList.add(new Channel()
 						.setSubscriber(subscriber)
-						.setTopicList(topicList)
-						.setNextTime(this.getNextTime(subscriber)));
+						.setTopicList(topicList));
 			}else{
 				for(String key:topicList){
 					if(!this.match(key, subscriber.getTopicMatch())){
@@ -47,8 +46,7 @@ public class ChannelContainer implements IChannelContainer {
 					topicList.add(key);
 					channelList.add(new Channel()
 							.setSubscriber(subscriber)
-							.setTopicList(topicKeyList)
-							.setNextTime(this.getNextTime(subscriber)));
+							.setTopicList(topicKeyList));
 				
 				}
 			}
@@ -72,8 +70,7 @@ public class ChannelContainer implements IChannelContainer {
 					topicKeyList.add(topic);
 					Channel channel = new Channel()
 					.setSubscriber(subscriber)
-					.setTopicList(topicKeyList)
-					.setNextTime(this.getNextTime(subscriber));
+					.setTopicList(topicKeyList);
 					channelList.add(channel);
 					
 					if(log.isDebugEnabled()){
@@ -85,13 +82,6 @@ public class ChannelContainer implements IChannelContainer {
 		}
 		
 		return this;
-	}
-	
-	private long getNextTime(ISubscriber subscriber){
-		long time = System.currentTimeMillis();
-		long unitTime = subscriber.getTimeUnit().toMillis(1);
-		
-		return time + unitTime - time % unitTime;
 	}
 	
 	protected boolean match(String key, String topicMatch){
