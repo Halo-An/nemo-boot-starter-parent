@@ -18,6 +18,10 @@ public class NoticeStatisticsEvent<T extends Number> extends NoticeEvent<T> impl
 		.setTopicKey(event.getTopicKey())
 		.setValue(event.getValue())
 		.setTime(event.getTime());
+		
+		if(noticeEvent instanceof INoticeWarnEvent){
+			this.setWarn(((INoticeWarnEvent<?>)noticeEvent).isWarn());
+		}
 		List<T> list = noticeEvent.getValue();
 		
 		for(T t:list){
