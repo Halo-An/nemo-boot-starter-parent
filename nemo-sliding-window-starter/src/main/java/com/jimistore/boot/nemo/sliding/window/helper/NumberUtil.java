@@ -113,8 +113,12 @@ public class NumberUtil {
 	
 	
 	
-	public static Number parse(String number, Class<?> valueType){
-		if(number==null||number.trim().length()==0){
+	public static Number parse(Object obj, Class<?> valueType){
+		if(obj==null){
+			return null;
+		}
+		String number = obj.toString();
+		if(number.trim().length()==0){
 			return null;
 		}
 		if(valueType.equals(Double.class)){

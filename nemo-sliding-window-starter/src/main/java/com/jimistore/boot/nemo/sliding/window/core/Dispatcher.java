@@ -17,6 +17,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.handler.INoticeHandler;
 import com.jimistore.boot.nemo.sliding.window.handler.IPublishHandler;
+import com.jimistore.boot.nemo.sliding.window.helper.NoticeEventHelper;
 
 /**
  * 调度器
@@ -218,6 +219,8 @@ public class Dispatcher implements IDispatcher {
 		}else{
 			key = channel.getTopicList().get(0);
 			value = this.getValueByBuffered(key, subscriber.getTimeUnit(), subscriber.getLength(), subscriber.getValueType());
+			//合并二级窗口
+			value = NoticeEventHelper.mergeWindow(value, subscriber.getSecondWindowLength());
 		}
 		NoticeEvent<Number> event = new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(time);
 		//是否是预警订阅
@@ -253,24 +256,20 @@ public class Dispatcher implements IDispatcher {
 		try{
 			
 			List<Number> min = null;
-			TimeUnit timeUnit = logicSubscriber.getTimeUnit();
-			Integer length = logicSubscriber.getLength();
 			Class<?> valueType = logicSubscriber.getValueType();
 			Map<String, String> variableMap = logicSubscriber.getTopicVariableMap();
 			Map<String, List<Number>> dataMap = new HashMap<String, List<Number>>();
-			Map<String, Topic> topicMap = new HashMap<String, Topic>();
 			
+			//读取所有需要参与计算的数据
 			for(Entry<String, String> entry:variableMap.entrySet()){
-				Topic topic = topicContainer.getTopic(entry.getKey());
-				topicMap.put(entry.getKey(), topic);
-				//找出最大的时间单位(小的兼容大的时间单位)
-				if(timeUnit==null || timeUnit.toMillis(1) < topic.getTimeUnit().toMillis(1)){
-					timeUnit = topic.getTimeUnit();
+				if(valueType==null){
+					Topic topic = topicContainer.getTopic(entry.getKey());
+					valueType = topic.getValueType();
 				}
-			}
-			//读取所有需要参与计算的数据，并找出最少的的数据集，以最小数据集的长度为逻辑数据集的长度
-			for(Entry<String, String> entry:variableMap.entrySet()){
-				List<Number> temp = this.getValueByBuffered(entry.getKey(), timeUnit, length, valueType);
+				List<Number> temp = this.getValueByBuffered(entry.getKey(), logicSubscriber.getTimeUnit(), logicSubscriber.getLength() + logicSubscriber.getSecondWindowLength() -1, valueType);
+
+				//合并二级窗口
+				temp = NoticeEventHelper.mergeWindow(temp, logicSubscriber.getSecondWindowLength());
 				if(temp==null){
 					//如果其中有一个数据集是空的，那么返回空的
 					return valueList;

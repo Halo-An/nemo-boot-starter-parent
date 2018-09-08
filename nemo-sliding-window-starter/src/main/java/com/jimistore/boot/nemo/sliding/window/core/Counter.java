@@ -101,8 +101,8 @@ public class Counter<T> implements ICounter<T> {
 			if(dataMap==null||dataMap.size()==0){
 				throw new ValidateException(String.format("no data[%s] can be find", key));
 			}
-			if(timeUnit.toMillis(1)>this.timeUnit.toMillis(1)){
-				throw new RuntimeException("window's timeUnit can not exceed counter's timeUnit ");
+			if(timeUnit.toMillis(1)<this.timeUnit.toMillis(1)){
+				throw new RuntimeException("window's timeUnit can not less than counter's timeUnit ");
 			}
 			List<E> dataList = new ArrayList<E>();
 			long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
@@ -111,7 +111,7 @@ public class Counter<T> implements ICounter<T> {
 			index = index - offset/times;
 			long cursor = index;
 			for(int i=0;i<length;i++){
-				Number value = 0;
+				Number value = NumberUtil.parse(0, valueType);
 				for(int j=0;j<times;j++){
 					cursor--;
 					if(cursor<0){
@@ -121,7 +121,7 @@ public class Counter<T> implements ICounter<T> {
 					if(cursor==index){
 						break;
 					}
-					value = NumberUtil.add(value, dataMap.get(cursor));
+					value = NumberUtil.add(value, NumberUtil.parse(dataMap.get(cursor), valueType));
 					if(value==null){
 						value=0;
 					}

@@ -54,5 +54,13 @@ public interface ISubscriber {
 		return 0l;
 	}
 	
+	/**
+	 * 订阅的二级窗口长度
+	 * @return
+	 */
+	public default Integer getSecondWindowLength(){
+		return 1;
+	}
+	
 
 }
