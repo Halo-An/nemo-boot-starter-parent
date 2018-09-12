@@ -3,13 +3,11 @@ package com.jimistore.boot.nemo.mq.rocketmq.adapter;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jimistore.boot.nemo.mq.core.adapter.IMQProperties;
-
-public class RocketMQProperties implements IMQProperties {
+public class RocketMQProperties {
 	
 	String type;
 	
-	String key;
+	String key="normal";
 	
 	String url;
 	

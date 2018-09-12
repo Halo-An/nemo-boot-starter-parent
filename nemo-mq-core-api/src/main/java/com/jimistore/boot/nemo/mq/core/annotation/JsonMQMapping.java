@@ -22,5 +22,9 @@ public @interface JsonMQMapping {
 	String tag() default DEFAULT_TAG;
 	
 	String delay() default "0";
+	
+	String key() default "";
+	
+	String shardingKey() default "";
 
 }

@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.8.16-RELEASE</version>
+	<version>1.8.20-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -32,7 +32,7 @@
 	<parent>
 		<groupId>com.cq</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.3.18-RELEASE</version>
+		<version>1.3.19-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -48,12 +48,12 @@
 		<nemo.core.api.version>1.4.3-RELEASE</nemo.core.api.version>
 		<nemo.core.version>1.4.0-RELEASE</nemo.core.version>
 		<nemo.dao.api.version>1.7.2-RELEASE</nemo.dao.api.version>
-		<nemo.dao.hibernate.version>1.8.8-RELEASE</nemo.dao.hibernate.version>
-		<nemo.mq.core.api.version>1.8.7-RELEASE</nemo.mq.core.api.version>
-		<nemo.mq.core.version>1.8.13-RELEASE</nemo.mq.core.version>
-		<nemo.mq.activemq.version>1.8.0-RELEASE</nemo.mq.activemq.version>
-		<nemo.mq.rabbitmq.version>1.8.0-RELEASE</nemo.mq.rabbitmq.version>
-		<nemo.mq.rocketmq.version>1.8.3-RELEASE</nemo.mq.rocketmq.version>
+		<nemo.dao.hibernate.version>1.8.19-RELEASE</nemo.dao.hibernate.version>
+		<nemo.mq.core.api.version>1.8.20-RELEASE</nemo.mq.core.api.version>
+		<nemo.mq.core.version>1.8.20-RELEASE</nemo.mq.core.version>
+		<nemo.mq.activemq.version>1.8.20-RELEASE</nemo.mq.activemq.version>
+		<nemo.mq.rabbitmq.version>1.8.20-RELEASE</nemo.mq.rabbitmq.version>
+		<nemo.mq.rocketmq.version>1.8.20-RELEASE</nemo.mq.rocketmq.version>
 		<nemo.rpc.eureka.api.version>1.4.0-RELEASE</nemo.rpc.eureka.api.version>
 		<nemo.rpc.eureka.version>1.4.0-RELEASE</nemo.rpc.eureka.version>
 		<nemo.lock.version>1.5.4-RELEASE</nemo.lock.version>
@@ -62,7 +62,7 @@
 		<nemo.monitor.server.version>1.4.0-RELEASE</nemo.monitor.server.version>
 		<nemo.rpc.eureka.server.version>1.4.0-RELEASE</nemo.rpc.eureka.server.version>
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
-		<nemo.sliding.window.version>1.8.16-RELEASE</nemo.sliding.window.version>
+		<nemo.sliding.window.version>1.8.18-RELEASE</nemo.sliding.window.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>

@@ -375,8 +375,8 @@ public class Dispatcher implements IDispatcher {
 					log.debug(String.format("create counter %s", topic.getKey()));
 				}
 				counterContainer.createCounter(topic);
-				topicContainer.createTopic(topic);
 				channelContainer.put(topic.getKey());
+				topicContainer.createTopic(topic);
 			}
 		});
 		return this;

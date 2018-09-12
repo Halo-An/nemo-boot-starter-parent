@@ -13,6 +13,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.remoting.support.RemoteAccessor;
+import org.springframework.util.StringUtils;
 
 import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -90,9 +91,20 @@ public class MQSenderProxy extends RemoteAccessor implements IMQSender,MethodInt
 		
 		StandardEvaluationContext context = SpelUtil.getContextByProceedingJoinPoint(invocation);
 		Long delayTime = SpelUtil.parseExpression(context, destination.delay(), Long.class);
+		String key = destination.key();
+		String shardingKey = destination.shardingKey();
+		if(!StringUtils.isEmpty(key)){
+			key = SpelUtil.parseExpression(context, key, String.class);
+		}
+		if(!StringUtils.isEmpty(shardingKey)){
+			shardingKey = SpelUtil.parseExpression(context, shardingKey, String.class);
+		}
+				
 		MQMessage msg = new MQMessage()
 				.setQueueType(destination.type())
 				.setmQName(mQName)
+				.setKey(key)
+				.setShardingKey(shardingKey)
 				.setTag(destination.tag())
 				.setDelayTime(delayTime)
 				.setContent(msgStr);

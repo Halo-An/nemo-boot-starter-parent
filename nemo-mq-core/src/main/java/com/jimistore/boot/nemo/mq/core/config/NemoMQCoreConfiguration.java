@@ -20,14 +20,6 @@ import com.jimistore.boot.nemo.mq.core.helper.MQNameHelper;
 public class NemoMQCoreConfiguration {
 	
 	@Bean
-	@ConditionalOnMissingBean(ObjectMapper.class)
-	public ObjectMapper ObjectMapper(){
-		ObjectMapper om = new ObjectMapper();
-		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		return om;
-	}
-	
-	@Bean
 	@ConditionalOnMissingBean(AsynExecuter.class)
 	public AsynExecuter AsynExecuter(){
 		return new AsynExecuter().setCapacity(5);
@@ -44,13 +36,15 @@ public class NemoMQCoreConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(MQCoreClient.class)
 	@ConditionalOnBean({IMQDataSource.class, ObjectMapper.class, AsynExecuter.class})
-	public MQCoreClient MQClient(List<MQDataSourceGroup> mQDataSourceGroupList, ObjectMapper objectMapper, AsynExecuter asynExecuter, MQNameHelper mQNameHelper){
+	public MQCoreClient MQClient(List<MQDataSourceGroup> mQDataSourceGroupList, AsynExecuter asynExecuter, MQNameHelper mQNameHelper){
 		List<IMQDataSource> mQDataSourceList = new ArrayList<IMQDataSource>();
 		for(MQDataSourceGroup mQDataSourceGroup:mQDataSourceGroupList){
 			if(mQDataSourceGroup.getDataSourceList()!=null){
 				mQDataSourceList.addAll(mQDataSourceGroup.getDataSourceList());
 			}
 		}
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		return new MQCoreClient()
 				.setmQNameHelper(mQNameHelper)
 				.setmQDataSourceList(mQDataSourceList)

@@ -99,7 +99,11 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
 				if(log.isDebugEnabled()){
 					log.debug(String.format("create publisher[%s]", entry.getValue().getName()));
 				}
-        		publisherHelper.createPublisher(entry.getValue());
+				try{
+					publisherHelper.createPublisher(entry.getValue());
+				}catch(Exception e){
+					log.warn(e.getMessage(), e);
+				}
         	}
     	}
     	

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.util.StringUtils;
 
 import com.aliyun.openservices.ons.api.Action;
 import com.aliyun.openservices.ons.api.ConsumeContext;
@@ -16,11 +17,17 @@ import com.aliyun.openservices.ons.api.MessageListener;
 import com.aliyun.openservices.ons.api.ONSFactory;
 import com.aliyun.openservices.ons.api.Producer;
 import com.aliyun.openservices.ons.api.PropertyKeyConst;
+import com.aliyun.openservices.ons.api.order.ConsumeOrderContext;
+import com.aliyun.openservices.ons.api.order.MessageOrderListener;
+import com.aliyun.openservices.ons.api.order.OrderAction;
+import com.aliyun.openservices.ons.api.order.OrderConsumer;
+import com.aliyun.openservices.ons.api.order.OrderProducer;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQAdapter;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQReceiver;
 import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
+import com.jimistore.boot.nemo.mq.rocketmq.enums.RocketMQType;
 
-public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener {
+public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener,MessageOrderListener {
 	
 	private static final Logger log = Logger.getLogger(RocketAdapter.class);
 	
@@ -28,7 +35,13 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 	
 	Producer producer;
 	
+	OrderProducer orderProducer;
+	
 	Consumer consumer;
+	
+	OrderConsumer orderConsumer;
+	
+	RocketMQType type;
 	
 	Map<String, Map<String, IMQReceiver>> receiverMap = new HashMap<String, Map<String, IMQReceiver>>();
 
@@ -46,6 +59,8 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
         properties.put(PropertyKeyConst.SecretKey, rocketMQProperties.getPassword());
         // 设置 TCP 接入域名（此处以公共云生产环境为例）
         properties.put(PropertyKeyConst.ONSAddr, rocketMQProperties.getUrl());
+        
+        type = RocketMQType.parse(rocketMQProperties.getType());
 
         if(rocketMQProperties.getProducerId()!=null){
     		log.debug("create rocketmq producer");
@@ -53,7 +68,15 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
             properties.put(PropertyKeyConst.ProducerId, rocketMQProperties.getProducerId());
             //设置发送超时时间，单位毫秒
             properties.setProperty(PropertyKeyConst.SendMsgTimeoutMillis, rocketMQProperties.getSendTimeOut().toString());
-            producer = ONSFactory.createProducer(properties);
+           
+            switch(type){
+            	case ORDER:
+            		orderProducer = ONSFactory.createOrderProducer(properties);
+            		break;
+            	default :
+            		producer = ONSFactory.createProducer(properties);
+            		break;
+            }
 			producer.start();
     		log.debug("rocketmq producer created");
         }
@@ -62,7 +85,15 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 			log.debug("create rocketmq consumer");
 	        // 您在控制台创建的 Consumer ID
 	        properties.put(PropertyKeyConst.ConsumerId, rocketMQProperties.getConsumerId());
-	        consumer = ONSFactory.createConsumer(properties);
+	        
+            switch(type){
+            	case ORDER:
+        	        orderConsumer = ONSFactory.createOrderedConsumer(properties);
+            		break;
+            	default :
+        	        consumer = ONSFactory.createConsumer(properties);
+            		break;
+            }
 			consumer.start();
 			log.debug("rocketmq rocketmq created");
 			
@@ -92,7 +123,10 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 		if(message.getDelayTime()>0){
 			msg.setStartDeliverTime(System.currentTimeMillis()+message.getDelayTime());
 		}
-		producer.send(msg);
+		if(!StringUtils.isEmpty(message.getKey())){
+			msg.setKey(message.getKey());
+		}
+		this.send(msg, message.getShardingKey());
 	}
 	
 	@Override
@@ -114,7 +148,14 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 			}
 			tags.append(tag);
 		}
-		consumer.subscribe(mQReceiver.getmQName(), tags.toString(), this);
+		switch(type){
+	    	case ORDER:
+	    		orderConsumer.subscribe(mQReceiver.getmQName(), tags.toString(), this);
+	    		break;
+	    	default :
+	    		consumer.subscribe(mQReceiver.getmQName(), tags.toString(), this);
+	    		break;
+	    }
 	}
 	
 	@Override
@@ -138,9 +179,36 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 			mQReceiver.receive(new String(message.getBody()));
 			return Action.CommitMessage;
 		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		}
 		return Action.ReconsumeLater;
+	}
+
+	@Override
+	public OrderAction consume(Message message, ConsumeOrderContext context) {
+		try {
+			IMQReceiver mQReceiver = receiverMap.get(message.getTopic()).get(message.getTag());
+			mQReceiver.receive(new String(message.getBody()));
+			return OrderAction.Success;
+		} catch (Throwable e) {
+			log.error(e.getMessage(), e);
+		}
+		return OrderAction.Suspend;
+	}
+	
+	private void send(Message msg, String shardingKey){
+		
+		switch(type){
+	    	case ORDER:
+	    		if(shardingKey==null){
+	    			shardingKey="";
+	    		}
+	    		orderProducer.send(msg, shardingKey);
+	    		break;
+	    	default :
+	    		producer.send(msg);
+	    		break;
+	    }
+		
 	}
 }

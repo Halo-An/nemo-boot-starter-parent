@@ -28,6 +28,16 @@ public class MQMessage {
 	 * 延时时间
 	 */
 	private long delayTime;
+	
+	/**
+	 * 消息标识
+	 */
+	private String key;
+	
+	/**
+	 * 消息分区标识
+	 */
+	private String shardingKey;
 
 	public String getmQName() {
 		return mQName;
@@ -71,6 +81,24 @@ public class MQMessage {
 
 	public MQMessage setTag(String tag) {
 		this.tag = tag;
+		return this;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public MQMessage setKey(String key) {
+		this.key = key;
+		return this;
+	}
+
+	public String getShardingKey() {
+		return shardingKey;
+	}
+
+	public MQMessage setShardingKey(String shardingKey) {
+		this.shardingKey = shardingKey;
 		return this;
 	}
 

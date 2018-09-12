@@ -2,9 +2,7 @@ package com.jimistore.boot.nemo.mq.rabbitmq.adapter;
 
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 
-import com.jimistore.boot.nemo.mq.core.adapter.IMQProperties;
-
-public class RabbitProperties extends CachingConnectionFactory implements IMQProperties {
+public class RabbitProperties extends CachingConnectionFactory {
 
 	String type;
 	
