@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import com.cq.nemo.core.exception.ValidatedException;
@@ -25,6 +26,8 @@ import com.jimistore.boot.nemo.sliding.window.core.Topic;
  *
  */
 public class RedisCounterContainer extends LocalCounterContainer implements IRedisSyncTask {
+	
+	private static final Logger log = Logger.getLogger(RedisCounterContainer.class);
 
 	@SuppressWarnings("rawtypes")
 	private RedisTemplate redisTemplate;
@@ -56,6 +59,9 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 	@SuppressWarnings("unchecked")
 	@Override
 	public ICounterContainer createCounter(Topic topic) {
+		if(log.isDebugEnabled()){
+			log.debug(String.format("create redis counter[%s]", topic.getKey()));
+		}
 		if(counterMap.containsKey(topic.getKey())){
 			throw new ValidatedException(String.format("counter[%s] is exist", topic.getKey()));
 		}
@@ -66,6 +72,9 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 				topic.getCapacity(),
 				topic.getValueType());
 		counterMap.put(topic.getKey(), counter);
+		if(log.isDebugEnabled()){
+			log.debug(String.format("created redis counter[%s]", topic.getKey()));
+		}
 
 		// 同步给redis
 		CounterMsg counterMsg = new CounterMsg().setCapacity(topic.getCapacity()).setKey(topic.getKey()).setClassName(topic.getClassName())
@@ -80,6 +89,9 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 			}else{
 				counter.sync();
 			}
+			if(log.isDebugEnabled()){
+				log.debug(String.format("uploaded redis counter[%s]", topic.getKey()));
+			}
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
@@ -89,6 +101,9 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 	@SuppressWarnings("unchecked")
 	@Override
 	public ICounterContainer deleteCounter(String key) {
+		if(log.isDebugEnabled()){
+			log.debug(String.format("delete counter[%s]", key));
+		}
 		if(counterMap.containsKey(key)){
 			redisTemplate.opsForHash().delete(slidingWindowProperties.getRedisContainerKey(), key);
 		}

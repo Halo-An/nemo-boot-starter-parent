@@ -78,7 +78,7 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T>, IRedisSy
 		redisTemplate.opsForHash().putIfAbsent(this.getRedisKey(), String.valueOf(START_KEY), String.valueOf(System.currentTimeMillis()));
 		redisTemplate.expire(this.getRedisKey(), slidingWindowProperties.getRedisExpired(), TimeUnit.MILLISECONDS);
 		long value = Long.parseLong(redisTemplate.opsForHash().get(this.getRedisKey(), String.valueOf(START_KEY)).toString());
-		super.setStart(value);
+		this.setStart(value);
 		
 		//增加冗余空间
 		super.setCapacity(this.getCapacity()+slidingWindowProperties.getExpiredCapacity()+slidingWindowProperties.getExpiredOffset());
@@ -86,6 +86,13 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T>, IRedisSy
 		return this;
 	}
 	
+	@Override
+	protected Counter<T> setStart(long start) {
+		remoteMap.put(START_KEY, start);
+		return super.setStart(start);
+	}
+
+
 	/**
 	 * 同步到redis
 	 */

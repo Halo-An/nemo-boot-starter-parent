@@ -376,7 +376,6 @@ public class Dispatcher implements IDispatcher {
 				}
 				counterContainer.createCounter(topic);
 				channelContainer.put(topic.getKey());
-				topicContainer.createTopic(topic);
 			}
 		});
 		return this;
@@ -391,10 +390,34 @@ public class Dispatcher implements IDispatcher {
 	}
 
 	@Override
+	public IDispatcher createTopic(Topic topic) {
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				if(log.isDebugEnabled()){
+					log.debug(String.format("create topic %s", topic.getKey()));
+				}
+				topicContainer.createTopic(topic);
+				counterContainer.createCounter(topic);
+				channelContainer.put(topic.getKey());
+			}
+		});
+		return this;
+	}
+
+	@Override
 	public IDispatcher deleteTopic(String topic) {
-		topicContainer.deleteTopic(topic);
-		counterContainer.deleteCounter(topic);
-		channelContainer.delete(topic);
+		this.createQueueTask(new Runnable() {
+			@Override
+			public void run() {
+				if(log.isDebugEnabled()){
+					log.debug(String.format("delete topic %s", topic));
+				}
+				topicContainer.deleteTopic(topic);
+				counterContainer.deleteCounter(topic);
+				channelContainer.delete(topic);
+			}
+		});
 		return this;
 	}
 

@@ -40,6 +40,9 @@ public class LocalCounterContainer implements ICounterContainer {
 
 	@Override
 	public ICounterContainer createCounter(Topic topic) {
+		if(log.isDebugEnabled()){
+			log.debug(String.format("create counter[%s]", topic.getKey()));
+		}
 
 		if(counterMap.containsKey(topic.getKey())){
 			throw new ValidatedException(String.format("counter[%s] is exist", topic.getKey()));
@@ -52,6 +55,9 @@ public class LocalCounterContainer implements ICounterContainer {
 
 	@Override
 	public ICounterContainer deleteCounter(String key) {
+		if(log.isDebugEnabled()){
+			log.debug(String.format("delete counter[%s]", key));
+		}
 		counterMap.remove(key);
 		return this;
 	}
@@ -63,7 +69,7 @@ public class LocalCounterContainer implements ICounterContainer {
 		
 		ICounter<?> counter = counterMap.get(key);
 		if(counter==null){
-			throw new ValidatedException(String.format("event can not find counter[%s]", key));
+			throw new ValidatedException(String.format("can not find counter[%s]", key));
 		}
 		return counter;
 	}

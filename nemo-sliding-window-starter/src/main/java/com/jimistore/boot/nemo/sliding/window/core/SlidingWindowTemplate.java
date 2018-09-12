@@ -154,7 +154,7 @@ public class SlidingWindowTemplate implements IDispatcher, IPublisherContainer, 
 
 	@Override
 	public SlidingWindowTemplate createTopic(Topic topic) {
-		topicContainer.createTopic(topic);
+		dispatcher.createTopic(topic);
 		return this;
 	}
 	

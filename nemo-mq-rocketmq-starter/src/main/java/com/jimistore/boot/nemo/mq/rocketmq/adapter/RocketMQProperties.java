@@ -5,9 +5,9 @@ import java.util.Map;
 
 public class RocketMQProperties {
 	
-	String type;
+	String type="normal";
 	
-	String key="normal";
+	String key;
 	
 	String url;
 	

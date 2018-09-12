@@ -30,6 +30,7 @@ public class RedisDispatcher extends Dispatcher implements IRedisSyncTask {
 		public void run() {
 			while(true){
 				try {
+					Thread.sleep(slidingWindowProperties.getSyncInterval());
 					if(redisSyncTaskList!=null){
 						for(IRedisSyncTask redisSyncTask:redisSyncTaskList){
 							createQueueTask(new Runnable() {
@@ -40,7 +41,6 @@ public class RedisDispatcher extends Dispatcher implements IRedisSyncTask {
 							});
 						}
 					}
-					Thread.sleep(slidingWindowProperties.getSyncInterval());
 				} catch (Exception e) {
 					log.error("redis sync error", e);
 				}

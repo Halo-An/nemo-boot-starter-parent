@@ -10,6 +10,13 @@ public interface IDispatcher {
 	 * @param topicKey
 	 * @return 
 	 */
+	public IDispatcher createTopic(Topic topic);
+	
+	/**
+	 * 删除topic
+	 * @param topicKey
+	 * @return 
+	 */
 	public IDispatcher deleteTopic(String topicKey);
 	
 	/**
