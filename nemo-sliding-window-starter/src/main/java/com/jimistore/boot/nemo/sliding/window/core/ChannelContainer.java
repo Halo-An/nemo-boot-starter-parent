@@ -13,7 +13,7 @@ public class ChannelContainer implements IChannelContainer {
 	
 //	Map<String, List<IChannel>> channelMap = new HashMap<String, List<IChannel>>();
 	
-	List<String> topicList = new ArrayList<String>();
+	Set<String> topicList = new HashSet<String>();
 
 	List<Channel> channelList = new ArrayList<Channel>();
 	
@@ -35,7 +35,7 @@ public class ChannelContainer implements IChannelContainer {
 				topicKeyList.addAll(logicSubscriber.getTopicVariableMap().keySet());
 				channelList.add(new Channel()
 						.setSubscriber(subscriber)
-						.setTopicList(topicList));
+						.setTopicList(topicKeyList));
 			}else{
 				for(String key:topicList){
 					if(!this.match(key, subscriber.getTopicMatch())){
@@ -43,7 +43,7 @@ public class ChannelContainer implements IChannelContainer {
 					}
 					
 					List<String> topicKeyList = new ArrayList<String>();
-					topicList.add(key);
+					topicKeyList.add(key);
 					channelList.add(new Channel()
 							.setSubscriber(subscriber)
 							.setTopicList(topicKeyList));
@@ -96,6 +96,7 @@ public class ChannelContainer implements IChannelContainer {
 				Channel channel = it.next();
 				if(channel.getTopicList().contains(key)){
 					it.remove();
+					topicList.remove(key);
 				}
 			}
 		}
