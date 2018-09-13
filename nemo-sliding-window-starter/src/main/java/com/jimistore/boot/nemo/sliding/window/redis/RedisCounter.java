@@ -162,6 +162,13 @@ public class RedisCounter<T> extends Counter<T> implements ICounter<T>, IRedisSy
 
 
 	@Override
+	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType, long timestamp) {
+		// TODO Auto-generated method stub
+		return super.window(remoteMap, timeUnit, length, valueType, timestamp, slidingWindowProperties.getSyncInterval());
+	}
+
+
+	@Override
 	public <E> List<E> window(TimeUnit timeUnit, Integer length, Class<E> valueType) {
 		long now = System.currentTimeMillis();
 		return super.window(remoteMap, timeUnit, length, valueType, now, slidingWindowProperties.getSyncInterval());
