@@ -108,7 +108,7 @@ public class Counter<T> implements ICounter<T> {
 			long times = timeUnit.toMillis(1) / this.timeUnit.toMillis(1);
 			long index = this.getIndex(dataMap.get(START_KEY).longValue(), now);
 			//计算偏移值
-			index = index - offset/times;
+			index = index - offset/this.timeUnit.toMillis(1);
 			long cursor = index;
 			for(int i=0;i<length;i++){
 				Number value = NumberUtil.parse(0, valueType);

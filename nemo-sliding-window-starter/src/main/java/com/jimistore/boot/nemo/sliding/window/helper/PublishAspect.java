@@ -61,11 +61,14 @@ public class PublishAspect {
 				
 				StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, result, throwable);
 				String key = this.parseExpression(context, topic.getKey(), String.class);
+				if(key.indexOf("\"")==0&&key.lastIndexOf("\"")==key.length()-1){
+					key=key.substring(0, key.length()-1);
+				}
 				boolean condition = this.parseExpression(context, topic.getCondition(), Boolean.class);
 				int num = this.parseExpression(context, topic.getNum(), Integer.class);
 				
 				log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.getCondition(), condition, result, throwable));
-				publisherHelper.createCounter(topic);
+				publisherHelper.createCounter(topic.setKey(key));
 				if(condition){
 					log.debug(String.format("publish counter %s", key));
 					publisherHelper.publish(new PublishEvent<Integer>()
