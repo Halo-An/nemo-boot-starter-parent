@@ -85,9 +85,7 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 				log.warn(e.getMessage(), e);
 			}
 		}
-		synchronized (topicMap) {
-			topicMap = remoteMap;
-		}
+		topicMap = remoteMap;
 		
 	}
 

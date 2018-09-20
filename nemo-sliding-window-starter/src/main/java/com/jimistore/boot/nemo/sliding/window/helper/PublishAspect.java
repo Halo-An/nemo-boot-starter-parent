@@ -67,10 +67,14 @@ public class PublishAspect {
 				boolean condition = this.parseExpression(context, topic.getCondition(), Boolean.class);
 				int num = this.parseExpression(context, topic.getNum(), Integer.class);
 				
-				log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.getCondition(), condition, result, throwable));
+				if(log.isDebugEnabled()){
+					log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.getCondition(), condition, result, throwable));
+				}
 				publisherHelper.createCounter(topic.setKey(key));
 				if(condition){
-					log.debug(String.format("publish counter %s", key));
+					if(log.isDebugEnabled()){
+						log.debug(String.format("publish counter %s", key));
+					}
 					publisherHelper.publish(new PublishEvent<Integer>()
 							.setTime(System.currentTimeMillis())
 							.setTopicKey(key)

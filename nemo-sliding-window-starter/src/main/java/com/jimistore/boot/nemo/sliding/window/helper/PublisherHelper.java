@@ -21,6 +21,8 @@ public class PublisherHelper {
 		
 	SlidingWindowTemplate slidingWindowTemplate;
 	
+	ThreadLocal<Collection<Topic>> copy = new ThreadLocal<Collection<Topic>>();
+	
 	String service;
 	
 	public PublisherHelper setService(String service) {
@@ -62,7 +64,10 @@ public class PublisherHelper {
 
 	public List<Topic> listTopicByPublisher(String publisherKey) {
 		List<Topic> list = new ArrayList<Topic>();
-		Collection<Topic> topicList = slidingWindowTemplate.listTopic();
+		Collection<Topic> value = slidingWindowTemplate.listTopic();
+		copy.set(value);
+		Collection<Topic> topicList = copy.get();
+		
 		for(Topic topic:topicList){
 			if(topic.getPublisherKey().equals(publisherKey)){
 				String key = topic.getKey();
