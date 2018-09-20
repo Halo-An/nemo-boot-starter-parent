@@ -18,10 +18,10 @@ public class NumberUtil {
 	}
 	
 	public static Number add(Number a, Number b){
-		if(a==null||Double.NaN==(Double)a||a.equals(0)){
+		if(a==null||a.equals(Double.NaN)||a.equals(0)){
 			return b;
 		}
-		if(b==null||Double.NaN==(Double)b||b.equals(0)){
+		if(b==null||b.equals(Double.NaN)||b.equals(0)){
 			return a;
 		}
 
@@ -50,10 +50,10 @@ public class NumberUtil {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static int compare(Number a, Number b){
-		if(a==null||Double.NaN==(Double)a){
+		if(a==null||a.equals(Double.NaN)){
 			return -1;
 		}
-		if(b==null||Double.NaN==(Double)b){
+		if(b==null||b.equals(Double.NaN)){
 			return 1;
 		}
 		Class<?> valueType = getIncludeClass(a, b);
@@ -66,7 +66,7 @@ public class NumberUtil {
 	}
 
 	public static Number except(Number number, int except){
-		if(except==0||Double.NaN==(Double)number){
+		if(except==0||number==null||number.equals(Double.NaN)){
 			return 0;
 		}
 		if(number instanceof Double){
