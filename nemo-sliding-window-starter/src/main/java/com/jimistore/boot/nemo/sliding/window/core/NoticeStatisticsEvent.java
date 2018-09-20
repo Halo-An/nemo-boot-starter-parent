@@ -25,7 +25,10 @@ public class NoticeStatisticsEvent<T extends Number> extends NoticeEvent<T> impl
 		List<T> list = noticeEvent.getValue();
 		
 		for(T t:list){
-			if(min==null&&t!=null&&!t.equals(Double.NaN)){
+			if(t==null||t.equals(Double.NaN)){
+				continue ;
+			}
+			if(min==null){
 				min=t;
 				max=t;
 				sum=t;
