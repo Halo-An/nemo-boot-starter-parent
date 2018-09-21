@@ -49,9 +49,11 @@ public class PublishAspect {
 			Signature signature = joinPoint.getSignature();
 			MethodSignature methodSignature = (MethodSignature) signature;
 			Method method = methodSignature.getMethod();
-			
+			long cost = 0;
 			try{
+				long old = System.currentTimeMillis();
 				result=joinPoint.proceed(joinPoint.getArgs());
+				cost = System.currentTimeMillis() - old;
 			}catch(Throwable e){
 				throwable = e;
 			}
@@ -59,7 +61,7 @@ public class PublishAspect {
 			
 			for(Topic topic:topicList){
 				
-				StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, result, throwable);
+				StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, result, throwable, cost);
 				String key = this.parseExpression(context, topic.getKey(), String.class);
 				if(key.indexOf("\"")==0&&key.lastIndexOf("\"")==key.length()-1){
 					key=key.substring(0, key.length()-1);
@@ -109,7 +111,7 @@ public class PublishAspect {
 	 * @param joinPoint
 	 * @return
 	 */
-	private StandardEvaluationContext getContextByProceedingJoinPoint(ProceedingJoinPoint joinPoint, Object result, Throwable error){
+	private StandardEvaluationContext getContextByProceedingJoinPoint(ProceedingJoinPoint joinPoint, Object result, Throwable error, long cost){
 		Signature signature = joinPoint.getSignature();
 		MethodSignature methodSignature = (MethodSignature) signature;
 		Method method = methodSignature.getMethod();
@@ -125,6 +127,7 @@ public class PublishAspect {
 		}
 		context.setVariable("result", result);
 		context.setVariable("error", error);
+		context.setVariable("cost", cost);
 
 		return context;
 	}
