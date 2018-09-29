@@ -1,6 +1,6 @@
 package com.jimistore.boot.nemo.core.api.exception;
 
-public class BaseException extends com.cq.nemo.core.exception.BaseException {
+public class BaseException extends RuntimeException {
 
 	/**
 	 * 

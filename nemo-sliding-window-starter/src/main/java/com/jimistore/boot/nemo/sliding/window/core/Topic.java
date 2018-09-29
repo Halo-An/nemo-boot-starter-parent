@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.jimistore.boot.nemo.sliding.window.helper.TimeUnitParser;
 
-public class Topic {
+public class Topic implements Cloneable {
 	
 	String publisherKey;
 	
@@ -141,6 +141,11 @@ public class Topic {
 	public Topic setFixed(boolean fixed) {
 		this.fixed = fixed;
 		return this;
+	}
+
+	@Override
+	public Topic clone() throws CloneNotSupportedException {
+		return (Topic) super.clone();
 	}
 	
 	

@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.transform.AliasedTupleSubsetResultTransformer;
 
-import com.cq.nemo.util.reflex.ClassUtil;
+import com.jimistore.boot.nemo.core.util.ClassUtil;
 
 public class AliasToEntityResultTransformer<T> extends AliasedTupleSubsetResultTransformer {
 	

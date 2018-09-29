@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.8.19-RELEASE</version>
+		<version>1.9.0-RELEASE</version>
 	</parent>
 	
 	<properties>
@@ -27,12 +27,8 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.cq</groupId>
-			<artifactId>nemo-util</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.cq</groupId>
-			<artifactId>nemo-core</artifactId>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-dao-core</artifactId>
 		</dependency>
 		
 		<!-- hibernate -->

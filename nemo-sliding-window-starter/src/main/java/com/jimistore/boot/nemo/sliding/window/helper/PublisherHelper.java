@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.cq.nemo.core.exception.ValidatedException;
+import com.jimistore.boot.nemo.core.api.exception.ValidatedException;
 import com.jimistore.boot.nemo.sliding.window.annotation.Publish;
 import com.jimistore.boot.nemo.sliding.window.core.IPublishEvent;
 import com.jimistore.boot.nemo.sliding.window.core.Publisher;
@@ -20,8 +20,6 @@ public class PublisherHelper {
 	private static final Logger log = Logger.getLogger(PublisherHelper.class);
 		
 	SlidingWindowTemplate slidingWindowTemplate;
-	
-	ThreadLocal<Collection<Topic>> copy = new ThreadLocal<Collection<Topic>>();
 	
 	String service;
 	
@@ -64,16 +62,10 @@ public class PublisherHelper {
 
 	public List<Topic> listTopicByPublisher(String publisherKey) {
 		List<Topic> list = new ArrayList<Topic>();
-		Collection<Topic> value = slidingWindowTemplate.listTopic();
-		copy.set(value);
-		Collection<Topic> topicList = copy.get();
+		Collection<Topic> topicList = slidingWindowTemplate.listTopic();
 		
 		for(Topic topic:topicList){
 			if(topic.getPublisherKey().equals(publisherKey)){
-				String key = topic.getKey();
-				if(key.indexOf("\"")!=0){
-					topic.setKey(String.format("\"%s\"", key));
-				}
 				list.add(topic);
 			}
 		}

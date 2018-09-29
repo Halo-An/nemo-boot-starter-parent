@@ -2,6 +2,12 @@ package com.jimistore.boot.nemo.sliding.window.exception;
 
 import com.jimistore.boot.nemo.core.api.exception.BaseException;
 
+/**
+ * 校验异常
+ * @author chenqi
+ * @Date 2018年9月25日
+ *
+ */
 public class ValidateException extends BaseException {
 
 	/**

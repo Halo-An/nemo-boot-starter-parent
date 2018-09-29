@@ -11,7 +11,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.Order;
 
-import com.cq.nemo.util.reflex.AnnotationUtil;
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 import com.jimistore.boot.nemo.dao.hibernate.annotation.SpelQuery;
 
 @Aspect

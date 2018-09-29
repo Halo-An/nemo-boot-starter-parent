@@ -3,6 +3,7 @@ package com.jimistore.boot.nemo.lock.helper;
 
 import java.lang.reflect.Method;
 
+import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
@@ -59,6 +60,8 @@ public class LockAspect {
 		if(lock.operator()!=null&&lock.operator().trim().length()>0){
 			operator = lock.operator();
 		}
+    	Logger log = Logger.getLogger(LockAspect.class);
+    	log.info("try lock");
 		lockHelper.lock(subject, operator, lock.timeout(), lock.prompt());  
 		try{
 			Object obj = joinPoint.proceed();

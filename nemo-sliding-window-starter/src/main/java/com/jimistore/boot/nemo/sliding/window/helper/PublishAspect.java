@@ -21,6 +21,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import com.jimistore.boot.nemo.sliding.window.annotation.Publish;
 import com.jimistore.boot.nemo.sliding.window.core.PublishEvent;
 import com.jimistore.boot.nemo.sliding.window.core.Topic;
+import com.jimistore.boot.nemo.sliding.window.exception.SpelParseException;
 import com.jimistore.util.reflex.AnnotationUtil;
 
 @Aspect
@@ -61,27 +62,40 @@ public class PublishAspect {
 			
 			for(Topic topic:topicList){
 				
-				StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, result, throwable, cost);
-				String key = this.parseExpression(context, topic.getKey(), String.class);
-				if(key.indexOf("\"")==0&&key.lastIndexOf("\"")==key.length()-1){
-					key=key.substring(0, key.length()-1);
-				}
-				boolean condition = this.parseExpression(context, topic.getCondition(), Boolean.class);
-				int num = this.parseExpression(context, topic.getNum(), Integer.class);
-				
-				if(log.isDebugEnabled()){
-					log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.getCondition(), condition, result, throwable));
-				}
-				publisherHelper.createCounter(topic.setKey(key));
-				if(condition){
-					if(log.isDebugEnabled()){
-						log.debug(String.format("publish counter %s", key));
+				try{
+					StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, result, throwable, cost);
+					String keyEl = topic.getKey();
+					if(keyEl==null){
+						log.warn("topic's key cannot be null");
+						continue ;
 					}
-					publisherHelper.publish(new PublishEvent<Integer>()
-							.setTime(System.currentTimeMillis())
-							.setTopicKey(key)
-							.setValue(num)
-							);
+					if(keyEl.indexOf("\"")!=0&&keyEl.indexOf("'")!=0){
+						keyEl = String.format("\"%s\"", keyEl);
+					}
+					String key = this.parseExpression(context, topic.getKey(), String.class);
+					if(key.indexOf("\"")==0&&key.lastIndexOf("\"")==key.length()-1){
+						key=key.substring(0, key.length()-1);
+					}
+					boolean condition = this.parseExpression(context, topic.getCondition(), Boolean.class);
+					int num = this.parseExpression(context, topic.getNum(), Integer.class);
+					
+					if(log.isDebugEnabled()){
+						log.debug(String.format("check topic[%s], the condition is %s=%s, the result is %s, the error is %s", key, topic.getCondition(), condition, result, throwable));
+					}
+					publisherHelper.createCounter(topic.setKey(key));
+					if(condition){
+						if(log.isDebugEnabled()){
+							log.debug(String.format("publish counter %s", key));
+						}
+						publisherHelper.publish(new PublishEvent<Integer>()
+								.setTime(System.currentTimeMillis())
+								.setTopicKey(key)
+								.setValue(num)
+								);
+					}
+				}catch(SpelParseException e){
+					log.error(e);
+					continue ;
 				}
 			}
 		}catch(Throwable t){
@@ -103,7 +117,12 @@ public class PublishAspect {
 	 * @return
 	 */
 	private <T> T parseExpression(StandardEvaluationContext context,String str, Class<T> clazz){
-		return new SpelExpressionParser().parseExpression(str).getValue(context, clazz);
+		try{
+			return new SpelExpressionParser().parseExpression(str).getValue(context, clazz);
+		}catch(Exception e){
+			log.error(String.format("spel parse error, the expression is '%s'", str));
+			throw new SpelParseException(e.getMessage(), e);
+		}
 	}
 	
 	/**

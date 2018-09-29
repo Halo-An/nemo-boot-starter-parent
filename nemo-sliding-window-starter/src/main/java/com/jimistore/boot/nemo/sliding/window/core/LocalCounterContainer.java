@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
-import com.cq.nemo.core.exception.ValidatedException;
+import com.jimistore.boot.nemo.core.api.exception.ValidatedException;
 
 /**
  * 计数容器

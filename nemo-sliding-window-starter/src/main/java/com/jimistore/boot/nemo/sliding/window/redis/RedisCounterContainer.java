@@ -1,6 +1,7 @@
 package com.jimistore.boot.nemo.sliding.window.redis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,9 +10,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import com.cq.nemo.core.exception.ValidatedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jimistore.boot.nemo.core.api.exception.ValidatedException;
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.core.ICounter;
 import com.jimistore.boot.nemo.sliding.window.core.ICounterContainer;
@@ -35,6 +36,8 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 	private SlidingWindowProperties slidingWindowProperties;
 
 	private ObjectMapper objectMapper;
+	
+	Map<String, CounterMsg> remoteMap = new HashMap<String, CounterMsg>();
 
 	public RedisCounterContainer() {
 		super();
@@ -111,17 +114,12 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 		return this;
 	}
 
-	@SuppressWarnings({ "unchecked" })
 	protected List<CounterMsg> getNotExistCounterList(){
 		List<CounterMsg> counterMsgList = new ArrayList<CounterMsg>();
-		// 同步计数容器
-		Map<String, String> src = redisTemplate.opsForHash()
-				.entries(slidingWindowProperties.getRedisContainerKey());
-		for (String key : src.keySet()) {
+		for (String key : remoteMap.keySet()) {
 			if (!counterMap.containsKey(key)) {
 				try {
-					String content = src.get(key);
-					CounterMsg counter = objectMapper.readValue(content, CounterMsg.class);
+					CounterMsg counter = remoteMap.get(key);
 					counterMsgList.add(counter);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
@@ -132,15 +130,11 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 		
 	}
 	
-	@SuppressWarnings({ "unchecked" })
 	protected List<ICounter<?>> getOverflowCounterList(){
 		List<ICounter<?>> counterMsgList = new ArrayList<ICounter<?>>();
-		// 同步计数容器
-		Map<String, String> src = redisTemplate.opsForHash()
-				.entries(slidingWindowProperties.getRedisContainerKey());
 		
 		for (String key : counterMap.keySet()) {
-			if (!src.containsKey(key)) {
+			if (!remoteMap.containsKey(key)) {
 				counterMsgList.add(counterMap.get(key));
 			}
 		}
@@ -148,7 +142,23 @@ public class RedisCounterContainer extends LocalCounterContainer implements IRed
 		
 	}
 
+	@SuppressWarnings("unchecked")
 	public void sync() {
+		// 同步计数容器
+		Map<String, String> src = redisTemplate.opsForHash()
+				.entries(slidingWindowProperties.getRedisContainerKey());
+		Map<String, CounterMsg> temp = new HashMap<String, CounterMsg>();
+		for (String key : src.keySet()) {
+			try {
+				String content = src.get(key);
+				CounterMsg counter = objectMapper.readValue(content, CounterMsg.class);
+				temp.put(key, counter);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		remoteMap = temp;
+		
 		// 同步计数
 		for (Entry<String, ICounter<?>> entry : counterMap.entrySet()) {
 			RedisCounter<?> counter = (RedisCounter<?>) entry.getValue();

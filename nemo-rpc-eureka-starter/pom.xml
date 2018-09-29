@@ -12,17 +12,17 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.0-RELEASE</version>
+		<version>1.9.0-RELEASE</version>
 	</parent>
 	
 	<dependencies>
 		<dependency>
-			<groupId>com.cq</groupId>
-			<artifactId>nemo-rpc-starter</artifactId>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.cq</groupId>
-			<artifactId>nemo-rpc-eureka</artifactId>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-rpc-eureka-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
