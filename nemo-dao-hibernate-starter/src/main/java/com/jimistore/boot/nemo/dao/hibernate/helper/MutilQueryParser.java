@@ -1,6 +1,6 @@
 package com.jimistore.boot.nemo.dao.hibernate.helper;
 
-public class MutilQueryParser extends QueryParserV2 {
+public class MutilQueryParser extends QueryParser {
 	
 	MutilSessionFactory mutilSessionFactory;
 
