@@ -28,12 +28,12 @@ import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ResourceUtils;
 
-import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQDataSource;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQListener;
-import com.jimistore.boot.nemo.mq.core.annotation.JsonMQMapping;
 import com.jimistore.boot.nemo.mq.core.annotation.EnableJsonMQ;
+import com.jimistore.boot.nemo.mq.core.annotation.JsonMQMapping;
 import com.jimistore.boot.nemo.mq.core.annotation.JsonMQService;
 
 public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware, InitializingBean {

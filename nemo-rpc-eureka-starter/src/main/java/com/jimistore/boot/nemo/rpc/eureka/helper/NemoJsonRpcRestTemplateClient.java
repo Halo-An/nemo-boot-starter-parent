@@ -33,7 +33,7 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 	
 	String path;
 	
-	String module;
+	IModuleExporter module;
 	
 	String version;
 	
@@ -88,9 +88,9 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 	private String getServiceUrl() throws IOException{
 		if(baseUrl==null){
 			if(nemoRpcClusterExporter!=null){
-				String instanceId = module;
+				String instanceId = module.getServiceName();
 				if(!StringUtils.isEmpty(version)){
-					instanceId=new StringBuilder(module).append(JOIN_STR).append(version).toString();
+					instanceId=new StringBuilder(module.getServiceName()).append(JOIN_STR).append(version).toString();
 				}
 				baseUrl = nemoRpcClusterExporter.getNextServerUrl(instanceId);
 				if(baseUrl==null||baseUrl.isEmpty()){
@@ -113,7 +113,7 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 		return this;
 	}
 
-	public NemoJsonRpcRestTemplateClient setModule(String module) {
+	public NemoJsonRpcRestTemplateClient setModule(IModuleExporter module) {
 		this.module = module;
 		return this;
 	}

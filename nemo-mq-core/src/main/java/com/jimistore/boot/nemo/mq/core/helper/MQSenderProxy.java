@@ -15,8 +15,8 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.remoting.support.RemoteAccessor;
 import org.springframework.util.StringUtils;
 
-import com.cq.nemo.util.reflex.AnnotationUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQSender;
 import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
 import com.jimistore.boot.nemo.mq.core.annotation.JsonMQMapping;

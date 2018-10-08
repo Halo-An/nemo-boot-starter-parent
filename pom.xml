@@ -4,7 +4,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.9.0-RELEASE</version>
+	<version>1.9.2-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -31,10 +31,10 @@
 	</modules>
 
 	<parent>
-		<groupId>com.cq</groupId>
-		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.3.19-RELEASE</version>
-		<relativePath></relativePath>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.9.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
 	<properties>
@@ -52,14 +52,14 @@
 		<nemo.core.version>1.9.0-RELEASE</nemo.core.version>
 		<nemo.dao.api.version>1.9.0-RELEASE</nemo.dao.api.version>
 		<nemo.dao.core.version>1.9.0-RELEASE</nemo.dao.core.version>
-		<nemo.dao.hibernate.version>1.9.0-RELEASE</nemo.dao.hibernate.version>
+		<nemo.dao.hibernate.version>1.9.1-RELEASE</nemo.dao.hibernate.version>
 		<nemo.mq.core.api.version>1.8.20-RELEASE</nemo.mq.core.api.version>
-		<nemo.mq.core.version>1.8.20-RELEASE</nemo.mq.core.version>
+		<nemo.mq.core.version>1.9.2-RELEASE</nemo.mq.core.version>
 		<nemo.mq.activemq.version>1.8.20-RELEASE</nemo.mq.activemq.version>
 		<nemo.mq.rabbitmq.version>1.8.20-RELEASE</nemo.mq.rabbitmq.version>
 		<nemo.mq.rocketmq.version>1.8.20-RELEASE</nemo.mq.rocketmq.version>
-		<nemo.rpc.eureka.api.version>1.9.0-RELEASE</nemo.rpc.eureka.api.version>
-		<nemo.rpc.eureka.version>1.9.0-RELEASE</nemo.rpc.eureka.version>
+		<nemo.rpc.eureka.api.version>1.9.1-RELEASE</nemo.rpc.eureka.api.version>
+		<nemo.rpc.eureka.version>1.9.1-RELEASE</nemo.rpc.eureka.version>
 		<nemo.lock.version>1.5.4-RELEASE</nemo.lock.version>
 		<nemo.security.version>1.5.0-RELEASE</nemo.security.version>
 		<nemo.fuse.version>1.4.0-RELEASE</nemo.fuse.version>

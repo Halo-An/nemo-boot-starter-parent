@@ -18,11 +18,11 @@ public class NemoJsonRpcHttpClient extends JsonRpcHttpClient {
 	
 	String path;
 	
-	String module;
+	IModuleExporter module;
 	
 	String version;
 
-	public NemoJsonRpcHttpClient(INemoRpcClusterExporter nemoRpcClusterExporter, ObjectMapper mapper, URL serviceUrl, String module, String version, String path, Map<String, String> headers) {
+	public NemoJsonRpcHttpClient(INemoRpcClusterExporter nemoRpcClusterExporter, ObjectMapper mapper, URL serviceUrl, IModuleExporter module, String version, String path, Map<String, String> headers) {
 		super(mapper, serviceUrl, headers);
 		this.path = path;
 		this.nemoRpcClusterExporter=nemoRpcClusterExporter;
@@ -35,9 +35,9 @@ public class NemoJsonRpcHttpClient extends JsonRpcHttpClient {
 		throws IOException {
 		String baseUrl = null;
 		if(nemoRpcClusterExporter!=null){
-			String instanceId = module;
+			String instanceId = module.getServiceName();
 			if(!StringUtils.isEmpty(version)){
-				instanceId=new StringBuilder(module).append(JOIN_STR).append(version).toString();
+				instanceId=new StringBuilder(module.getServiceName()).append(JOIN_STR).append(version).toString();
 			}
 			baseUrl = nemoRpcClusterExporter.getNextServerUrl(instanceId);
 			if(baseUrl==null||baseUrl.isEmpty()){
@@ -50,7 +50,7 @@ public class NemoJsonRpcHttpClient extends JsonRpcHttpClient {
 		return super.prepareConnection(extraHeaders);
 	}
 
-	public void setModule(String module) {
+	public void setModule(IModuleExporter module) {
 		this.module = module;
 	}
 

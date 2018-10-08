@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.8.20-RELEASE</version>
+		<version>1.9.2-RELEASE</version>
 	</parent>
 
 	<dependencies>
@@ -30,7 +30,7 @@
 			<artifactId>nemo-mq-core-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.cq</groupId>
+			<groupId>com.jimistore.boot</groupId>
 			<artifactId>nemo-core</artifactId>
 		</dependency>
 	</dependencies>

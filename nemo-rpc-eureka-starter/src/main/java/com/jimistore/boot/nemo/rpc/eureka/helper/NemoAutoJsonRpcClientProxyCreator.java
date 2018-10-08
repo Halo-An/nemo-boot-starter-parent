@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.jsonrpc4j.JsonRpcService;
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcClientProxyCreator;
 import com.jimistore.boot.nemo.rpc.eureka.config.NemoRpcItem;
+import com.jimistore.boot.nemo.rpc.eureka.config.NemoRpcProperties;
 
 /**
  * 修改默认异常处理
@@ -40,21 +41,23 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
 
     private ObjectMapper objectMapper;
     
-    private Map<String, NemoRpcItem> rpcMap;
+    private NemoRpcProperties properties;
     
     private INemoRpcClusterExporter nemoRpcClusterExporter;
     
     private RestTemplate restTemplate;
+    
+    private DefaultListableBeanFactory dlbf;
 
-	public NemoAutoJsonRpcClientProxyCreator setRpcMap(Map<String, NemoRpcItem> rpcMap) {
-		this.rpcMap = rpcMap;
+	public NemoAutoJsonRpcClientProxyCreator setProperties(NemoRpcProperties properties) {
+		this.properties = properties;
 		return this;
 	}
 
 	@Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         SimpleMetadataReaderFactory metadataReaderFactory = new SimpleMetadataReaderFactory(applicationContext);
-        DefaultListableBeanFactory dlbf = (DefaultListableBeanFactory) beanFactory;
+        this.dlbf = (DefaultListableBeanFactory) beanFactory;
         
         try{
         	this.nemoRpcClusterExporter = beanFactory.getBean(INemoRpcClusterExporter.class);
@@ -69,7 +72,7 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
             	
             }
         }
-        
+        Map<String, NemoRpcItem> rpcMap = properties.getMap();
         if(rpcMap!=null&&rpcMap.size()>0){
 			for(Entry<String, NemoRpcItem> entry:rpcMap.entrySet()){
 				NemoRpcItem nemoRpcConfig = entry.getValue();
@@ -112,6 +115,10 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
     private String resolvePackageToScan(String scanPackage) {
         return CLASSPATH_URL_PREFIX + convertClassNameToResourcePath(scanPackage) + "/**/*.class";
     }
+    
+    public void registerJsonProxyBean(String className, String module, String version, String path, boolean useNamedParams) {
+    	this.registerJsonProxyBean(dlbf, className, module, version, path, useNamedParams);
+    }
 
     /**
      * Registers a new proxy bean with the bean factory.
@@ -120,7 +127,12 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
     	BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
                 .rootBeanDefinition(NemoJsonProxyFactoryBean.class)
                 .addPropertyValue("path", path)
-                .addPropertyValue("module", module)
+                .addPropertyValue("module", new IModuleExporter(){
+					@Override
+					public String getServiceName() {
+						return module;
+					}
+                })
                 .addPropertyValue("version", version)
                 .addPropertyValue("serviceInterface", className)
                 .addPropertyValue("useNamedParams", useNamedParams);

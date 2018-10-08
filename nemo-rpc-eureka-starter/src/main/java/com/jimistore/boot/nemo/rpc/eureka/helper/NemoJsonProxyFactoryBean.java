@@ -23,7 +23,7 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 	private INemoRpcClusterExporter nemoRpcClusterExporter  = null;
 	private RestTemplate        restTemplate        = null;
 	private String              path				= null;
-	private String              module				= null;
+	private IModuleExporter     module				= null;
 	private String              version				= null;
 
 	private boolean				useNamedParams		= false;
@@ -147,7 +147,7 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 		super.setObjectMapper(objectMapper);
 	}
 
-	public void setModule(String module) {
+	public void setModule(IModuleExporter module) {
 		this.module = module;
 	}
 
@@ -169,6 +169,10 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 
 	public void setRestTemplate(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
+	}
+
+	public IModuleExporter getModule() {
+		return module;
 	}
 	
 }
