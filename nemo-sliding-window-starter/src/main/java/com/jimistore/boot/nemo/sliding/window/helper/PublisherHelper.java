@@ -65,7 +65,7 @@ public class PublisherHelper {
 		Collection<Topic> topicList = slidingWindowTemplate.listTopic();
 		
 		for(Topic topic:topicList){
-			if(topic.getPublisherKey().equals(publisherKey)){
+			if(topic.getPublisherKey().trim().length()>0&&topic.getPublisherKey().equals(publisherKey)){
 				list.add(topic);
 			}
 		}

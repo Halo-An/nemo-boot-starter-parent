@@ -68,12 +68,12 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
             
         }
 	}
-    private <T> Map<T, Method> parseAnnotationList(Class<?> clazz, Class<T> annotation){
-    	Map<T, Method> map = new HashMap<T, Method>();
+    private <T> Map<Method, T> parseAnnotationList(Class<?> clazz, Class<T> annotation){
+    	Map<Method, T> map = new HashMap<Method, T>();
     	for(Method method:clazz.getDeclaredMethods()){
     		T t = AnnotationUtil.getAnnotation(method, annotation);
     		if(t!=null){
-    			map.put(t, method);
+    			map.put(method, t);
     		}
     	}
     	return map;
@@ -94,13 +94,13 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
     		if(clazz==null){
     			clazz = this.getClass(beanName);
     		}
-    		Map<Publish, Method> methodMap = this.parseAnnotationList(clazz, Publish.class);
-			for(Map.Entry<Publish, Method> entry:methodMap.entrySet()){
+    		Map<Method, Publish> methodMap = this.parseAnnotationList(clazz, Publish.class);
+			for(Map.Entry<Method, Publish> entry:methodMap.entrySet()){
 				if(log.isDebugEnabled()){
-					log.debug(String.format("create publisher[%s]", entry.getValue().getName()));
+					log.debug(String.format("create publisher[%s]", entry.getKey().getName()));
 				}
 				try{
-					publisherHelper.createPublisher(entry.getValue());
+					publisherHelper.createPublisher(entry.getKey());
 				}catch(Exception e){
 					log.warn(e.getMessage(), e);
 				}
@@ -113,12 +113,12 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
     		if(clazz==null){
     			clazz = this.getClass(beanName);
     		}
-			Map<Subscribe, Method> methodMap = this.parseAnnotationList(clazz, Subscribe.class);
-			for(Map.Entry<Subscribe, Method> entry:methodMap.entrySet()){
+			Map<Method, Subscribe> methodMap = this.parseAnnotationList(clazz, Subscribe.class);
+			for(Map.Entry<Method, Subscribe> entry:methodMap.entrySet()){
 				if(log.isDebugEnabled()){
-					log.debug(String.format("create subscriber[%s:%s]", entry.getKey(), entry.getValue().getName()));
+					log.debug(String.format("create subscriber[%s:%s]", entry.getValue(), entry.getKey().getName()));
 				}
-				subscriberHelper.createSubscriber(entry.getKey(), entry.getValue(), bean);
+				subscriberHelper.createSubscriber(entry.getValue(), entry.getKey(), bean);
 			}
     	}
 		return bean;

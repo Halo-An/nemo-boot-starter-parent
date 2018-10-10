@@ -72,7 +72,7 @@ public class PublishAspect {
 					if(keyEl.indexOf("\"")!=0&&keyEl.indexOf("'")!=0){
 						keyEl = String.format("\"%s\"", keyEl);
 					}
-					String key = this.parseExpression(context, topic.getKey(), String.class);
+					String key = this.parseExpression(context, keyEl, String.class);
 					if(key.indexOf("\"")==0&&key.lastIndexOf("\"")==key.length()-1){
 						key=key.substring(0, key.length()-1);
 					}
