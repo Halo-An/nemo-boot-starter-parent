@@ -76,5 +76,8 @@ public class NemoAutoJsonRpcClientProxyCreatorHelper implements InitializingBean
     public void registerJsonProxyBean(String className, String module, String version, String path, boolean useNamedParams) {
     	nemoAutoJsonRpcClientProxyCreator.registerJsonProxyBean(className, module, version, path, useNamedParams);
     }
-
+    
+	public <T> T getRegisteredBean(String module, Class<T> clazz, String version){
+		return nemoAutoJsonRpcClientProxyCreator.getRegisteredBean(module, clazz, version);
+	}
 }

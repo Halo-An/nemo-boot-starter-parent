@@ -27,33 +27,38 @@ public class NemoDynamicRpcServiceExporter implements IDynamicRpcServiceExporter
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getRpcService(Class<T> inf, String serviceName, String version) {
-		if(!beanCacheMap.containsKey(serviceName)){
-			JsonRpcService jsonRpcService = AnnotationUtil.getAnnotation(inf, JsonRpcService.class);
-			helper.registerJsonProxyBean(inf.getName(), serviceName, version, jsonRpcService.value(), jsonRpcService.useNamedParams());
+		if(log.isDebugEnabled()){
+			log.debug(String.format("request getRpcService, the serviceName is %s, the version is %s", serviceName, version));
 		}
-		return (T)beanCacheMap.get(serviceName);
+		String key = this.parseKey(serviceName, version);
+		if(!beanCacheMap.containsKey(key)){
+			T service = null;
+			try{
+				service = helper.getRegisteredBean(serviceName, inf, version);
+			}catch(Exception e){
+				log.warn(e.getMessage());
+			}
+			if(service==null){
+				JsonRpcService jsonRpcService = AnnotationUtil.getAnnotation(inf, JsonRpcService.class);
+				helper.registerJsonProxyBean(inf.getName(), serviceName, version, jsonRpcService.value(), jsonRpcService.useNamedParams());
+				service = helper.getRegisteredBean(serviceName, inf, version);
+			}
+			beanCacheMap.put(key, service);
+		}
+		return (T)beanCacheMap.get(key);
 	}
 	
-	public void put(String serviceName, Object bean){
-		beanCacheMap.put(serviceName, bean);
+	private String parseKey(String serviceName, String version){
+		return String.format("%s-%s", serviceName, version);
 	}
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if(beanName.indexOf("clientProxy")>=0){
-			return bean;
-		}
-		log.info(String.format("=====================>%s", beanName));
 		return bean;
 	}
 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		if(beanName.indexOf("clientProxy")>=0||bean instanceof NemoJsonProxyFactoryBean){
-//			NemoJsonProxyFactoryBean fac = (NemoJsonProxyFactoryBean) bean;
-//			this.put(fac.getModule().getServiceName(), bean);
-			return bean;
-		}
 		return bean;
 	}
 

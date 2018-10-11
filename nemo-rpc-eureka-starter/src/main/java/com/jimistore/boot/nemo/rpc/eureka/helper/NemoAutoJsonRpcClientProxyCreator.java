@@ -146,7 +146,19 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
         if(restTemplate!=null){
         	beanDefinitionBuilder.addPropertyValue("restTemplate", restTemplate);
         }
-        dlbf.registerBeanDefinition(className+ "-" + module + "-clientProxy", beanDefinitionBuilder.getBeanDefinition());
+        String beanName = this.parseBeanName(className, module, version);
+        dlbf.registerBeanDefinition(beanName, beanDefinitionBuilder.getBeanDefinition());
+    }
+    
+    private String parseBeanName(String className, String module, String version){
+    	return String.format("%s-%s-%s-clientProxy", className, module, version);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public <T> T getRegisteredBean(String module, Class<T> clazz, String version){
+    	String className = clazz.getName();
+    	String beanName = this.parseBeanName(className, module, version);
+    	return (T)dlbf.getBean(beanName);
     }
 
     /**
