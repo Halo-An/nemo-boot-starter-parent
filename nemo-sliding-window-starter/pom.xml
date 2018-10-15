@@ -21,17 +21,37 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.jimistore.boot</groupId>
 			<artifactId>nemo-core</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.jimistore.util</groupId>
 			<artifactId>reflex-util</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<attach>true</attach>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 
 </project>

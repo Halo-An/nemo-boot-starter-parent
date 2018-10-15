@@ -2,12 +2,12 @@ package com.jimistore.boot.nemo.mq.rocketmq.adapter;
 
 import java.lang.reflect.Method;
 
-import com.cq.nemo.util.reflex.AnnotationUtil;
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 import com.jimistore.boot.nemo.mq.core.annotation.JsonMQService;
 import com.jimistore.boot.nemo.mq.core.helper.MQNameHelper;
 import com.jimistore.boot.nemo.mq.rocketmq.config.MutilRocketMQProperties;
 
-public class RocketMQNameHelper extends MQNameHelper {
+public class RocketMQNameHelper extends MQNameHelper { 
 	
 	MutilRocketMQProperties mutilRocketMQProperties;
 	
