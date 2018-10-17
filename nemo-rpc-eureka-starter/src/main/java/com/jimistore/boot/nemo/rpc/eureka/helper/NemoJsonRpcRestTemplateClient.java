@@ -86,18 +86,14 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 	}
 	
 	private String getServiceUrl() throws IOException{
-		if(baseUrl==null){
-			if(nemoRpcClusterExporter!=null){
-				String instanceId = module.getServiceName();
-				if(!StringUtils.isEmpty(version)){
-					instanceId=new StringBuilder(module.getServiceName()).append(JOIN_STR).append(version).toString();
-				}
-				baseUrl = nemoRpcClusterExporter.getNextServerUrl(instanceId);
-				if(baseUrl==null||baseUrl.isEmpty()){
-					throw new IOException(String.format("serviceUrl cannot be empty, check cluster server please ", baseUrl));
-				}
-			}else{
-				baseUrl = this.getServiceUrl().toString();
+		if(nemoRpcClusterExporter!=null){
+			String instanceId = module.getServiceName();
+			if(!StringUtils.isEmpty(version)){
+				instanceId=new StringBuilder(module.getServiceName()).append(JOIN_STR).append(version).toString();
+			}
+			baseUrl = nemoRpcClusterExporter.getNextServerUrl(instanceId);
+			if(baseUrl==null||baseUrl.isEmpty()){
+				throw new IOException(String.format("serviceUrl cannot be empty, check cluster server please ", baseUrl));
 			}
 		}
 		return new URL(new URL(baseUrl), path).toString();
