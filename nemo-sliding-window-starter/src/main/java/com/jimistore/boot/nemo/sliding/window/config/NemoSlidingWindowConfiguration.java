@@ -41,16 +41,11 @@ public class NemoSlidingWindowConfiguration {
 		return template;
 	}
 
-	@Bean("objectMapper")
-	@ConditionalOnMissingBean(value = ObjectMapper.class)
-	public ObjectMapper objectMapper() {
-		return new ObjectMapper();
-	}
-
 	@Bean
 	@ConditionalOnMissingBean(SlidingWindowTemplate.class)
 	public SlidingWindowTemplate slidingWindowTemplate(SlidingWindowProperties slidingWindowProperties,
-			@Lazy RedisTemplate<String, String> redisTemplate, @Lazy ObjectMapper objectMapper) {
+			@Lazy RedisTemplate<String, String> redisTemplate) {
+		ObjectMapper objectMapper = new ObjectMapper();
 		return SlidingWindowTemplate.create(slidingWindowProperties, redisTemplate, objectMapper);
 	}
 
