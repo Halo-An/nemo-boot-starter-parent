@@ -5,6 +5,7 @@
 
 	<artifactId>nemo-dao-api</artifactId>
 	<packaging>jar</packaging>
+	<version>${nemo.dao.api.version}</version>
 
 	<name>nemo-dao-api</name>
 	<description>Demo project for Spring Boot</description>
@@ -12,8 +13,35 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.1-RELEASE</version>
+		<version>1.9.3-RELEASE</version>
 	</parent>
+	
+	<properties>
+		<hibernate.version>4.3.11.Final</hibernate.version>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-core-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
+
+		<!-- hibernate -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
 
 
 </project>

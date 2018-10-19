@@ -3,8 +3,6 @@ package com.jimistore.boot.nemo.rpc.eureka.helper;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 
-import com.cq.nemo.rpc.service.INemoRpcClusterExporter;
-
 public class NemoRpcEurekaRibbonExporter implements INemoRpcClusterExporter {
 
     private LoadBalancerClient loadBalancerClient;

@@ -80,4 +80,11 @@ public class InjectSqlValidator implements IInjectSqlValidator {
 		}while((filter=filter.getNext())!=null);
 	}
 
+	@Override
+	public void check(Object... objects) throws QueryValidatorException {
+		for(Object obj:objects){
+			InjectSqlValidator.check(obj);
+		}
+	}
+
 }

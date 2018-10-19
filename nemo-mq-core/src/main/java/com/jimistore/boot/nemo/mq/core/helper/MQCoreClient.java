@@ -11,14 +11,15 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
@@ -26,21 +27,20 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ResourceUtils;
-import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
+import com.jimistore.boot.nemo.mq.core.adapter.IMQDataSource;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQListener;
-import com.jimistore.boot.nemo.mq.core.adapter.IMQSender;
 import com.jimistore.boot.nemo.mq.core.annotation.EnableJsonMQ;
+import com.jimistore.boot.nemo.mq.core.annotation.JsonMQMapping;
 import com.jimistore.boot.nemo.mq.core.annotation.JsonMQService;
 
-public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor, ApplicationContextAware {
+public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware, InitializingBean {
 	
 	private static final Logger log = Logger.getLogger(MQCoreClient.class);
 	
-	IMQListener mQListener;
-	
-	IMQSender mQSender;
+	Map<String, IMQDataSource> mQDataSourceMap = new HashMap<String, IMQDataSource>();
 	
 	ObjectMapper objectMapper;
 	
@@ -58,18 +58,19 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 	
 	AsynExecuter asynExecuter;
 	
+	MQNameHelper mQNameHelper;
+	
+	
+	
+	public MQCoreClient setmQDataSourceList(List<IMQDataSource> mQDataSourceList) {
+		for(IMQDataSource mQDataSource:mQDataSourceList){
+			mQDataSourceMap.put(mQDataSource.getKey(), mQDataSource);
+		}
+		return this;
+	}
+
 	public MQCoreClient setAsynExecuter(AsynExecuter asynExecuter) {
 		this.asynExecuter = asynExecuter;
-		return this;
-	}
-
-	public MQCoreClient setmQListener(IMQListener mQListener) {
-		this.mQListener = mQListener;
-		return this;
-	}
-
-	public MQCoreClient setmQSender(IMQSender mQSender) {
-		this.mQSender = mQSender;
 		return this;
 	}
 
@@ -77,13 +78,20 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 		this.objectMapper = objectMapper;
 		return this;
 	}
+	
+	private IMQDataSource getMQDataSource(String dataSource){
+		IMQDataSource ds = mQDataSourceMap.get(dataSource);
+		if(ds==null){
+			throw new RuntimeException(String.format("no datasource[%s] can be found in your configuration, check application.properties please ", dataSource));
+		}
+		return ds;
+	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext=applicationContext;
 	}
 	
-	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 		
@@ -98,20 +106,17 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
         	}
 			JsonMQService jsonMQService = beanFactory.findAnnotationOnBean(beanName, JsonMQService.class);
 			if(jsonMQService!=null){
-				try {
-					annoMap.put(beanName, jsonMQService);
-					Class<?> clazz = this.getClass(beanFactory, beanName);
-					clazzMap.put(beanName, clazz);
-				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				annoMap.put(beanName, jsonMQService);
+				Class<?> clazz = this.getClass(beanFactory, beanName);
+				clazzMap.put(beanName, clazz);
 			}
         }
         
         for(String scanPackage:scanPackages){
             String resolvedPath = resolvePackageToScan(scanPackage);
-            log.debug(String.format("Scanning '%s' for JSON-MQ service interfaces.", resolvedPath));
+            if(log.isDebugEnabled()){
+                log.debug(String.format("Scanning '%s' for JSON-MQ service interfaces.", resolvedPath));
+            }
             try {
                 for (Resource resource : applicationContext.getResources(resolvedPath)) {
                     if (resource.isReadable()) {
@@ -121,28 +126,24 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
                         String jsonRpcPathAnnotation = JsonMQService.class.getName();
                         if (annotationMetadata.isAnnotated(jsonRpcPathAnnotation)) {
                             String className = classMetadata.getClassName();
-                            String mQGroup = (String) annotationMetadata.getAnnotationAttributes(jsonRpcPathAnnotation).get("value");
-                            String dataSource = (String) annotationMetadata.getAnnotationAttributes(jsonRpcPathAnnotation).get("dataSource");
-                            if(StringUtils.isEmpty(mQGroup)){
-                            	mQGroup = className;
-                            }
-                            
+                            String dataSource = (String) annotationMetadata.getAnnotationAttributes(jsonRpcPathAnnotation).get("value");
 
                             String beanName = this.getExistKey(className);
                         	if(beanName!=null){
                         		MQSenderProxy mQSenderProxy = new MQSenderProxy()
+                        				.setmQNameHelper(mQNameHelper)
                         				.setAsynExecuter(asynExecuter)
                         				.setObjectMapper(objectMapper)
-                        				.setmQSender(mQSender)
-                        				.setDataSource(dataSource)
-                        				.setmQGroup(mQGroup);
+                        				.setmQSender(this.getMQDataSource(dataSource).getMQSender());
                         		mQSenderProxy.setServiceInterface(Class.forName(className));
                         		
                         		senderMap.put(beanName, mQSenderProxy);
                         	}else{
-                                log.debug(String.format("Found JSON-MQ service to proxy [%s] on mqGroup '%s'.", className, mQGroup));
+                        		if(log.isDebugEnabled()){
+                                    log.debug(String.format("Found JSON-MQ service to proxy [%s].", className));
+                        		}
                                 //本地重新注册一个调用代理
-                                registerJsonProxyBean(dlbf, className, dataSource, mQGroup);
+                                registerJsonProxyBean(dlbf, className, dataSource);
                         	}
 
                         }
@@ -167,21 +168,19 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 		return null;
 	}
 	
-	private void registerJsonProxyBean(DefaultListableBeanFactory dlbf, String className, String dataSource, String mQGroup) {
+	private void registerJsonProxyBean(DefaultListableBeanFactory dlbf, String className, String dataSource) {
 		try {
 			Class<?> serviceInterface = Class.forName(className);
 			BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
 	                .rootBeanDefinition(MQSenderProxy.class)
 	                .addPropertyValue("asynExecuter", asynExecuter)
-	                .addPropertyValue("dataSource", dataSource)
-	                .addPropertyValue("mQGroup", mQGroup)
 	                .addPropertyValue("serviceInterface", serviceInterface)
 	                .addPropertyValue("objectMapper", objectMapper)
-	                .addPropertyValue("mQSender", mQSender);
+	                .addPropertyValue("mQNameHelper", mQNameHelper)
+	                .addPropertyValue("mQSender", this.getMQDataSource(dataSource).getMQSender());
 			dlbf.registerBeanDefinition(className+ "-clientProxy", beanDefinitionBuilder.getBeanDefinition());
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -212,23 +211,27 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 			FactoryBean<?> f = (FactoryBean<?>)target;
 			clazz = f.getObjectType();
 		}else{
-			try {
-				clazz = this.getClass(beanFactory, beanName);
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
+			clazz = this.getClass(beanFactory, beanName);
 		}
 			        
 		List<Method> methodList = this.listMethodByAnnotaion(clazz);
 		for(Method method:methodList){
-			String mQName = MQNameHelper.getMQNameByGroupAndMethod(clazz.getName(), jsonMQService.value(), method);
+			JsonMQMapping destination = AnnotationUtil.getAnnotation(method, JsonMQMapping.class);
+			if(destination==null){
+				continue ;
+			}
+			String mQName = mQNameHelper.getMQNameClassAndMethod(clazz, method);			
+			
+			IMQListener mQListener = this.getMQDataSource(jsonMQService.value()).getMQListener();
 			mQListener.listener(new MQReceiverProxy()
-					.setQueueType(jsonMQService.type())
+					.setmQNameHelper(mQNameHelper)
+					.setQueueType(destination.type())
 					.setTarget(target)
 					.setMsgClass(method.getParameterTypes())
 					.setObjectMapper(objectMapper)
-					.setmQDataSource(jsonMQService.dataSource())
-					.setmQName(mQName));
+					.setmQDataSource(jsonMQService.value())
+					.setmQName(mQName)
+					.setTag(destination.tag()));
 		}
 	}
 	
@@ -251,10 +254,21 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
 				"Bean with name '%s' can no longer be found.", serviceBeanName));
 	}
 	
-	private Class<?> getClass(ConfigurableListableBeanFactory beanFactory, String serviceBeanName) throws ClassNotFoundException{
+	/**
+	 * 根据beanName获取Class
+	 * @param beanFactory
+	 * @param serviceBeanName
+	 * @return
+	 * @throws ClassNotFoundException
+	 */
+	private Class<?> getClass(ConfigurableListableBeanFactory beanFactory, String serviceBeanName){
 		BeanDefinition beanDefinition = this.findBeanDefintion(beanFactory, serviceBeanName);
  		String className = beanDefinition.getBeanClassName();
-		return Class.forName(className);
+		try {
+			return Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private List<Method> listMethodByAnnotaion(Class<?> clazz){
@@ -275,4 +289,18 @@ public class MQCoreClient implements BeanFactoryPostProcessor, BeanPostProcessor
     private String resolvePackageToScan(String scanPackage) {
         return ResourceUtils.CLASSPATH_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(scanPackage) + "/**/*.class";
     }
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) applicationContext;
+		DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) configurableApplicationContext.getBeanFactory();
+		this.postProcessBeanFactory(defaultListableBeanFactory);
+	}
+
+	public MQCoreClient setmQNameHelper(MQNameHelper mQNameHelper) {
+		this.mQNameHelper = mQNameHelper;
+		return this;
+	}
+	
+	
 }

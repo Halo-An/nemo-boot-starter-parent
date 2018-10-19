@@ -23,6 +23,12 @@ public interface IMQReceiver {
 	public String getmQName();
 	
 	/**
+	 * 获取队列标签
+	 * @return
+	 */
+	public String getTag();
+	
+	/**
 	 * 获取队列名称
 	 * @return
 	 */

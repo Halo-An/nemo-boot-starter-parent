@@ -4,6 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>nemo-dao-hibernate-starter</artifactId>
+	<version>${nemo.dao.hibernate.version}</version>
 	<packaging>jar</packaging>
 
 	<name>nemo-dao-hibernate-starter</name>
@@ -12,8 +13,12 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.1-RELEASE</version>
+		<version>1.9.3-RELEASE</version>
 	</parent>
+	
+	<properties>
+		<hibernate.version>4.3.11.Final</hibernate.version>
+	</properties>
 	
 	<dependencies>
 		<dependency>
@@ -22,12 +27,8 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.cq</groupId>
-			<artifactId>nemo-util</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.cq</groupId>
-			<artifactId>nemo-core</artifactId>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-dao-core</artifactId>
 		</dependency>
 		
 		<!-- hibernate -->
@@ -84,6 +85,7 @@
 			<artifactId>cglib-nodep</artifactId>
 			<version>2.1_3</version>
 		</dependency>
+				
 	</dependencies>
 
 

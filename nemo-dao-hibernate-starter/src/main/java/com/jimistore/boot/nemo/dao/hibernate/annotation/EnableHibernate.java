@@ -8,13 +8,12 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Import;
 
-import com.cq.nemo.core.config.NemoAutoConfiguration;
 import com.jimistore.boot.nemo.dao.hibernate.config.NemoDaoHibernateAutoConfiguration;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import({NemoDaoHibernateAutoConfiguration.class,NemoAutoConfiguration.class})
+@Import({NemoDaoHibernateAutoConfiguration.class})
 public @interface EnableHibernate {
 
 }

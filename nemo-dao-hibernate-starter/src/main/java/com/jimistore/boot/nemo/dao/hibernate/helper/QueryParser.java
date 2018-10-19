@@ -33,6 +33,12 @@ public class QueryParser implements IQueryParser {
 		return this;
 	}
 
+	public HibernateNamingStrategy getHibernateNamingStrategy() {
+		return hibernateNamingStrategy;
+	}
+
+
+
 	@Override
 	public Query parse(Session session, IQuery<?> query) {
 		if(query instanceof SqlQuery){
@@ -66,7 +72,11 @@ public class QueryParser implements IQueryParser {
 		String sql = String.format("%s %s %s %s", selectSql, targetSql, groupSql, orderSql);	
 		
 		Query sQuery = session.createSQLQuery(sql);
-		sQuery.setResultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP);
+		if(query.getOutClass()!=null&&!query.getOutClass().equals(Map.class)){
+			sQuery.setResultTransformer(AliasToEntityResultTransformer.create(query.getOutClass()));
+		}else{
+			sQuery.setResultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP);
+		}
 		//设置分页
 		if(query!=null&&query.getPageNum()!=null&&query.getPageSize()!=null){
 			sQuery.setFirstResult((query.getPageNum() - 1) * query.getPageSize());
@@ -333,24 +343,6 @@ public class QueryParser implements IQueryParser {
 	
 	private String getOrderSql(IQuery<?> query){
 		return this.getOrderSql(query, null);
-//		StringBuffer hql = new StringBuffer();
-//		//处理排序
-//		if(query.getOrders()!=null&&query.getOrders().length>0){
-//			
-//			for(Order order:query.getOrders()){
-//				if(hql.length()==0){
-//					hql.append(" order by ");
-//				}else{
-//					hql.append(",");
-//				}
-//				String column = order.getKey();
-//				if(order instanceof SqlOrder){
-//					column = this.getColumnByFieldName(column);
-//				}
-//				hql.append(String.format("%s %s", column, order.getOrderType().getCode()));
-//			}
-//		}
-//		return hql.toString();
 	}
 	
 	/**
@@ -386,6 +378,10 @@ public class QueryParser implements IQueryParser {
 		
 		if(filterEntry.getCompare().equals(Compare.like)){
 			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("%'").toString();
+		}else if(filterEntry.getCompare().equals(Compare.lelike)){
+			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '%").append(filterEntry.getValue()).append("'").toString();
+		}else if(filterEntry.getCompare().equals(Compare.rilike)){
+			return new StringBuffer().append(column).append(" ").append(filterEntry.getCompare().getCode()).append(" '").append(filterEntry.getValue()).append("%'").toString();
 		}else if(filterEntry.getCompare().equals(Compare.nl)){
 			return String.format("%s is null", column);
 		}else if(filterEntry.getCompare().equals(Compare.nnl)){
@@ -438,11 +434,11 @@ public class QueryParser implements IQueryParser {
 	}
 	
 	private String getTableNameByClass(Class<?> clazz){
-		return hibernateNamingStrategy.classToTableName(clazz.getSimpleName());
+		return getHibernateNamingStrategy().classToTableName(clazz.getSimpleName());
 	}
 	
 	private String getColumnByFieldName(String filedName){
-		return hibernateNamingStrategy.propertyToColumnName(filedName);
+		return getHibernateNamingStrategy().propertyToColumnName(filedName);
 	}
 	
 

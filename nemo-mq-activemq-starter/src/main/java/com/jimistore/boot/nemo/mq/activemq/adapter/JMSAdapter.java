@@ -1,27 +1,21 @@
 package com.jimistore.boot.nemo.mq.activemq.adapter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.ScheduledMessage;
+import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.log4j.Logger;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQProperties;
 import org.springframework.jms.core.JmsMessagingTemplate;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.jms.listener.SessionAwareMessageListener;
+import org.springframework.jms.core.MessageCreator;
 
+import com.jimistore.boot.nemo.mq.activemq.helper.JMSAdapterHelper;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQAdapter;
 import com.jimistore.boot.nemo.mq.core.adapter.IMQReceiver;
+import com.jimistore.boot.nemo.mq.core.adapter.MQMessage;
 import com.jimistore.boot.nemo.mq.core.enums.QueueType;
 
 /**
@@ -30,88 +24,89 @@ import com.jimistore.boot.nemo.mq.core.enums.QueueType;
  * @Date 2017年12月19日
  *
  */
-public class JMSAdapter implements IMQAdapter, BeanFactoryPostProcessor {
+public class JMSAdapter implements IMQAdapter {
 	
 	private static final Logger log = Logger.getLogger(JMSAdapter.class);
-		
-	private DefaultListableBeanFactory dlbf;
-	
-	private Map<String, JMSDataSource> dataSourceMap = new HashMap<String, JMSDataSource>();
-	
-	private List<IMQReceiver> mQReceiverList = new ArrayList<IMQReceiver>();
 
-	public JMSAdapter setmQDataSourceList(List<JMSDataSource> mQDataSourceList) {
-		for(JMSDataSource mQDataSource:mQDataSourceList){
-			dataSourceMap.put(mQDataSource.getKey(), mQDataSource);
-		}
+	MyActiveMQProperties myActiveMQProperties;
+	
+	JmsMessagingTemplate jmsMessagingTemplate;
+	
+	ActiveMQConnectionFactory activeMQConnectionFactory;
+	
+	JMSAdapterHelper jMSAdapterHelper;
+
+	public JMSAdapter setjMSAdapterHelper(JMSAdapterHelper jMSAdapterHelper) {
+		this.jMSAdapterHelper = jMSAdapterHelper;
 		return this;
 	}
 
+
+
+	public JMSAdapter setMyActiveMQProperties(MyActiveMQProperties myActiveMQProperties) {
+		this.myActiveMQProperties = myActiveMQProperties;
+		return this;
+	}
+	
+	public JMSAdapter init(){
+		
+		activeMQConnectionFactory = new ActiveMQConnectionFactory(
+				myActiveMQProperties.getUser(),
+				myActiveMQProperties.getPassword(),
+				myActiveMQProperties.getBrokerUrl());
+		
+		activeMQConnectionFactory.setUseAsyncSend(true);
+		
+		PooledConnectionFactory pooledConnectionFactory = new PooledConnectionFactory();
+		pooledConnectionFactory.setConnectionFactory(activeMQConnectionFactory);
+		
+		if(myActiveMQProperties.getPool()!=null){
+			ActiveMQProperties.Pool pool = myActiveMQProperties.getPool();
+			pooledConnectionFactory.setBlockIfSessionPoolIsFull(pool.isBlockIfFull());
+			pooledConnectionFactory.setBlockIfSessionPoolIsFullTimeout(pool.getBlockIfFullTimeout());
+			pooledConnectionFactory.setCreateConnectionOnStartup(pool.isCreateConnectionOnStartup());
+			pooledConnectionFactory.setExpiryTimeout(pool.getExpiryTimeout());
+			pooledConnectionFactory.setIdleTimeout(pool.getIdleTimeout());
+			pooledConnectionFactory.setMaxConnections(pool.getMaxConnections());
+			pooledConnectionFactory.setMaximumActiveSessionPerConnection(pool.getMaximumActiveSessionPerConnection());
+			pooledConnectionFactory.setReconnectOnException(pool.isReconnectOnException());
+			pooledConnectionFactory.setTimeBetweenExpirationCheckMillis(pool.getTimeBetweenExpirationCheck());
+			pooledConnectionFactory.setUseAnonymousProducers(pool.isUseAnonymousProducers());			
+		}
+		
+		jmsMessagingTemplate = new JmsMessagingTemplate();
+		jmsMessagingTemplate.setConnectionFactory(pooledConnectionFactory);
+		
+		log.info(String.format("activemq client [%s] started", myActiveMQProperties.getKey()));
+		
+		return this;
+	}
+
+
+
 	@Override
-	public void send(String dataSource, String mqname, QueueType type, Object msg) {
-		log.info(String.format("send a message , maname is [%s]", mqname));
-		JmsMessagingTemplate jmsMessagingTemplate = getmQDataSource(dataSource).getJmsMessagingTemplate();
-		jmsMessagingTemplate.getJmsTemplate().setPubSubDomain(QueueType.Topic.equals(type));
-		jmsMessagingTemplate.convertAndSend(mqname, msg);
+	public void send(MQMessage msg) {
+		if(log.isDebugEnabled()){
+			log.debug(String.format("send a message , maname is [%s]", msg.getmQName()));
+		}
+		jmsMessagingTemplate.getJmsTemplate().setPubSubDomain(QueueType.Topic.equals(msg.getQueueType()));
+		jmsMessagingTemplate.getJmsTemplate().send(msg.getmQName(), new MessageCreator(){
+			
+			@Override
+			public Message createMessage(Session session) throws JMSException {
+				Message message = session.createTextMessage(msg.getContent().toString());
+				if(msg.getDelayTime()>0){
+					message.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, msg.getDelayTime());
+				}
+				return message;
+			}
+			
+		});
 	}
 
 	@Override
 	public void listener(final IMQReceiver mQReceiver) {
-		mQReceiverList.add(mQReceiver);
-		this.initListener();
+		jMSAdapterHelper.initListener(mQReceiver, activeMQConnectionFactory);
 	}
-	
-	private ConnectionFactory getConnectionFactory(String key){
-		return this.getmQDataSource(key).getJmsMessagingTemplate().getConnectionFactory();
-	}
-	
-	private JMSDataSource getmQDataSource(String key){
-		if(!dataSourceMap.containsKey(key)){
-			throw new RuntimeException(String.format("cannot find config of datasource[%s], check application.properties please ", key));
-		}
-		return dataSourceMap.get(key);
-	}
-
-	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		this.dlbf = (DefaultListableBeanFactory) beanFactory;
-		this.initListener();
-	}
-	
-	private void initListener(){
-		if(this.dlbf==null){
-			return ;
-		}
-		for(int i=mQReceiverList.size()-1;i>=0;i--){
-			final IMQReceiver mQReceiver = mQReceiverList.get(i);
-			BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
-	                .rootBeanDefinition(DefaultMessageListenerContainer.class)
-	                .addPropertyValue("connectionFactory", this.getConnectionFactory(mQReceiver.getmQDataSource()))
-	                .addPropertyValue("destinationName", mQReceiver.getmQName())
-	                .addPropertyValue("sessionTransacted", true)
-	                .addPropertyValue("cacheLevel", DefaultMessageListenerContainer.CACHE_NONE)
-	                .addPropertyValue("messageListener", new SessionAwareMessageListener<TextMessage>(){
-
-						@Override
-						public void onMessage(TextMessage message, Session session) throws JMSException {
-							try {
-								log.info(String.format("receive a message, mqname is [%s]", mQReceiver.getmQName()));
-								mQReceiver.receive(message.getText());
-							} catch (Throwable e) {
-								log.warn("handle massage throw a exception", e);
-								throw new JMSException(e.getMessage(), e.toString());
-							}
-						}
-	                	
-	                });
-
-			log.info(String.format("add a message listener[%s]", mQReceiver.getmQName()));
-			dlbf.registerBeanDefinition(String.format("mq-%s-clientProxy", mQReceiver.getmQName()), beanDefinitionBuilder.getBeanDefinition());
-			
-			mQReceiverList.remove(i);
-		}
-		
-	}
-	
 
 }

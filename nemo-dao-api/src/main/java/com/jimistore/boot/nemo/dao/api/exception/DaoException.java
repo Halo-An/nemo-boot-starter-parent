@@ -1,6 +1,8 @@
 package com.jimistore.boot.nemo.dao.api.exception;
 
-public class DaoException extends RuntimeException {
+import com.jimistore.boot.nemo.core.api.exception.BaseException;
+
+public class DaoException extends BaseException {
 
 	/**
 	 * 

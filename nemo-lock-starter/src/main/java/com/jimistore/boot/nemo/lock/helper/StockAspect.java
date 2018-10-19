@@ -32,19 +32,19 @@ public class StockAspect {
 		return this;
 	}
 
-	@Pointcut("@annotation(com.jimistore.boot.nemo.high.concurrency.api.annotation.LockConsume)")
+	@Pointcut("@annotation(com.jimistore.boot.nemo.lock.annotation.LockConsume)")
 	public void consume(){
 	}
 
-	@Pointcut("@annotation(com.jimistore.boot.nemo.high.concurrency.api.annotation.LockProduce)")
+	@Pointcut("@annotation(com.jimistore.boot.nemo.lock.annotation.LockProduce)")
 	public void produce(){
 	}
 
-	@Pointcut("@annotation(com.jimistore.boot.nemo.high.concurrency.api.annotation.LockStockUpdate)")
+	@Pointcut("@annotation(com.jimistore.boot.nemo.lock.annotation.LockStockUpdate)")
 	public void update(){
 	}
 
-	@Pointcut("@annotation(com.jimistore.boot.nemo.high.concurrency.api.annotation.LockStockCreate)")
+	@Pointcut("@annotation(com.jimistore.boot.nemo.lock.annotation.LockStockCreate)")
 	public void create(){
 	}
 	

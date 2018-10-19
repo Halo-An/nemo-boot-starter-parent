@@ -7,9 +7,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.cq.nemo.core.service.JsonString;
-import com.cq.nemo.util.reflex.AnnotationUtil;
-import com.cq.nemo.util.reflex.ClassUtil;
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
+import com.jimistore.boot.nemo.core.util.ClassUtil;
+import com.jimistore.boot.nemo.core.util.JsonString;
 import com.jimistore.boot.nemo.dao.api.annotation.XssIgnoreField;
 import com.jimistore.boot.nemo.dao.api.exception.XssValidatorException;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
