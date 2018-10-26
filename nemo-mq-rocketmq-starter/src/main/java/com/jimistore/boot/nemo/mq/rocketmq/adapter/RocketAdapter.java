@@ -72,12 +72,13 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
             switch(type){
             	case ORDER:
             		orderProducer = ONSFactory.createOrderProducer(properties);
+            		orderProducer.start();
             		break;
             	default :
             		producer = ONSFactory.createProducer(properties);
+        			producer.start();
             		break;
             }
-			producer.start();
     		log.debug("rocketmq producer created");
         }
 
@@ -89,12 +90,13 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
             switch(type){
             	case ORDER:
         	        orderConsumer = ONSFactory.createOrderedConsumer(properties);
+        	        orderConsumer.start();
             		break;
             	default :
         	        consumer = ONSFactory.createConsumer(properties);
+        			consumer.start();
             		break;
             }
-			consumer.start();
 			log.debug("rocketmq rocketmq created");
 			
 			log.info(String.format("rocketmq client [%s] started", rocketMQProperties.getKey()));
@@ -114,7 +116,7 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 
 	@Override
 	public void send(MQMessage message) {
-		if(producer==null){
+		if(producer==null&&orderProducer==null){
 			throw new RuntimeException(String.format("can not find producer id for topic[%s]", message.getmQName()));
 		}
 		
@@ -131,7 +133,7 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 	
 	@Override
 	public void listener(final IMQReceiver mQReceiver) {
-		if(consumer==null){
+		if(consumer==null&&orderConsumer==null){
 			throw new RuntimeException(String.format("can not find consumer id for topic[%s]", mQReceiver.getmQName()));
 		}
 		
@@ -200,8 +202,8 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 		
 		switch(type){
 	    	case ORDER:
-	    		if(shardingKey==null){
-	    			shardingKey="";
+	    		if(StringUtils.isEmpty(shardingKey)){
+	    			shardingKey=String.valueOf(System.currentTimeMillis());
 	    		}
 	    		orderProducer.send(msg, shardingKey);
 	    		break;
