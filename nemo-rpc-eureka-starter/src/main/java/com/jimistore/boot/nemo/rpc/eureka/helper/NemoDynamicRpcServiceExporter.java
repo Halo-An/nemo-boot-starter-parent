@@ -30,7 +30,7 @@ public class NemoDynamicRpcServiceExporter implements IDynamicRpcServiceExporter
 		if(log.isDebugEnabled()){
 			log.debug(String.format("request getRpcService, the serviceName is %s, the version is %s", serviceName, version));
 		}
-		String key = this.parseKey(serviceName, version);
+		String key = this.parseKey(inf, serviceName, version);
 		if(!beanCacheMap.containsKey(key)){
 			T service = null;
 			try{
@@ -48,8 +48,8 @@ public class NemoDynamicRpcServiceExporter implements IDynamicRpcServiceExporter
 		return (T)beanCacheMap.get(key);
 	}
 	
-	private String parseKey(String serviceName, String version){
-		return String.format("%s-%s", serviceName, version);
+	private String parseKey(Class<?> inf, String serviceName, String version){
+		return String.format("%s-%s-%s", inf.getName(), serviceName, version);
 	}
 
 	@Override
