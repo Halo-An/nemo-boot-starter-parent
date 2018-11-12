@@ -119,8 +119,14 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 		if(producer==null&&orderProducer==null){
 			throw new RuntimeException(String.format("can not find producer id for topic[%s]", message.getmQName()));
 		}
+		if(message==null) {
+			throw new RuntimeException("message cannot be empty");
+		}
+		if(StringUtils.isEmpty(message.getKey())) {
+			message.setKey(UUID.randomUUID().toString());
+		}
 		
-		Message msg = new Message(message.getmQName(), message.getmQName(), UUID.randomUUID().toString(), message.getContent().toString().getBytes());
+		Message msg = new Message(message.getmQName(), message.getmQName(), message.getKey(), message.getContent().toString().getBytes());
 		msg.setTag(message.getTag());
 		if(message.getDelayTime()>0){
 			msg.setStartDeliverTime(System.currentTimeMillis()+message.getDelayTime());
