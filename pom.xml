@@ -69,6 +69,27 @@
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
 		<nemo.sliding.window.version>1.9.9-RELEASE</nemo.sliding.window.version>
 	</properties>
+	
+	<profiles>
+		<profile>
+			<id>test</id>
+			<properties>
+				<build.packaging>war</build.packaging>
+				<build.web.scope>provided</build.web.scope>
+			</properties>
+		</profile>
+		<profile>
+			<id>default</id>
+			<properties>
+				<build.packaging>jar</build.packaging>
+				<build.web.scope>compile</build.web.scope>
+			</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+	</profiles>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -223,6 +244,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<scope>${build.web.scope}</scope>
 		</dependency>
 
 		<dependency>
