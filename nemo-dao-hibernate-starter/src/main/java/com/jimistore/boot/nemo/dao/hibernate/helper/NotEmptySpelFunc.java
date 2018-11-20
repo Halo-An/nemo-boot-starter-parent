@@ -9,6 +9,13 @@ public class NotEmptySpelFunc implements ISpelExtendFunc {
 
 	@Override
 	public Object format(String format, Object... value) {
+		if(value==null || value.toString().trim().length()==0) {
+			return "";
+		}
+		Object[] objs = value;
+		if(objs.length==0) {
+			return "";
+		}
 		for(Object obj:value){
 			if(obj==null){
 				return "";
