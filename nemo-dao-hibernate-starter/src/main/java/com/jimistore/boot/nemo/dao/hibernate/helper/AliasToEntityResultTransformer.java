@@ -48,7 +48,7 @@ public class AliasToEntityResultTransformer<T> extends AliasedTupleSubsetResultT
 						try{
 							this.fillValue(target, field, tuple[i]);
 						}catch(Exception e){
-							log.warn(e);
+							log.warn(String.format("fill value error:%s[%s]", columnName, aliases[i]), e);
 						}
 					}
 				}
@@ -68,6 +68,14 @@ public class AliasToEntityResultTransformer<T> extends AliasedTupleSubsetResultT
 	}
 	
 	private void fillValue(Object target, Field field, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+		if(value!=null) {
+			if(field.getType().equals(Long.class)) {
+				value = Long.parseLong(value.toString());
+			}else if(field.getType().equals(Short.class)) {
+				value = Short.parseShort(value.toString());
+			}
+		}
+		
 		String fieldName = field.getName();
 		String methodName = String.format("set%s%s", fieldName.substring(0,1).toUpperCase(),fieldName.substring(1));
 		entityClass.getMethod(methodName, field.getType()).invoke(target, value);
