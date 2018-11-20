@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -27,7 +28,7 @@
 		<module>nemo-lock-starter</module>
 		<module>nemo-security-starter</module>
 		<module>nemo-sliding-window-starter</module>
-		
+
 	</modules>
 
 	<parent>
@@ -69,27 +70,27 @@
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
 		<nemo.sliding.window.version>1.9.9-RELEASE</nemo.sliding.window.version>
 	</properties>
-	
+
 	<profiles>
 		<profile>
 			<id>test</id>
 			<properties>
 				<build.packaging>war</build.packaging>
-				<build.web.scope>provided</build.web.scope>
+				<build.tomcat.scope>provided</build.tomcat.scope>
 			</properties>
 		</profile>
 		<profile>
 			<id>default</id>
 			<properties>
 				<build.packaging>jar</build.packaging>
-				<build.web.scope>compile</build.web.scope>
+				<build.tomcat.scope>compile</build.tomcat.scope>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
 		</profile>
 	</profiles>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -191,7 +192,7 @@
 				<artifactId>nemo-security-starter</artifactId>
 				<version>${nemo.security.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-sliding-window-starter</artifactId>
@@ -244,7 +245,18 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<scope>${build.web.scope}</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>${build.tomcat.scope}</scope>
 		</dependency>
 
 		<dependency>
