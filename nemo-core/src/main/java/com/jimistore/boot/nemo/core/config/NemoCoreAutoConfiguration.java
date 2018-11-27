@@ -11,11 +11,11 @@ import javax.validation.MessageInterpolator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.core.helper.InitContextAspect;
+import com.jimistore.boot.nemo.core.helper.NemoJsonKeyGennerator;
 import com.jimistore.boot.nemo.core.helper.NemoJsonRedisSerializer;
 import com.jimistore.boot.nemo.core.helper.NemoMethodValidationPostProcessor;
 import com.jimistore.boot.nemo.core.helper.RequestLoggerAspect;
@@ -35,6 +36,7 @@ import com.jimistore.boot.nemo.core.helper.ResponseBodyWrapFactory;
 import com.jimistore.boot.nemo.core.helper.ResponseExceptionHandle;
 
 @Configuration
+@EnableCaching
 @EnableConfigurationProperties(RedisProperties.class)
 public class NemoCoreAutoConfiguration {
 
@@ -116,8 +118,8 @@ public class NemoCoreAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(RedisTemplate.class)
-	public RedisTemplate<String, String> redisTemplate(
+	@ConditionalOnMissingBean(StringRedisTemplate.class)
+	public StringRedisTemplate redisTemplate(
 			RedisConnectionFactory connectionFactory) {
 		
 		StringRedisTemplate template = new StringRedisTemplate(connectionFactory);
@@ -135,8 +137,7 @@ public class NemoCoreAutoConfiguration {
 	}
 	
 	@Bean
-	public CacheManager cacheManager(
-			@SuppressWarnings("rawtypes") RedisTemplate redisTemplate, RedisProperties redisProperties) {
+	public CacheManager cacheManager(StringRedisTemplate redisTemplate, RedisProperties redisProperties) {
 		RedisCacheManager redisCacheManager = new RedisCacheManager(redisTemplate);
 		redisCacheManager.setDefaultExpiration(300l);
 		Map<String,Long> map=new HashMap<String,Long>();
@@ -152,6 +153,12 @@ public class NemoCoreAutoConfiguration {
 		}
 		redisCacheManager.setExpires(map);
 		return redisCacheManager;
+	}
+	
+	@Bean
+	public NemoJsonKeyGennerator keyGenerator()
+	{
+	    return new NemoJsonKeyGennerator();
 	}
 	
 }

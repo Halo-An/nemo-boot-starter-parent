@@ -33,6 +33,8 @@ public class DataSourceProperties {
 	
 	private Boolean testConnectionOnCheckout=false;
 	
+	private Boolean testConnectionOnCheckin=false;
+	
 	private String characterEncoding="UTF-8";
 
 	public String getDriverClass() {
@@ -153,6 +155,14 @@ public class DataSourceProperties {
 
 	public void setCharacterEncoding(String characterEncoding) {
 		this.characterEncoding = characterEncoding;
+	}
+
+	public Boolean getTestConnectionOnCheckin() {
+		return testConnectionOnCheckin;
+	}
+
+	public void setTestConnectionOnCheckin(Boolean testConnectionOnCheckin) {
+		this.testConnectionOnCheckin = testConnectionOnCheckin;
 	}
 	
 	

@@ -33,6 +33,7 @@ public class BaseDataSource implements FactoryBean  {
 		dataSource.setAcquireRetryAttempts(dataSourceProperties.getAcquireRetryAttempts());
 		dataSource.setBreakAfterAcquireFailure(dataSourceProperties.getBreakAfterAcquireFailure());
 		dataSource.setTestConnectionOnCheckout(dataSourceProperties.getTestConnectionOnCheckout());
+		dataSource.setTestConnectionOnCheckin(dataSourceProperties.getTestConnectionOnCheckin());
 		return dataSource;
 	}
 
