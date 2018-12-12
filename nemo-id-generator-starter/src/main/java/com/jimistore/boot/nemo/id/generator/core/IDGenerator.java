@@ -7,7 +7,7 @@ public class IDGenerator implements IIDGenerator {
 		StringBuilder id = new StringBuilder();
 		char[] chars = seq.toCharArray();
 		int size = chars.length;
-		int diff = 0;
+		long diff = 0;
 		for(int i=0; i<length; i++) {
 			diff = diff * size + 1;
 		}
