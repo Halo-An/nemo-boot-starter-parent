@@ -19,15 +19,21 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 	HibernateProperties hibernatePropertie;
 	
 	DataSourceProperties dataSourcePropertie;
+	
+	DataSource dataSource;
+	
+	NamingStrategy namingStrategy;
 
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 		super.setDataSource(dataSource);
 	}
 
 	@Autowired
 	@Override
 	public void setNamingStrategy(NamingStrategy namingStrategy) {
+		this.namingStrategy = namingStrategy;
 		super.setNamingStrategy(namingStrategy);
 	}
 
