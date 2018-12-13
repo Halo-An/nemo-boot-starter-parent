@@ -8,14 +8,14 @@ public class IDGenerator implements IIDGenerator {
 		char[] chars = seq.toCharArray();
 		int size = chars.length;
 		long diff = 0;
-		for(int i=0; i<length; i++) {
-			diff = diff * size + 1;
+		for(int i=length; i>0; i--) {
+			diff = diff * size + i;
 		}
 		long remain = diff * num;
 		for(int i=length; i>0; i--) {
-			int cur = (int)Math.pow(size, (i-1));
-			int index = (int) remain / cur;
-			id.append(chars[ index % size ]);
+			long cur = (long)Math.pow(size, (i-1));
+			long index = (long) remain / cur;
+			id.append(chars[ (int)index % size ]);
 			remain = remain % cur;
 		}
 		
