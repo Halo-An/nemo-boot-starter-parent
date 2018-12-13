@@ -1,7 +1,6 @@
 package com.jimistore.boot.nemo.id.generator.helper;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -41,14 +40,10 @@ public class IDGeneratorAspect {
 		IDGenerator iDGenerator = AnnotationUtil.getAnnotation(method, IDGenerator.class);
 		String id = iDGeneratorHelper.generator(iDGenerator);
 		Object[] args = joinPoint.getArgs();
-		Parameter[] params = method.getParameters();
-		for(int i = 0;i<params.length;i++) {
-			Parameter param = params[i];
-			if(param.getType().equals(String.class)&&param.getName().equals(iDGenerator.field())) {
-				args[i]=id;
-			}
+		if(args.length<=iDGenerator.field()) {
+			throw new RuntimeException("field of IDGenerator cannot be less than length of args");
 		}
-		
+		args[iDGenerator.field()] = id;
 		return joinPoint.proceed(args);
 	}
 	

@@ -33,7 +33,7 @@ public @interface IDGenerator {
 	 * 生成id后输出的字段
 	 * @return
 	 */
-	String field() default "id";
+	int field() default 0;
 	
 	/**
 	 * 开始的序号
@@ -45,6 +45,6 @@ public @interface IDGenerator {
 	 * 生成器的类
 	 * @return
 	 */
-	Class<?> generatorClass() default IDGenerator.class;
+	Class<?> generatorClass() default com.jimistore.boot.nemo.id.generator.core.IDGenerator.class;
 
 }
