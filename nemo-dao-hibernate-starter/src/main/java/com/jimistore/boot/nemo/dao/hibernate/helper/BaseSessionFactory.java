@@ -37,6 +37,14 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 		super.setNamingStrategy(namingStrategy);
 	}
 
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+
+	public NamingStrategy getNamingStrategy() {
+		return namingStrategy;
+	}
+
 	public BaseSessionFactory() {
 		super();
 	}
@@ -87,6 +95,14 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 	public String getKey() {
 		return key;
+	}
+
+	public HibernateProperties getHibernatePropertie() {
+		return hibernatePropertie;
+	}
+
+	public DataSourceProperties getDataSourcePropertie() {
+		return dataSourcePropertie;
 	}
 
 	public BaseSessionFactory setKey(String key) {
