@@ -8,10 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Table;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.CriteriaSpecification;
+import org.springframework.util.StringUtils;
 
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 import com.jimistore.boot.nemo.dao.api.enums.AndOr;
 import com.jimistore.boot.nemo.dao.api.enums.Compare;
 import com.jimistore.boot.nemo.dao.api.request.Filter;
@@ -455,6 +459,10 @@ public class QueryParserV2 implements IQueryParser {
 	}
 	
 	private String getTableNameByClass(Class<?> clazz){
+		Table table = AnnotationUtil.getAnnotation(clazz, Table.class);
+		if(table!=null && !StringUtils.isEmpty(table.name())) {
+			return table.name();
+		}
 		return getHibernateNamingStrategy().classToTableName(clazz.getSimpleName());
 	}
 	

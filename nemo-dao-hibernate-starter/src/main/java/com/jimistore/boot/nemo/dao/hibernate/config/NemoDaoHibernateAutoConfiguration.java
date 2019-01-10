@@ -13,9 +13,11 @@ import com.jimistore.boot.nemo.dao.api.dao.IDao;
 import com.jimistore.boot.nemo.dao.api.validator.IQueryValidator;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 import com.jimistore.boot.nemo.dao.hibernate.dao.MutilHibernateQueryDao;
+import com.jimistore.boot.nemo.dao.hibernate.helper.BaseSessionFactory;
 import com.jimistore.boot.nemo.dao.hibernate.helper.IQueryParser;
 import com.jimistore.boot.nemo.dao.hibernate.helper.ISpelExtendFunc;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilDaoAccessAspect;
+import com.jimistore.boot.nemo.dao.hibernate.helper.MutilDataSourceHealthEndPoint;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilQueryParser;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactory;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactoryHelper;
@@ -62,6 +64,13 @@ public class NemoDaoHibernateAutoConfiguration {
 	public MutilSessionFactoryHelper mutilSessionFactoryHelper(MutilSessionFactory mutilSessionFactory){
 		return new MutilSessionFactoryHelper().setMutilSessionFactory(mutilSessionFactory);
 	}
+	
+	@Bean("db")
+	@ConditionalOnMissingBean(MutilDataSourceHealthEndPoint.class)
+	public MutilDataSourceHealthEndPoint butilDataSourceHealthEndPoint(List<BaseSessionFactory> sessionFactoryList){
+		return new MutilDataSourceHealthEndPoint().setSessionFactoryList(sessionFactoryList);
+	}
+	
 	
 	@Bean
 	@ConditionalOnMissingBean(MutilDaoAccessAspect.class)
