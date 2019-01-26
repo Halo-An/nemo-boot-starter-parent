@@ -60,7 +60,9 @@ public class InitContextAspect {
 			set=new HashSet<BaseBean<?>>();
 		}
 		set.add(baseBean);
-		baseBean.setCreateTime(now);
+		if(baseBean.getCreateTime()==null) {
+			baseBean.setCreateTime(now);
+		}
 		baseBean.setUpdateTime(now);
 		baseBean.setCreateAuthor(user);
 		baseBean.setUpdateAuthor(user);
