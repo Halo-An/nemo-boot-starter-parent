@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.4.0-RELEASE</version>
+		<version>1.9.23-RELEASE</version>
 	</parent>
 
 	<dependencies>
@@ -22,12 +22,10 @@
 			<artifactId>nemo-core-api</artifactId>
 		</dependency>
 		
-		<!-- https://mvnrepository.com/artifact/io.reactivex/rxjava -->
 		<dependency>
-		    <groupId>io.reactivex</groupId>
-		    <artifactId>rxjava</artifactId>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-sliding-window-starter</artifactId>
 		</dependency>
-				
 
 	</dependencies>
 

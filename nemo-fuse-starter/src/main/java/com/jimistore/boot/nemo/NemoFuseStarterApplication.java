@@ -1,4 +1,4 @@
-package com.jimistore.boot.nemofusestarter;
+package com.jimistore.boot.nemo;
 
 import java.util.ArrayList;
 import java.util.List;
