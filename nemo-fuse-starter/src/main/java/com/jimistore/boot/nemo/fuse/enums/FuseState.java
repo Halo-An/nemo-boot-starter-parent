@@ -8,8 +8,22 @@ package com.jimistore.boot.nemo.fuse.enums;
  */
 public enum FuseState {
 	
-	OPEN,
+	OPEN(true),
 	CONNECT,
-	TRY_CONNECT
+	TRY(true),
+	TRYING;
+	
+	boolean available = false;
+
+	private FuseState(boolean available) {
+		this.available = available;
+	}
+
+	private FuseState() {
+	}
+
+	public boolean isAvailable() {
+		return available;
+	}
 
 }

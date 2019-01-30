@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.jimistore.boot.nemo.fuse.exception.OpenException;
 import com.jimistore.boot.nemo.fuse.exception.OutOfCapacityException;
-import com.jimistore.boot.nemo.fuse.exception.OutOfTryCapacityException;
+import com.jimistore.boot.nemo.fuse.exception.TaskInternalException;
 import com.jimistore.boot.nemo.fuse.exception.TimeOutException;
 
 /**
@@ -22,12 +22,12 @@ public interface IFuseContainer {
 	 * @return
 	 * @throws 
 	 */
-	public <V> V execute(String key, ITask<V> task) throws TimeOutException, OpenException, OutOfCapacityException, OutOfTryCapacityException;
+	public <V> V execute(String key, ITask<V> task) throws TimeOutException, OpenException, OutOfCapacityException, TaskInternalException;
 
 	/**
 	 * 获取所有熔断器信息
 	 * @return
 	 */
-	public List<IFuseInfo> getFuseInfoList(); 
+	public List<IFuseInfo> getFuseInfoList();
 	
 }

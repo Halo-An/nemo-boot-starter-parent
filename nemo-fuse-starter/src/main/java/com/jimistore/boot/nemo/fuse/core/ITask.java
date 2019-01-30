@@ -17,4 +17,10 @@ public interface ITask<V> extends Callable<V> {
 	 */
 	public long getTimeout();
 	
+	/**
+	 * 获取任务执行异常回调函数
+	 * @return
+	 */
+	public Callable<V> getCallback();
+	
 }

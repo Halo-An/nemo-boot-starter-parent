@@ -3,7 +3,7 @@ package com.jimistore.boot.nemo.fuse.core;
 import com.jimistore.boot.nemo.fuse.enums.FuseState;
 import com.jimistore.boot.nemo.fuse.exception.OpenException;
 import com.jimistore.boot.nemo.fuse.exception.OutOfCapacityException;
-import com.jimistore.boot.nemo.fuse.exception.OutOfTryCapacityException;
+import com.jimistore.boot.nemo.fuse.exception.TaskInternalException;
 import com.jimistore.boot.nemo.fuse.exception.TimeOutException;
 
 /**
@@ -33,11 +33,17 @@ public interface IFuse {
 	public IFuseInfo getFuseInfo();
 	
 	/**
+	 * 获取熔断器的策略
+	 * @return
+	 */
+	public IFuseStrategy getFuseStrategy();
+	
+	/**
 	 * 执行任务
 	 * @param task
 	 * @return
 	 * @throws 
 	 */
-	public <V> V execute(ITask<V> task) throws TimeOutException, OpenException, OutOfCapacityException, OutOfTryCapacityException;
+	public <V> V execute(ITask<V> task) throws TimeOutException, OpenException, OutOfCapacityException, TaskInternalException;
 
 }

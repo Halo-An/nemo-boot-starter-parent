@@ -1,5 +1,7 @@
 package com.jimistore.boot.nemo.fuse.core;
 
+import com.jimistore.boot.nemo.fuse.exception.OutOfCapacityException;
+import com.jimistore.boot.nemo.fuse.exception.TaskInternalException;
 import com.jimistore.boot.nemo.fuse.exception.TimeOutException;
 
 /**
@@ -15,6 +17,6 @@ public interface IFuseExecutor {
 	 * @param task
 	 * @return
 	 */
-	public <V> V execute(ITask<V> task) throws TimeOutException;
+	public <V> V execute(ITask<V> task) throws TimeOutException, OutOfCapacityException, TaskInternalException;
 
 }

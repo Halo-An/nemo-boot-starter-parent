@@ -58,14 +58,14 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
         // SecretKey 阿里云身份验证，在阿里云服务器管理控制台创建
         properties.put(PropertyKeyConst.SecretKey, rocketMQProperties.getPassword());
         // 设置 TCP 接入域名（此处以公共云生产环境为例）
-        properties.put(PropertyKeyConst.ONSAddr, rocketMQProperties.getUrl());
+        properties.put(PropertyKeyConst.NAMESRV_ADDR, rocketMQProperties.getUrl());
         
         type = RocketMQType.parse(rocketMQProperties.getType());
 
         if(rocketMQProperties.getProducerId()!=null){
     		log.debug("create rocketmq producer");
     		//您在控制台创建的 Producer ID
-            properties.put(PropertyKeyConst.ProducerId, rocketMQProperties.getProducerId());
+            properties.put(PropertyKeyConst.GROUP_ID, rocketMQProperties.getProducerId());
             //设置发送超时时间，单位毫秒
             properties.setProperty(PropertyKeyConst.SendMsgTimeoutMillis, rocketMQProperties.getSendTimeOut().toString());
            
@@ -85,7 +85,7 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
 		if(rocketMQProperties.getConsumerId()!=null){
 			log.debug("create rocketmq consumer");
 	        // 您在控制台创建的 Consumer ID
-	        properties.put(PropertyKeyConst.ConsumerId, rocketMQProperties.getConsumerId());
+	        properties.put(PropertyKeyConst.GROUP_ID, rocketMQProperties.getConsumerId());
 	        
             switch(type){
             	case ORDER:

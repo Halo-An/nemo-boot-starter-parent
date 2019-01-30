@@ -1,7 +1,5 @@
 package com.jimistore.boot.nemo.fuse.core;
 
-import com.jimistore.boot.nemo.fuse.enums.FuseState;
-
 /**
  * 熔断器策略接口
  * @author chenqi
@@ -11,9 +9,30 @@ import com.jimistore.boot.nemo.fuse.enums.FuseState;
 public interface IFuseStrategy {
 	
 	/**
-	 * 熔断器调用统计信息变更时
-	 * @param fuse
+	 * 熔断器被创建时
+	 * @param fuseInfo
 	 */
-	public FuseState changeInfo(IFuse fuse);
+	public void creating(IFuseInfo fuseInfo);
+	
+	/**
+	 * 熔断器执行任务前
+	 * @param fuseInfo
+	 * @return
+	 */
+	public void executeBefore(IFuseInfo fuseInfo);
+	
+	/**
+	 * 熔断器执行任务成功
+	 * @param fuseInfo
+	 * @return
+	 */
+	public void executeSuccess(IFuseInfo fuseInfo);
+	
+	/**
+	 * 熔断器执行任务异常
+	 * @param fuseInfo
+	 * @return
+	 */
+	public void executeException(IFuseInfo fuseInfo, Throwable throwable);
 
 }
