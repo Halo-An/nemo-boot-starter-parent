@@ -1,7 +1,6 @@
 package com.jimistore.boot.nemo.core.util;
 
 import java.lang.reflect.Field;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -209,7 +208,7 @@ public class JsonString {
 		exclusionMap.put(obj, "{}");
 		StringBuffer jsonStr=new StringBuffer();
 		if(ClassUtil.isDoubleType(obj)){
-			jsonStr.append(new DecimalFormat("#.0000").format(Double.parseDouble(String.valueOf(obj))));
+			jsonStr.append(String.format("%.4f", Double.parseDouble(String.valueOf(obj))));
 		}else if(ClassUtil.isBasicType(obj)){
 			jsonStr.append(String.valueOf(obj));
 		}else if(obj instanceof String){
