@@ -204,6 +204,12 @@
 
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-fuse-starter</artifactId>
+				<version>${nemo.fuse.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-id-generator-starter</artifactId>
 				<version>${nemo.id.generator.version}</version>
 			</dependency>

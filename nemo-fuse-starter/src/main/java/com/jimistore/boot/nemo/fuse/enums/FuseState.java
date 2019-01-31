@@ -8,8 +8,8 @@ package com.jimistore.boot.nemo.fuse.enums;
  */
 public enum FuseState {
 	
-	OPEN(true),
-	CONNECT,
+	OPEN,
+	CONNECT(true),
 	TRY(true),
 	TRYING;
 	

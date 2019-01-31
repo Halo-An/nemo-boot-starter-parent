@@ -66,6 +66,11 @@ public class Fuse implements IFuse {
 		if(!fuseState.isAvailable()) {
 			throw new OpenException();
 		}
+		if(fuseState.equals(FuseState.TRY)) {
+			if(fuseInfo instanceof FuseInfo) {
+				((FuseInfo)fuseInfo).setFuseState(FuseState.TRYING);
+			}
+		}
 		return fuseExecutor.execute(task);
 	}
 

@@ -13,6 +13,8 @@ import com.jimistore.boot.nemo.fuse.core.FuseTemplate;
 import com.jimistore.boot.nemo.fuse.core.IFuseStrategy;
 import com.jimistore.boot.nemo.fuse.core.IFuseStrategyFactory;
 import com.jimistore.boot.nemo.fuse.helper.FuseExecutorAspect;
+import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
+import com.jimistore.boot.nemo.sliding.window.core.SlidingWindowTemplate;
 
 @Configuration
 @EnableConfigurationProperties(FuseProperties.class)
@@ -21,13 +23,18 @@ public class NemoFuseAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(IFuseStrategy.class)
 	public IFuseStrategy fuseStrategy(FuseProperties fuseProperties) {
-		return new DefaultFuseStrategy().setFuseProperties(fuseProperties);
+		SlidingWindowTemplate slidingWindowTemplate = SlidingWindowTemplate.create(new SlidingWindowProperties()
+				.setCacheModel(SlidingWindowProperties.CACHE_MODEL_LOCAL));
+		return new DefaultFuseStrategy()
+				.setSlidingWindowTemplate(slidingWindowTemplate)
+				.setFuseProperties(fuseProperties);
 	}
 	
 	@Bean
 	@ConditionalOnMissingBean(IFuseStrategyFactory.class)
 	public IFuseStrategyFactory fuseStrategyFactory(List<IFuseStrategy> fuseStrategyList) {
-		return new DefaultFuseStrategyFactory().setFuseStrategyList(fuseStrategyList);
+		return new DefaultFuseStrategyFactory()
+				.setFuseStrategyList(fuseStrategyList);
 	}
 	
 	@Bean

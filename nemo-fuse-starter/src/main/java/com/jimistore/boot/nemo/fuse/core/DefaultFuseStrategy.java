@@ -8,6 +8,8 @@ import org.apache.log4j.Logger;
 
 import com.jimistore.boot.nemo.fuse.config.FuseProperties;
 import com.jimistore.boot.nemo.fuse.enums.FuseState;
+import com.jimistore.boot.nemo.fuse.exception.TaskInternalException;
+import com.jimistore.boot.nemo.fuse.exception.TimeOutException;
 import com.jimistore.boot.nemo.sliding.window.core.ILogicSubscriber;
 import com.jimistore.boot.nemo.sliding.window.core.INotice;
 import com.jimistore.boot.nemo.sliding.window.core.INoticeEvent;
@@ -50,13 +52,6 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("request execute before, the key is %s", fuseInfo.getKey()));
 		}
-		FuseState state = fuseInfo.getFuseState();
-		//如果是准备尝试
-		if(state.equals(FuseState.TRY)) {
-			if(fuseInfo instanceof FuseInfo) {
-				((FuseInfo)fuseInfo).setFuseState(FuseState.TRYING);
-			}
-		}
 		slidingWindowTemplate.publish(new PublishEvent<Integer>()
 				.setTime(System.currentTimeMillis())
 				.setTopicKey(String.format(REQUEST_KEY_FORMAT, fuseInfo.getKey()))
@@ -88,10 +83,13 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 			}
 		}
 
-		slidingWindowTemplate.publish(new PublishEvent<Integer>()
-				.setTime(System.currentTimeMillis())
-				.setTopicKey(String.format(REQUEST_EXCEPTION_KEY_FORMAT, fuseInfo.getKey()))
-				.setValue(1));
+		if(throwable instanceof TaskInternalException || throwable instanceof TimeOutException) {
+			slidingWindowTemplate.publish(new PublishEvent<Integer>()
+					.setTime(System.currentTimeMillis())
+					.setTopicKey(String.format(REQUEST_EXCEPTION_KEY_FORMAT, fuseInfo.getKey()))
+					.setValue(1));
+			
+		}
 	}
 	
 	/**
@@ -107,7 +105,7 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 		if(state.equals(FuseState.CONNECT)) {
 			Double value = event.getValue().get(0).doubleValue();
 			//如果调用的异常率大于50%，则断开
-			if(value!=null && !value.isNaN() && value>0.5d) {
+			if(value!=null && !value.isNaN() && value>=fuseProperties.getOpenRatioThreshold()) {
 				if(fuseInfo instanceof FuseInfo) {
 					((FuseInfo)fuseInfo).setFuseState(FuseState.OPEN);
 				}
@@ -115,7 +113,7 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 		}else if(state.equals(FuseState.OPEN)) {
 			Double value = event.getValue().get(0).doubleValue();
 			//如果调用量已经停滞了，每分钟去尝试一次
-			if(value==null || value.isNaN()) {
+			if(value==null || value.isNaN() || value <= fuseProperties.getTryRatioThreshold()) {
 				((FuseInfo)fuseInfo).setFuseState(FuseState.TRY);
 			}
 		}
@@ -131,8 +129,8 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 		String exceptionKey = String.format(REQUEST_EXCEPTION_KEY_FORMAT, fuseInfo.getKey());
 		String matchKey = "#b/#a";
 		Map<String, String> variableMap = new HashMap<String, String>();
-		variableMap.put("a", requestKey);
-		variableMap.put("b", exceptionKey);
+		variableMap.put(requestKey, "a");
+		variableMap.put(exceptionKey, "b");
 		
 		//创建调用的计数器
 		slidingWindowTemplate.createCounter(new Topic()
@@ -170,7 +168,18 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 
 			@Override
 			public Integer getLength() {
-				return 60;
+				return 1;
+			}
+			
+
+			@Override
+			public Class<?> getValueType() {
+				return Double.class;
+			}
+
+			@Override
+			public Long getInterval() {
+				return fuseProperties.getCheckInterval();
 			}
 
 			@Override
@@ -187,7 +196,6 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 			public Map<String, String> getTopicVariableMap() {
 				return variableMap;
 			}
-			
 		});
 	}
 

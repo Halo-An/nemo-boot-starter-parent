@@ -6,6 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class FuseProperties {
 	
 	int maxExecutorThreadSize = 100;
+	
+	double tryRatioThreshold = 0d;
+	
+	double openRatioThreshold = 0.5d;
+	
+	long checkInterval = 10000l;
 
 	public int getMaxExecutorThreadSize() {
 		// TODO Auto-generated method stub
@@ -14,6 +20,33 @@ public class FuseProperties {
 
 	public FuseProperties setMaxExecutorThreadSize(int maxExecutorThreadSize) {
 		this.maxExecutorThreadSize = maxExecutorThreadSize;
+		return this;
+	}
+
+	public double getTryRatioThreshold() {
+		return tryRatioThreshold;
+	}
+
+	public FuseProperties setTryRatioThreshold(double tryRatioThreshold) {
+		this.tryRatioThreshold = tryRatioThreshold;
+		return this;
+	}
+
+	public double getOpenRatioThreshold() {
+		return openRatioThreshold;
+	}
+
+	public FuseProperties setOpenRatioThreshold(double openRatioThreshold) {
+		this.openRatioThreshold = openRatioThreshold;
+		return this;
+	}
+
+	public long getCheckInterval() {
+		return checkInterval;
+	}
+
+	public FuseProperties setCheckInterval(long checkInterval) {
+		this.checkInterval = checkInterval;
 		return this;
 	}
 

@@ -57,14 +57,14 @@ public class FuseContainer implements IFuseContainer {
 			
 			IFuseInfo fuseInfo = new FuseInfo().setKey(key);
 			//创建熔断器
-			Fuse temp = new Fuse()
+			fuse = new Fuse()
 					.setFuseInfo(fuseInfo)
 					.setFuseExecutor(fuseExecutor)
 					.setFuseStrategy(fuseStrategy);
-			fuse = fuseMap.putIfAbsent(key, temp);
+			IFuse old = fuseMap.putIfAbsent(key, fuse);
 			
 			//如果有线程资源没有冲突
-			if(fuse.equals(temp)) {
+			if(old == null) {
 				fuseStrategy.creating(fuseInfo);
 			}
 		}
