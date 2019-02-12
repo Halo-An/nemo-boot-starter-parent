@@ -24,6 +24,11 @@ public class NemoRpcProperties {
 	private int readTimeOut = 10000;
 	
 	/**
+	 * 熔断器超时时间
+	 */
+	private int fuseTimeOut = 10000;
+	
+	/**
 	 * 是否忽略版本兼容
 	 */
 	private boolean ignoreVersionCompatible = true;
@@ -61,6 +66,15 @@ public class NemoRpcProperties {
 
 	public NemoRpcProperties setIgnoreVersionCompatible(boolean ignoreVersionCompatible) {
 		this.ignoreVersionCompatible = ignoreVersionCompatible;
+		return this;
+	}
+
+	public int getFuseTimeOut() {
+		return fuseTimeOut;
+	}
+
+	public NemoRpcProperties setFuseTimeOut(int fuseTimeOut) {
+		this.fuseTimeOut = fuseTimeOut;
 		return this;
 	}
 

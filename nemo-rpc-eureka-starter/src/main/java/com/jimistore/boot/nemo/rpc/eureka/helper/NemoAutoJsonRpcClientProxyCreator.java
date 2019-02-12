@@ -26,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.jsonrpc4j.JsonRpcService;
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcClientProxyCreator;
+import com.jimistore.boot.nemo.fuse.core.FuseTemplate;
 import com.jimistore.boot.nemo.rpc.eureka.config.NemoRpcItem;
 import com.jimistore.boot.nemo.rpc.eureka.config.NemoRpcProperties;
 
@@ -46,6 +47,8 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
     private INemoRpcClusterExporter nemoRpcClusterExporter;
     
     private RestTemplate restTemplate;
+    
+    private FuseTemplate fuseTemplate;
     
     private DefaultListableBeanFactory dlbf;
 
@@ -68,6 +71,13 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
         if(restTemplate==null){
             try{
             	this.restTemplate = beanFactory.getBean(RestTemplate.class);
+            }catch(Exception e){
+            	
+            }
+        }
+        if(fuseTemplate==null){
+            try{
+            	this.fuseTemplate = beanFactory.getBean(FuseTemplate.class);
             }catch(Exception e){
             	
             }
@@ -127,6 +137,7 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
     	BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
                 .rootBeanDefinition(NemoJsonProxyFactoryBean.class)
                 .addPropertyValue("path", path)
+                .addPropertyValue("properties", properties)
                 .addPropertyValue("module", new IModuleExporter(){
 					@Override
 					public String getServiceName() {
@@ -145,6 +156,9 @@ public class NemoAutoJsonRpcClientProxyCreator extends AutoJsonRpcClientProxyCre
         }
         if(restTemplate!=null){
         	beanDefinitionBuilder.addPropertyValue("restTemplate", restTemplate);
+        }
+        if(fuseTemplate!=null){
+        	beanDefinitionBuilder.addPropertyValue("fuseTemplate", fuseTemplate);
         }
         String beanName = this.parseBeanName(className, module, version);
         dlbf.registerBeanDefinition(beanName, beanDefinitionBuilder.getBeanDefinition());

@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.jsonrpc4j.IJsonRpcClient;
 import com.googlecode.jsonrpc4j.ReflectionUtil;
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
+import com.jimistore.boot.nemo.fuse.core.FuseTemplate;
+import com.jimistore.boot.nemo.rpc.eureka.config.NemoRpcProperties;
 
 public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 	
@@ -34,6 +36,9 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
     
     
 	private ApplicationContext	applicationContext;
+	
+	private NemoRpcProperties 	properties;
+	private FuseTemplate 		fuseTemplate;
 
 	/**
 	 * {@inheritDoc}
@@ -61,7 +66,6 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 			objectMapper = new ObjectMapper();
 		}
 
-		
 		URL url = null;
 		try{
 			url = new URL(getServiceUrl());
@@ -74,12 +78,15 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 			jsonRpcClient = new NemoJsonRpcHttpClient(nemoRpcClusterExporter, objectMapper, url, module, version, path, extraHttpHeaders);
 		}else{
 			jsonRpcClient = new NemoJsonRpcRestTemplateClient(objectMapper)
+					.setProperties(properties)
+					.setFuseTemplate(fuseTemplate)
 					.setServiceUrl(url)
 					.setPath(path)
 					.setModule(module)
 					.setVersion(version)
 					.setRestTemplate(restTemplate)
 					.setNemoRpcClusterExporter(nemoRpcClusterExporter);
+			
 		}
 	}
 
@@ -173,6 +180,14 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 
 	public IModuleExporter getModule() {
 		return module;
+	}
+
+	public void setProperties(NemoRpcProperties properties) {
+		this.properties = properties;
+	}
+
+	public void setFuseTemplate(FuseTemplate fuseTemplate) {
+		this.fuseTemplate = fuseTemplate;
 	}
 	
 }
