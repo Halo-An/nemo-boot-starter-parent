@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,15 +18,8 @@ import com.googlecode.jsonrpc4j.IJsonRpcClient;
 import com.googlecode.jsonrpc4j.JsonRpcClient;
 import com.googlecode.jsonrpc4j.JsonRpcClientException;
 import com.jimistore.boot.nemo.core.helper.Context;
-import com.jimistore.boot.nemo.fuse.core.FuseTemplate;
-import com.jimistore.boot.nemo.fuse.core.ITask;
-import com.jimistore.boot.nemo.rpc.eureka.config.NemoRpcProperties;
 
 public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJsonRpcClient {
-	
-	NemoRpcProperties properties;
-	
-	FuseTemplate fuseTemplate;
 	
 	private static final String JOIN_STR="-";
 	
@@ -62,49 +54,13 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 		return this;
 	}
 
-	public NemoJsonRpcRestTemplateClient setFuseTemplate(FuseTemplate fuseTemplate) {
-		this.fuseTemplate = fuseTemplate;
-		return this;
-	}
-
 	@Override
 	public void invoke(String methodName, Object argument) throws Throwable {
 		restTemplate.postForEntity(getServiceUrl(), this.createRequestSelf(methodName, argument), Object.class);
 	}
 
-	public NemoJsonRpcRestTemplateClient setProperties(NemoRpcProperties properties) {
-		this.properties = properties;
-		return this;
-	}
-
 	@Override
 	public Object invoke(String methodName, Object argument, Type returnType) throws Throwable {
-
-		if(fuseTemplate!=null){
-			return fuseTemplate.execute(String.format("%s-%s-%s", getServiceUrl(), methodName, argument!=null?argument:""), new ITask<Object>(){
-
-				@Override
-				public Object call() throws Exception {
-					ResponseEntity<String> response = restTemplate.postForEntity(getServiceUrl(), createRequestSelf(methodName, argument), String.class);
-					try {
-						return parseResponse(returnType, response.getBody());
-					} catch (Throwable e) {
-						throw new RuntimeException(e);
-					}
-				}
-
-				@Override
-				public long getTimeout() {
-					return properties.getFuseTimeOut();
-				}
-
-				@Override
-				public Callable<Object> getCallback() {
-					return null;
-				}
-				
-			});
-		}
 		
 		ResponseEntity<String> response = restTemplate.postForEntity(getServiceUrl(), this.createRequestSelf(methodName, argument), String.class);
 		return this.parseResponse(returnType, response.getBody());
@@ -116,9 +72,11 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 		return this.invoke(methodName, argument, returnType);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T invoke(String methodName, Object argument, Class<T> clazz) throws Throwable {
-		return (T)this.invoke(methodName, argument, clazz);
+		ResponseEntity<String> response = restTemplate.postForEntity(getServiceUrl(), this.createRequestSelf(methodName, argument), String.class);
+		return (T) this.parseResponse(clazz, response.getBody());
 	}
 
 	@Override

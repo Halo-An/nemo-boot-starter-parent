@@ -22,10 +22,10 @@ public class TaskInternalException extends FuseException {
 	}
 
 	public TaskInternalException(String message, Throwable cause) {
-		super(CODE, message, cause);
+		super(CODE, String.format("%s:%s", MSG, message), cause);
 	}
 
 	public TaskInternalException(String message) {
-		super(CODE, message);
+		super(CODE, String.format("%s:%s", MSG, message));
 	}
 }

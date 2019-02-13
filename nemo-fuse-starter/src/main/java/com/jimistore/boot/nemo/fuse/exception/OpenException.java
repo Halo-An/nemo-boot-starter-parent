@@ -22,10 +22,10 @@ public class OpenException extends FuseException {
 	}
 
 	public OpenException(String message, Throwable cause) {
-		super(CODE, message, cause);
+		super(CODE, String.format("%s:%s", MSG, message), cause);
 	}
 
 	public OpenException(String message) {
-		super(CODE, message);
+		super(CODE, String.format("%s:%s", MSG, message));
 	}
 }

@@ -22,6 +22,8 @@ public class RocketMQProperties {
 	Long sendTimeOut=3000l;
 	
 	Map<String, String> topicMap = new HashMap<String, String>();
+	
+	Map<String, String> extend = new HashMap<String, String>();
 
 	public String getUrl() {
 		return url;
@@ -101,6 +103,15 @@ public class RocketMQProperties {
 
 	public RocketMQProperties setTopicMap(Map<String, String> topicMap) {
 		this.topicMap = topicMap;
+		return this;
+	}
+
+	public Map<String, String> getExtend() {
+		return extend;
+	}
+
+	public RocketMQProperties setExtend(Map<String, String> extend) {
+		this.extend = extend;
 		return this;
 	}
 	

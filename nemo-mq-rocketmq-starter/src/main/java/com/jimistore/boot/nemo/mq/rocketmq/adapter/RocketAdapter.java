@@ -2,6 +2,7 @@ package com.jimistore.boot.nemo.mq.rocketmq.adapter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -59,6 +60,12 @@ public class RocketAdapter implements IMQAdapter, DisposableBean,MessageListener
         properties.put(PropertyKeyConst.SecretKey, rocketMQProperties.getPassword());
         // 设置 TCP 接入域名（此处以公共云生产环境为例）
         properties.put(PropertyKeyConst.NAMESRV_ADDR, rocketMQProperties.getUrl());
+        // 设置RocketMQ的其它配置
+        if(rocketMQProperties.getExtend()!=null) {
+        	for(Entry<String,String> entry:rocketMQProperties.getExtend().entrySet()) {
+        		properties.put(entry.getKey(), entry.getValue());
+        	}
+        }
         
         type = RocketMQType.parse(rocketMQProperties.getType());
 

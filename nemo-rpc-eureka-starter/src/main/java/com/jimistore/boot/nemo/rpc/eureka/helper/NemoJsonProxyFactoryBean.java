@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
@@ -18,6 +19,7 @@ import com.googlecode.jsonrpc4j.IJsonRpcClient;
 import com.googlecode.jsonrpc4j.ReflectionUtil;
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import com.jimistore.boot.nemo.fuse.core.FuseTemplate;
+import com.jimistore.boot.nemo.fuse.core.ITask;
 import com.jimistore.boot.nemo.rpc.eureka.config.NemoRpcProperties;
 
 public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
@@ -78,8 +80,6 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 			jsonRpcClient = new NemoJsonRpcHttpClient(nemoRpcClusterExporter, objectMapper, url, module, version, path, extraHttpHeaders);
 		}else{
 			jsonRpcClient = new NemoJsonRpcRestTemplateClient(objectMapper)
-					.setProperties(properties)
-					.setFuseTemplate(fuseTemplate)
 					.setServiceUrl(url)
 					.setPath(path)
 					.setModule(module)
@@ -110,9 +110,51 @@ public class NemoJsonProxyFactoryBean extends JsonProxyFactoryBean {
 		Object arguments = ReflectionUtil.parseArguments(
 			invocation.getMethod(), invocation.getArguments(), useNamedParams);
 
+
 		// invoke it
+		if(fuseTemplate!=null){
+			StringBuilder key = new StringBuilder("rpc-")
+					.append(module.getServiceName())
+					.append("-")
+					.append(version)
+					.append(":")
+					.append(method.getName())
+					.append("(");
+			for(Class<?> paramType:method.getParameterTypes()) {
+				key.append(paramType.getName()).append(",");
+			}
+			if(method.getParameterTypes().length>0) {
+				key.deleteCharAt(key.length()-1);
+			}
+			key.append(")");
+			return fuseTemplate.execute(key.toString(), new ITask<Object>(){
+
+				@Override
+				public Object call() throws Exception {
+					try {
+						return jsonRpcClient.invoke(
+							method.getName(),
+							arguments,
+							retType, extraHttpHeaders);
+					} catch (Throwable e) {
+						throw new RuntimeException(e);
+					}
+				}
+
+				@Override
+				public long getTimeout() {
+					return properties.getFuseTimeOut();
+				}
+
+				@Override
+				public Callable<Object> getCallback() {
+					return null;
+				}
+				
+			});
+		}
 		return jsonRpcClient.invoke(
-			invocation.getMethod().getName(),
+			method.getName(),
 			arguments,
 			retType, extraHttpHeaders);
 	}

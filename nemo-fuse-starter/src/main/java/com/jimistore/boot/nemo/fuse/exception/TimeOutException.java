@@ -22,10 +22,10 @@ public class TimeOutException extends FuseException {
 	}
 
 	public TimeOutException(String message, Throwable cause) {
-		super(CODE, message, cause);
+		super(CODE, String.format("%s:%s", MSG, message), cause);
 	}
 
 	public TimeOutException(String message) {
-		super(CODE, message);
+		super(CODE, String.format("%s:%s", MSG, message));
 	}
 }

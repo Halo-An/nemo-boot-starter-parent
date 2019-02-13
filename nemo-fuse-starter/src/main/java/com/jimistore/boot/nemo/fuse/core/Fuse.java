@@ -64,14 +64,18 @@ public class Fuse implements IFuse {
 		FuseState fuseState = fuseInfo.getFuseState();
 
 		if(!fuseState.isAvailable()) {
-			throw new OpenException();
+			throw new OpenException(fuseInfo.getKey());
 		}
 		if(fuseState.equals(FuseState.TRY)) {
 			if(fuseInfo instanceof FuseInfo) {
 				((FuseInfo)fuseInfo).setFuseState(FuseState.TRYING);
 			}
 		}
-		return fuseExecutor.execute(task);
+		try {
+			return fuseExecutor.execute(task);
+		}catch(TimeOutException e) {
+			throw new TimeOutException(fuseInfo.getKey());
+		}
 	}
 
 	public IFuseStrategy getFuseStrategy() {
