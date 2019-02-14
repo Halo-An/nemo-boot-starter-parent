@@ -70,7 +70,7 @@
 		<nemo.monitor.server.version>1.4.0-RELEASE</nemo.monitor.server.version>
 		<nemo.rpc.eureka.server.version>1.9.6-RELEASE</nemo.rpc.eureka.server.version>
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
-		<nemo.sliding.window.version>1.9.9-RELEASE</nemo.sliding.window.version>
+		<nemo.sliding.window.version>1.10.2-RELEASE</nemo.sliding.window.version>
 		<nemo.id.generator.version>1.9.21-RELEASE</nemo.id.generator.version>
 		
 	</properties>

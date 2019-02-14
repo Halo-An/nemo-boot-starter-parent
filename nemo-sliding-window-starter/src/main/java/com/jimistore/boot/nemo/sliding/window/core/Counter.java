@@ -40,7 +40,7 @@ public class Counter<T> implements ICounter<T> {
 	}
 	
 	public static <E> Counter<E> create(String key, TimeUnit timeUnit, Integer capacity, Class<E> valueType){
-		return new Counter<E>().checkType(valueType).setCapacity(capacity).setTimeUnit(timeUnit).setStart(System.currentTimeMillis());
+		return new Counter<E>().checkType(valueType).setKey(key).setCapacity(capacity).setTimeUnit(timeUnit).setStart(System.currentTimeMillis());
 	}
 	
 	protected Counter<T> setStart(long start){
@@ -56,7 +56,7 @@ public class Counter<T> implements ICounter<T> {
 		if(now >= nextHeartbeatTime){
 			nextHeartbeatTime = now + timeUnit.toMillis(1);
 			
-			Long index = this.getIndex(valueMap.get(START_KEY).longValue(), now)-capacity;
+			Long index = (this.getIndex(valueMap.get(START_KEY).longValue(), now) + 1 ) % capacity;
 			if(valueMap.containsKey(index)){
 				valueMap.remove(index);
 			}
