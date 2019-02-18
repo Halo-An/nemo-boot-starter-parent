@@ -43,7 +43,9 @@ public class NoticeStatisticsEvent<T extends Number> extends NoticeEvent<T> impl
 				sum = (T) NumberUtil.add(sum, t);
 			}
 		}
-		cur = list.get(0);
+		if(list.size()>0) {
+			cur = list.get(0);
+		}
 		avg = (T) NumberUtil.except(sum, list.size());
 	}
 

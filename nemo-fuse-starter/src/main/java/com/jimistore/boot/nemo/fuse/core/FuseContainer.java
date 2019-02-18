@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
+import com.jimistore.boot.nemo.fuse.exception.FuseException;
 import com.jimistore.boot.nemo.fuse.exception.OpenException;
 import com.jimistore.boot.nemo.fuse.exception.OutOfCapacityException;
 import com.jimistore.boot.nemo.fuse.exception.TaskInternalException;
@@ -73,16 +74,17 @@ public class FuseContainer implements IFuseContainer {
 		try {
 			fuse.getFuseStrategy().executeBefore(fuse.getFuseInfo());
 			return fuse.execute(task);
-		}catch(TimeOutException | OpenException | OutOfCapacityException e){
+		}catch(Exception e){
 			throwable = e;
-			if(task.getCallback()==null) {
-				throw e;
+			//如果声明了异常回调，则调用回调函数，并使用回调函数的结果作为返回
+			if(e instanceof FuseException && task.getCallback()!=null) {
+				try {
+					return task.getCallback().call();
+				} catch (Exception e1) {
+					throw new RuntimeException(e1);
+				}
 			}
-			try {
-				return task.getCallback().call();
-			} catch (Exception e1) {
-				throw new RuntimeException(e1);
-			}
+			throw e;
 		}finally {
 			if(throwable==null) {
 				fuse.getFuseStrategy().executeSuccess(fuse.getFuseInfo());

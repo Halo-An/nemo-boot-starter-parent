@@ -9,7 +9,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.core.annotation.Order;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.jimistore.boot.nemo.core.helper.Context;
 import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 import com.jimistore.boot.nemo.dao.hibernate.annotation.DataSource;
 import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
@@ -17,42 +19,66 @@ import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 @Aspect
 @Order(100)
 public class MutilDaoAccessAspect {
-	
-	private final Logger log = Logger.getLogger(getClass());
-	
-	Map<Class<?>, DataSource> buffer = new HashMap<Class<?>, DataSource>();
-	
-	MutilSessionFactory mutilSessionFactory;
 
+	private final Logger log = Logger.getLogger(getClass());
+
+	Map<Class<?>, DataSource> buffer = new HashMap<Class<?>, DataSource>();
+
+	MutilSessionFactory mutilSessionFactory;
 
 	public MutilDaoAccessAspect setMutilSessionFactory(MutilSessionFactory mutilSessionFactory) {
 		this.mutilSessionFactory = mutilSessionFactory;
 		return this;
 	}
 
-	@Pointcut("@within(com.jimistore.boot.nemo.dao.hibernate.annotation.DataSource) || @within(org.springframework.stereotype.Repository)")
-	public void dao(){
+	@Pointcut("@within(com.jimistore.boot.nemo.dao.hibernate.annotation.DataSource))")
+	public void dataSource() {
 	}
-	
-	@Before("dao()")
-	public void before(JoinPoint joinPoint) throws Throwable {
+
+	@Pointcut("@within(javax.transaction.Transactional) || @within(org.springframework.transaction.annotation.Transactional)")
+	public void transaction() {
+	}
+
+	@Before("dataSource()")
+	public void beforeDataSource(JoinPoint joinPoint) throws Throwable {
 		Class<?> clazz = joinPoint.getTarget().getClass();
 		DataSource dataSource = buffer.get(clazz);
-		if(dataSource==null){
+		if (dataSource == null) {
 			dataSource = AnnotationUtil.getAnnotation(clazz, DataSource.class);
 			buffer.put(clazz, dataSource);
 		}
-		if(log.isDebugEnabled()){
-			log.debug(String.format("init datasource key[%s]", dataSource!=null?dataSource.value():"null"));
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("init datasource key[%s]", dataSource != null ? dataSource.value() : "null"));
 		}
-		if(dataSource!=null){
-			mutilSessionFactory.setDataSourceKey(dataSource.value());
-		}else{
-			mutilSessionFactory.setDataSourceKey(MutilDataSourceProperties.DEFAULT_DATASOURCE);
+		String ds = null;
+		if (dataSource != null) {
+			ds = dataSource.value();
 		}
+		this.setDataSourceKey(ds);
 	}
-	
-	
-	
-}
 
+	@Before("transaction()")
+	public void beforeTransaction(JoinPoint joinPoint) throws Throwable {
+		Class<?> clazz = joinPoint.getTarget().getClass();
+		Transactional transactional = AnnotationUtil.getAnnotation(clazz, Transactional.class);
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("init datasource key[%s]", transactional != null ? transactional.value() : "null"));
+		}
+
+		String ds = null;
+		if (transactional != null) {
+			ds = transactional.value();
+		}
+		this.setDataSourceKey(ds);
+	}
+
+	private void setDataSourceKey(String dataSource) {
+		if (dataSource != null && dataSource.trim().length() > 0) {
+			Context.put(MutilDataSourceProperties.DATASROUCE_KEY, dataSource);
+		} else {
+			Context.put(MutilDataSourceProperties.DATASROUCE_KEY, MutilDataSourceProperties.DEFAULT_DATASOURCE);
+		}
+
+	}
+
+}

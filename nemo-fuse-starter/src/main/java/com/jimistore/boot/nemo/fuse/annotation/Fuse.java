@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Fuse {
 
-	String value();
+	String value() default "";
 	
 	long timeout() default 10000;
 	

@@ -68,6 +68,10 @@ public class Fuse implements IFuse {
 		}
 		if(fuseState.equals(FuseState.TRY)) {
 			if(fuseInfo instanceof FuseInfo) {
+				log.debug(String.format("fuse state changing, the key is %s, %s==>%s", 
+					fuseInfo.getKey(), 
+					fuseInfo.getFuseState(), 
+					FuseState.TRYING));
 				((FuseInfo)fuseInfo).setFuseState(FuseState.TRYING);
 			}
 		}

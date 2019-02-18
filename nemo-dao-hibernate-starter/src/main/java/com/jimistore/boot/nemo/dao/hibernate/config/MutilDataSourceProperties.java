@@ -7,11 +7,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "nemo")
 public class MutilDataSourceProperties {
-	
+
 	public static final String DEFAULT_DATASOURCE = "default";
-	
+
+	public static final String DATASROUCE_KEY = "datasource-key";
+
 	private Map<String, DataSourceProperties> datasource = new HashMap<String, DataSourceProperties>();
-	
+
 	private Map<String, HibernateProperties> hibernate = new HashMap<String, HibernateProperties>();
 
 	public Map<String, DataSourceProperties> getDatasource() {

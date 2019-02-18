@@ -1,6 +1,5 @@
 package com.jimistore.boot.nemo.fuse.core;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
@@ -36,7 +35,7 @@ public class FuseExecutor implements IFuseExecutor {
 		executorService.execute(futureTask);
 		try {
 			return futureTask.get(task.getTimeout(), TimeUnit.MILLISECONDS);
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (TimeoutException e) {
 			futureTask.cancel(true);
