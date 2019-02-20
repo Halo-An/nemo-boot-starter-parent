@@ -88,7 +88,7 @@
 			<appender-ref ref="console" />
 		</root>
 
-		<logger name="com.cq.nemo.core.helper.RequestLoggerAspect"
+		<logger name="com.jimistore.boot.nemo.core.helper.RequestLoggerAspect"
 			level="debug" additivity="false">
 			<appender-ref ref="console" />
 		</logger>

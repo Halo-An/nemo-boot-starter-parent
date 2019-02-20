@@ -13,41 +13,45 @@ import com.jimistore.boot.nemo.fuse.core.FuseTemplate;
 import com.jimistore.boot.nemo.fuse.core.IFuseStrategy;
 import com.jimistore.boot.nemo.fuse.core.IFuseStrategyFactory;
 import com.jimistore.boot.nemo.fuse.helper.FuseExecutorAspect;
+import com.jimistore.boot.nemo.fuse.helper.FuseHealthEndPoint;
 import com.jimistore.boot.nemo.sliding.window.config.SlidingWindowProperties;
 import com.jimistore.boot.nemo.sliding.window.core.SlidingWindowTemplate;
 
 @Configuration
 @EnableConfigurationProperties(FuseProperties.class)
 public class NemoFuseAutoConfiguration {
-	
+
 	@Bean
 	@ConditionalOnMissingBean(IFuseStrategy.class)
 	public IFuseStrategy fuseStrategy(FuseProperties fuseProperties) {
-		SlidingWindowTemplate slidingWindowTemplate = SlidingWindowTemplate.create(new SlidingWindowProperties()
-				.setCacheModel(SlidingWindowProperties.CACHE_MODEL_LOCAL));
-		return new DefaultFuseStrategy()
-				.setSlidingWindowTemplate(slidingWindowTemplate)
+		SlidingWindowTemplate slidingWindowTemplate = SlidingWindowTemplate
+				.create(new SlidingWindowProperties().setCacheModel(SlidingWindowProperties.CACHE_MODEL_LOCAL));
+		return new DefaultFuseStrategy().setSlidingWindowTemplate(slidingWindowTemplate)
 				.setFuseProperties(fuseProperties);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(IFuseStrategyFactory.class)
 	public IFuseStrategyFactory fuseStrategyFactory(List<IFuseStrategy> fuseStrategyList) {
-		return new DefaultFuseStrategyFactory()
-				.setFuseStrategyList(fuseStrategyList);
+		return new DefaultFuseStrategyFactory().setFuseStrategyList(fuseStrategyList);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(FuseTemplate.class)
 	public FuseTemplate fuseTemplate(FuseProperties fuseProperties, IFuseStrategyFactory fuseStrategyFactory) {
 		return FuseTemplate.create(fuseProperties, fuseStrategyFactory);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(FuseExecutorAspect.class)
 	public FuseExecutorAspect FuseExecutorAspect(FuseTemplate fuseTemplate) {
 		return new FuseExecutorAspect().setFuseTemplate(fuseTemplate);
 	}
-	
+
+	@Bean("Fuse")
+	@ConditionalOnMissingBean(FuseHealthEndPoint.class)
+	public FuseHealthEndPoint FuseHealthEndPoint(FuseTemplate fuseTemplate) {
+		return new FuseHealthEndPoint().setFuseTemplate(fuseTemplate);
+	}
 
 }
