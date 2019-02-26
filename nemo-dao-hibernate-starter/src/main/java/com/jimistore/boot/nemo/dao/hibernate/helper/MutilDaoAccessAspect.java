@@ -35,7 +35,7 @@ public class MutilDaoAccessAspect {
 	public void dataSource() {
 	}
 
-	@Pointcut("@within(javax.transaction.Transactional) || @within(org.springframework.transaction.annotation.Transactional)")
+	@Pointcut("@within(org.springframework.transaction.annotation.Transactional)")
 	public void transaction() {
 	}
 
@@ -76,7 +76,7 @@ public class MutilDaoAccessAspect {
 		if (dataSource != null && dataSource.trim().length() > 0) {
 			Context.put(MutilDataSourceProperties.DATASROUCE_KEY, dataSource);
 		} else {
-			Context.put(MutilDataSourceProperties.DATASROUCE_KEY, MutilDataSourceProperties.DEFAULT_DATASOURCE);
+//			Context.put(MutilDataSourceProperties.DATASROUCE_KEY, MutilDataSourceProperties.DEFAULT_DATASOURCE);
 		}
 
 	}
