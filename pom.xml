@@ -13,8 +13,8 @@
 		<module>nemo-core</module>
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
-		<!-- <module>nemo-rpc-eureka-server</module> -->
-		<!-- <module>nemo-monitor-server</module> -->
+		<module>nemo-rpc-eureka-server</module>
+		<module>nemo-monitor-server</module>
 		<module>nemo-sleuth-starter</module>
 		<module>nemo-dao-api</module>
 		<module>nemo-dao-core</module>
@@ -24,7 +24,7 @@
 		<module>nemo-mq-activemq-starter</module>
 		<module>nemo-mq-rabbitmq-starter</module>
 		<module>nemo-mq-rocketmq-starter</module>
-		<!-- <module>nemo-config-server</module> -->
+		<module>nemo-config-server</module>
 		<module>nemo-lock-starter</module>
 		<module>nemo-fuse-starter</module>
 		<module>nemo-security-starter</module>
