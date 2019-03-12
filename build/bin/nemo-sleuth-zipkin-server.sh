@@ -5,6 +5,7 @@ MAX_CHECK_NUM=60
 JAVA_OPTS="-Xms64m -Xmx192m -Xss1024K -XX:PermSize=64m -XX:MaxPermSize=128m"
 APP_OPTS="--spring.profiles.active=$FLAVOR"
 DATE=$(date "+%Y-%m-%d")
+PID_FILE=$SERVER/pid/$APP-server.pid
 
 check(){
   for((i=0;i<$MAX_CHECK_NUM;i++))
@@ -60,7 +61,6 @@ else
   exit 1
 fi
 
-PID_FILE=$SERVER/pid/$APP-server.pid
 case "$1" in
   start)
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
