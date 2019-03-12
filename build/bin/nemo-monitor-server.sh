@@ -1,7 +1,7 @@
 #!/bin/bash
 SERVER=$(cd `dirname $0`;cd ..;pwd)
 APP=$(basename $0 .sh)
-MAX_CHECK_NUM=100
+MAX_CHECK_NUM=50
 JAVA_OPTS="-Xms64m -Xmx192m -Xss1024K -XX:PermSize=64m -XX:MaxPermSize=128m"
 APP_OPTS="--spring.profiles.active=$FLAVOR"
 DATE=$(date "+%Y-%m-%d")
@@ -10,7 +10,7 @@ PID_FILE=$SERVER/pid/$APP-server.pid
 check(){
   for((i=0;i<$MAX_CHECK_NUM;i++))
   do
-    echo "checking $i%"
+    echo "scale=2;checking $i/$MAX_CHECK_NUM%"
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     if [[ $PORT != "" ]]; then
       RESULT=$(curl -s http://localhost:$PORT/health)
