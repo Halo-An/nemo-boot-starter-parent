@@ -12,8 +12,9 @@ check(){
   do
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     RESULT=$(curl -s http://localhost:$PORT)
-    echo -e ".\e"
+    echo -e ".\c"
     if [[ $RESULT != "" ]]; then
+      echo "" 
       echo "$APP started，pid:$PID"
       exit 0
     fi
@@ -66,7 +67,7 @@ case "$1" in
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
     echo $PID > $PID_FILE
-    echo -e "$APP starting \e"
+    echo -e "$APP starting \c"
     check
     ;;
   stop)
@@ -83,7 +84,7 @@ case "$1" in
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
     echo $PID > $PID_FILE
-    echo -e "$APP starting \e"
+    echo -e "$APP starting \c"
     check
     ;;
   *)
