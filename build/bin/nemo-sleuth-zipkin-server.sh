@@ -11,13 +11,15 @@ check(){
   for((i=0;i<$MAX_CHECK_NUM;i++))
   do
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
-    RESULT=$(curl -s http://localhost:$PORT)
-    echo "$PORT,$RESULT"
-    echo -e ".\c"
-    if [[ $RESULT != "" ]]; then
-      echo "" 
-      echo "$APP started，pid:$PID"
-      exit 0
+    if [[ $PORT != "" ]]; then
+      RESULT=$(curl -s http://localhost:$PORT)
+      echo "$PORT,$RESULT"
+      echo -e ".\c"
+      if [[ $RESULT != "" ]]; then
+        echo "" 
+        echo "$APP started，pid:$PID"
+        exit 0
+      fi
     fi
     sleep 1
   done
