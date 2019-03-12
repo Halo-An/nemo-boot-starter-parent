@@ -12,6 +12,7 @@ check(){
   do
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     RESULT=$(curl -s http://localhost:$PORT)
+    echo "$PORT,$RESULT"
     echo -e ".\c"
     if [[ $RESULT != "" ]]; then
       echo "" 
