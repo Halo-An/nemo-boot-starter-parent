@@ -10,7 +10,8 @@ PID_FILE=$SERVER/pid/$APP-server.pid
 check(){
   for((i=0;i<$MAX_CHECK_NUM;i++))
   do
-    echo "scale=2;checking $i*100/$MAX_CHECK_NUM%"|bc
+    PROCESS=$i*100/$MAX_CHECK_NUM
+    echo "checking $PROCESS%"
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     if [[ $PORT != "" ]]; then
       RESULT=$(curl -s http://localhost:$PORT/health)
