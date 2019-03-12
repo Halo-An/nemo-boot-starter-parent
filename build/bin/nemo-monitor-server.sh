@@ -1,7 +1,7 @@
 #!/bin/bash
 SERVER=$(cd `dirname $0`;cd ..;pwd)
 APP=$(basename $0 .sh)
-MAX_CHECK_NUM=120
+MAX_CHECK_NUM=100
 JAVA_OPTS="-Xms64m -Xmx192m -Xss1024K -XX:PermSize=64m -XX:MaxPermSize=128m"
 APP_OPTS="--spring.profiles.active=$FLAVOR"
 DATE=$(date "+%Y-%m-%d")
@@ -10,22 +10,20 @@ PID_FILE=$SERVER/pid/$APP-server.pid
 check(){
   for((i=0;i<$MAX_CHECK_NUM;i++))
   do
-    echo -e ".\c"
+    echo "checking $MAX_CHECK_NUM%"
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     if [[ $PORT != "" ]]; then
-      RESULT=$(curl -s http://localhost:$PORT)
+      RESULT=$(curl -s http://localhost:$PORT/health)
 ##      echo "$PORT,$RESULT"
       if [[ $RESULT != "" ]]; then
-        echo "" 
-        echo "$APP started，pid:$PID"
+        echo "checking 100%, $APP started，pid:$PID"
         exit 0
       fi
     fi
     sleep 1
   done
 
-  echo "" 
-  echo "$APP start failed"
+  echo "checking 100%, $APP start failed"
   exit 1
 }
 
@@ -87,7 +85,7 @@ case "$1" in
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
     echo $PID > $PID_FILE
-    echo -e "$APP starting \c"
+    echo "$APP starting"
     check
     ;;
   *)
