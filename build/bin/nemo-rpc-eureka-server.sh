@@ -1,7 +1,7 @@
 #!/bin/bash
 SERVER=$(cd `dirname $0`;cd ..;pwd)
 APP=$(basename $0 .sh)
-MAX_CHECK_NUM=60
+MAX_CHECK_NUM=120
 JAVA_OPTS="-Xms64m -Xmx192m -Xss1024K -XX:PermSize=64m -XX:MaxPermSize=128m"
 APP_OPTS="--spring.profiles.active=$FLAVOR"
 DATE=$(date "+%Y-%m-%d")
@@ -13,7 +13,7 @@ check(){
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     if [[ $PORT != "" ]]; then
       RESULT=$(curl -s http://localhost:$PORT)
-      echo "$PORT,$RESULT"
+##      echo "$PORT,$RESULT"
       echo -e ".\c"
       if [[ $RESULT != "" ]]; then
         echo "" 
