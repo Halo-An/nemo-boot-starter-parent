@@ -1,23 +1,47 @@
 #!/bin/bash
 SERVER=$(cd `dirname $0`;cd ..;pwd)
 APP=$(basename $0 .sh)
+MAX_CHECK_NUM=60
+JAVA_OPTS="-Xms64m -Xmx192m -Xss1024K -XX:PermSize=64m -XX:MaxPermSize=128m"
+APP_OPTS="--spring.profiles.active=$FLAVOR"
+DATE=$(date "+%Y-%m-%d")
+
+check(){
+  for((i=0;i<$MAX_CHECK_NUM;i++))
+  do
+    PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
+    RESULT=$(curl -s http://localhost:$PORT)
+    echo -e ".\e"
+    if [[ $RESULT != "" ]]; then
+      echo ""
+      echo "$APP started"
+      exit 0
+    fi
+    sleep 1
+  done
+
+  echo "$APP start failed"
+  exit 1
+}
 
 cd $SERVER
-
-JAVA_OPTS="-Xms64m -Xmx192m -Xss1024K -XX:PermSize=64m -XX:MaxPermSize=128m"
 case "$FLAVOR" in
-  prod)
+  prod) 
     echo "FLAVOR is $FLAVOR"
+    FP=20
     JAVA_OPTS="-server -Xms1024m -Xmx1024m -Xss1024k -XX:PermSize=128m -XX:MaxPermSize=128m -XX:+UseParallelOldGC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$SERVER/logs/jvm -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:$SERVER/logs/jvm-heap-trace.log -XX:NewSize=384m -XX:MaxNewSize=384m"
     ;;
   test)
     echo "FLAVOR is $FLAVOR"
+    FP=22
     ;;
   sandbox)
     echo "FLAVOR is $FLAVOR"
+    FP=23
     ;;
   default)
     echo "FLAVOR is $FLAVOR"
+	FP=21
     ;;
   *)
     echo -e "\e[1;31m"
@@ -27,9 +51,8 @@ case "$FLAVOR" in
     ;;
 esac
 
-APP_OPTS="--spring.profiles.active=$FLAVOR"
 if [ $ZONE ];then
-  APP_OPTS="--spring.profiles.active=$FLAVOR --zone=$ZONE"
+  APP_OPTS="$APP_OPTS --zone=$ZONE"
   echo "ZONE is $ZONE"
 else
   echo -e "\e[1;31m"
@@ -41,26 +64,31 @@ fi
 PID_FILE=$SERVER/pid/$APP-server.pid
 case "$1" in
   start)
-    nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS > $SERVER/logs/$APP-stdout.log 2>&1 &
-    echo $! > $PID_FILE
-    echo "start $APP successfully, pid:$!"
+    nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
+    PID=$!
+    echo PID > $PID_FILE
+    echo "$APP starting, pid:$PID"
+    check
     ;;
   stop)
-    kill `cat $PID_FILE`
+    kill -9 `cat $PID_FILE`
     rm -rf $PID_FILE
-    echo "stop $APP successfully" 
+    echo "$APP stoped" 
+    exit 0
     ;;
   restart)
-    kill `cat $PID_FILE`
+    kill -9 `cat $PID_FILE`
     rm -rf $PID_FILE
-    echo "stop $APP successfully" 
+    echo "$APP stoped" 
     
-    nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS > $SERVER/logs/$APP-stdout.log 2>&1 &
-    echo $! > $PID_FILE
-    echo "start $APP successfully, pid:$!"
+    nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
+    PID=$!
+    echo PID > $PID_FILE
+    echo "$APP starting, pid:$PID"
+    check
     ;;
   *)
     echo  -e "Usage: {start|stop|restart}" 
+    exit 1
     ;;
 esac
-exit 0
