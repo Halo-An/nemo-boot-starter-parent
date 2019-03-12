@@ -15,6 +15,7 @@
 		<module>nemo-rpc-eureka-starter</module>
 		<module>nemo-rpc-eureka-server</module>
 		<module>nemo-monitor-server</module>
+		<module>nemo-sleuth-zipkin-server</module>
 		<module>nemo-sleuth-starter</module>
 		<module>nemo-dao-api</module>
 		<module>nemo-dao-core</module>
