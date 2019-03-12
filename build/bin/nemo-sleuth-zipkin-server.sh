@@ -65,7 +65,7 @@ case "$1" in
   start)
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
-    echo PID > $PID_FILE
+    echo $PID > $PID_FILE
     echo -e "$APP starting \e"
     check
     ;;
@@ -82,7 +82,7 @@ case "$1" in
     sleep 5
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
-    echo PID > $PID_FILE
+    echo $PID > $PID_FILE
     echo -e "$APP starting \e"
     check
     ;;
