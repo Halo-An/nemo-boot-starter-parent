@@ -11,20 +11,22 @@ check(){
   for((i=0;i<$MAX_CHECK_NUM;i++))
   do
     PROCESS=$(echo "scale=2;a=$i*100/$MAX_CHECK_NUM;if(length(a)==scale(a)) print 0;print a"|bc)
-    echo "checking $PROCESS%"
+    echo "checking $i/$MAX_CHECK_NUM"
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     if [[ $PORT != "" ]]; then
       RESULT=$(curl -s http://localhost:$PORT/health)
 ##      echo "$PORT,$RESULT"
       if [[ $RESULT != "" ]]; then
-        echo "checking 100%, $APP started，pid:$PID"
+        echo "checking $MAX_CHECK_NUM/$MAX_CHECK_NUM"
+        echo "$APP started，pid:$PID"
         exit 0
       fi
     fi
     sleep 1
   done
 
-  echo "checking 100%, $APP start failed"
+  echo "checking $MAX_CHECK_NUM/$MAX_CHECK_NUM"
+  echo "$APP start failed"
   exit 1
 }
 
