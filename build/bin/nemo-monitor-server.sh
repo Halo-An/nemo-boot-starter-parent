@@ -10,11 +10,11 @@ PID_FILE=$SERVER/pid/$APP-server.pid
 check(){
   for((i=0;i<$MAX_CHECK_NUM;i++))
   do
+    echo -e ".\c"
     PORT=$(netstat -tunlp | grep $PID/java | grep $FP | awk '{printf $4}' | cut -d: -f2)
     if [[ $PORT != "" ]]; then
       RESULT=$(curl -s http://localhost:$PORT)
 ##      echo "$PORT,$RESULT"
-      echo -e ".\c"
       if [[ $RESULT != "" ]]; then
         echo "" 
         echo "$APP started，pid:$PID"
@@ -24,6 +24,7 @@ check(){
     sleep 1
   done
 
+  echo "" 
   echo "$APP start failed"
   exit 1
 }
