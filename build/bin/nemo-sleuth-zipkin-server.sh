@@ -13,8 +13,7 @@ check(){
     RESULT=$(curl -s http://localhost:$PORT)
     echo -e ".\e"
     if [[ $RESULT != "" ]]; then
-      echo ""
-      echo "$APP started"
+      echo "$APP started，pid:$PID"
       exit 0
     fi
     sleep 1
@@ -67,7 +66,7 @@ case "$1" in
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
     echo PID > $PID_FILE
-    echo "$APP starting, pid:$PID"
+    echo -e "$APP starting \e"
     check
     ;;
   stop)
@@ -80,11 +79,11 @@ case "$1" in
     kill -9 `cat $PID_FILE`
     rm -rf $PID_FILE
     echo "$APP stoped" 
-    
+    sleep 5
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
     echo PID > $PID_FILE
-    echo "$APP starting, pid:$PID"
+    echo -e "$APP starting \e"
     check
     ;;
   *)
