@@ -84,7 +84,6 @@ case "$1" in
     kill -9 `cat $PID_FILE`
     rm -rf $PID_FILE
     echo "$APP stoped" 
-    sleep 5
     nohup java $JAVA_OPTS -jar $SERVER/lib/$APP*.jar $APP_OPTS >> $SERVER/logs/$APP-stdout-$DATE.log 2>&1 &
     PID=$!
     echo $PID > $PID_FILE
