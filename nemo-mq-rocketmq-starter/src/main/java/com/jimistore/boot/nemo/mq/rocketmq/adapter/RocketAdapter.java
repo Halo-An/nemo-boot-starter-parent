@@ -180,8 +180,14 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 		if (producer != null) {
 			producer.shutdown();
 		}
+		if (orderProducer != null) {
+			orderProducer.shutdown();
+		}
 		if (consumer != null) {
 			consumer.shutdown();
+		}
+		if (orderConsumer != null) {
+			orderConsumer.shutdown();
 		}
 
 		log.debug("rocketmq client shutdowned");
