@@ -5,7 +5,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.10.7-RELEASE</version>
+	<version>1.10.10-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -56,7 +56,7 @@
 		<ons.client.version>1.7.9.Final</ons.client.version>
 
 		<nemo.core.api.version>1.9.0-RELEASE</nemo.core.api.version>
-		<nemo.core.version>1.9.25-RELEASE</nemo.core.version>
+		<nemo.core.version>1.10.10-RELEASE</nemo.core.version>
 		<nemo.dao.api.version>1.9.3-RELEASE</nemo.dao.api.version>
 		<nemo.dao.core.version>1.10.7-RELEASE</nemo.dao.core.version>
 		<nemo.dao.hibernate.version>1.10.5-RELEASE</nemo.dao.hibernate.version>
@@ -64,11 +64,11 @@
 		<nemo.mq.core.version>1.10.6-RELEASE</nemo.mq.core.version>
 		<nemo.mq.activemq.version>1.10.6-RELEASE</nemo.mq.activemq.version>
 		<nemo.mq.rabbitmq.version>1.10.6-RELEASE</nemo.mq.rabbitmq.version>
-		<nemo.mq.rocketmq.version>1.10.6-RELEASE</nemo.mq.rocketmq.version>
+		<nemo.mq.rocketmq.version>1.10.9-RELEASE</nemo.mq.rocketmq.version>
 		<nemo.rpc.eureka.api.version>1.9.1-RELEASE</nemo.rpc.eureka.api.version>
-		<nemo.rpc.eureka.version>1.10.2-RELEASE</nemo.rpc.eureka.version>
+		<nemo.rpc.eureka.version>1.10.10-RELEASE</nemo.rpc.eureka.version>
 		<nemo.lock.version>1.9.7-RELEASE</nemo.lock.version>
-		<nemo.security.version>1.9.7-RELEASE</nemo.security.version>
+		<nemo.security.version>1.10.10-RELEASE</nemo.security.version>
 		<nemo.fuse.version>1.10.4-RELEASE</nemo.fuse.version>
 		<nemo.monitor.server.version>1.10.4-RELEASE</nemo.monitor.server.version>
 		<nemo.rpc.eureka.server.version>1.9.6-RELEASE</nemo.rpc.eureka.server.version>

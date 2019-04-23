@@ -62,7 +62,6 @@ public class MutilDaoAccessAspect {
 		Class<?> clazz = joinPoint.getTarget().getClass();
 		Transactional transactional = AnnotationUtil.getAnnotation(clazz, Transactional.class);
 		if (log.isDebugEnabled()) {
-			log.debug(String.format("init datasource key[%s]", transactional != null ? transactional.value() : "null"));
 		}
 
 		String ds = null;

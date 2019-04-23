@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -20,23 +21,25 @@ import com.googlecode.jsonrpc4j.JsonRpcClientException;
 import com.jimistore.boot.nemo.core.helper.Context;
 
 public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJsonRpcClient {
-	
-	private static final String JOIN_STR="-";
-	
+
+	private static final Logger LOGGER = Logger.getLogger(NemoJsonRpcServer.class.getName());
+
+	private static final String JOIN_STR = "-";
+
 	RestTemplate restTemplate;
-	
+
 	URL serviceUrl;
-	
+
 	INemoRpcClusterExporter nemoRpcClusterExporter;
-	
+
 	ObjectMapper objectMapper;
-	
+
 	String path;
-	
+
 	IModuleExporter module;
-	
+
 	String version;
-	
+
 	String baseUrl;
 
 	public NemoJsonRpcRestTemplateClient(ObjectMapper objectMapper) {
@@ -61,8 +64,9 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 
 	@Override
 	public Object invoke(String methodName, Object argument, Type returnType) throws Throwable {
-		
-		ResponseEntity<String> response = restTemplate.postForEntity(getServiceUrl(), this.createRequestSelf(methodName, argument), String.class);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(getServiceUrl(),
+				this.createRequestSelf(methodName, argument), String.class);
 		return this.parseResponse(returnType, response.getBody());
 	}
 
@@ -75,7 +79,8 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T invoke(String methodName, Object argument, Class<T> clazz) throws Throwable {
-		ResponseEntity<String> response = restTemplate.postForEntity(getServiceUrl(), this.createRequestSelf(methodName, argument), String.class);
+		ResponseEntity<String> response = restTemplate.postForEntity(getServiceUrl(),
+				this.createRequestSelf(methodName, argument), String.class);
 		return (T) this.parseResponse(clazz, response.getBody());
 	}
 
@@ -84,16 +89,17 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 			throws Throwable {
 		return this.invoke(methodName, argument, clazz);
 	}
-	
-	private String getServiceUrl() throws IOException{
-		if(nemoRpcClusterExporter!=null){
+
+	private String getServiceUrl() throws IOException {
+		if (nemoRpcClusterExporter != null) {
 			String instanceId = module.getServiceName();
-			if(!StringUtils.isEmpty(version)){
-				instanceId=new StringBuilder(module.getServiceName()).append(JOIN_STR).append(version).toString();
+			if (!StringUtils.isEmpty(version)) {
+				instanceId = new StringBuilder(module.getServiceName()).append(JOIN_STR).append(version).toString();
 			}
 			baseUrl = nemoRpcClusterExporter.getNextServerUrl(instanceId);
-			if(baseUrl==null||baseUrl.isEmpty()){
-				throw new IOException(String.format("serviceUrl cannot be empty, check cluster server please ", baseUrl));
+			if (baseUrl == null || baseUrl.isEmpty()) {
+				throw new IOException(
+						String.format("serviceUrl cannot be empty, check cluster server please ", baseUrl));
 			}
 		}
 		return new URL(new URL(baseUrl), path).toString();
@@ -118,13 +124,13 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 		this.version = version;
 		return this;
 	}
-	
+
 	public NemoJsonRpcRestTemplateClient setObjectMapper(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
 		return this;
 	}
 
-	private Object parseResponse(Type type,String json) throws Throwable{
+	private Object parseResponse(Type type, String json) throws Throwable {
 
 		JsonNode response = objectMapper.readValue(json, JsonNode.class);
 
@@ -136,17 +142,21 @@ public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJso
 
 		return super.readResponse(type, jsonObject);
 	}
-	
-	private Object createRequestSelf(String methodName, Object argument){
+
+	private Object createRequestSelf(String methodName, Object argument) {
 		Object request = super.createRequest(methodName, argument);
-		Object user = Context.get(Context.CONTEXT_REQUEST_USER);
-		if(user!=null){
-			HttpHeaders headers = new HttpHeaders();
-			headers.add(Context.CONTEXT_REQUEST_USER, user.toString());
-			return new HttpEntity<Object>(request, headers);
-		
+		HttpHeaders headers = new HttpHeaders();
+		for (Context.Key key : Context.Key.values()) {
+			Object value = (String) Context.get(key);
+			if (value != null) {
+				headers.add(key.getCode(), value.toString());
+			}
+
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace(String.format("before request of rpc, %s = %s", key.getCode(), value));
+			}
 		}
-		return request;
+		return new HttpEntity<Object>(request, headers);
 	}
 
 }

@@ -27,11 +27,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jimistore.boot.nemo.core.helper.InitContextAspect;
+import com.jimistore.boot.nemo.core.helper.InitContextFilter;
 import com.jimistore.boot.nemo.core.helper.NemoJsonKeyGennerator;
 import com.jimistore.boot.nemo.core.helper.NemoJsonRedisSerializer;
 import com.jimistore.boot.nemo.core.helper.NemoMethodValidationPostProcessor;
 import com.jimistore.boot.nemo.core.helper.RequestLoggerAspect;
+import com.jimistore.boot.nemo.core.helper.RequestProxyFilter;
 import com.jimistore.boot.nemo.core.helper.ResponseBodyWrapFactory;
 import com.jimistore.boot.nemo.core.helper.ResponseExceptionHandle;
 
@@ -41,44 +42,44 @@ import com.jimistore.boot.nemo.core.helper.ResponseExceptionHandle;
 public class NemoCoreAutoConfiguration {
 
 	@Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurerAdapter() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**");
-                registry.addMapping("/meta/**");
-            }
-        };
-    }
-	
-	@Bean
-	public InitContextAspect InitContextAspect(){
-		return new InitContextAspect();
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurerAdapter() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/api/**");
+				registry.addMapping("/meta/**");
+			}
+		};
 	}
-	
 
-	
 	@Bean
-	public ResponseBodyWrapFactory responseBodyWrapFactory(){
+	public ResponseBodyWrapFactory responseBodyWrapFactory() {
 		return new ResponseBodyWrapFactory();
 	}
 
-
 	@Bean
-	public ResponseExceptionHandle responseExceptionHandle(){
+	public ResponseExceptionHandle responseExceptionHandle() {
 		return new ResponseExceptionHandle();
 	}
-	
+
 	@Bean
-	public RequestLoggerAspect requestLoggerAspect(){
+	public InitContextFilter initContextFilter() {
+		return new InitContextFilter();
+	}
+
+	@Bean
+	public RequestProxyFilter requestProxyFilter() {
+		return new RequestProxyFilter();
+	}
+
+	@Bean
+	public RequestLoggerAspect requestLoggerFilter() {
 		return new RequestLoggerAspect();
 	}
-	
-	
-	
+
 	@Bean
-	public MessageInterpolator messageInterpolator(){
-		return new MessageInterpolator(){
+	public MessageInterpolator messageInterpolator() {
+		return new MessageInterpolator() {
 
 			@Override
 			public String interpolate(String messageTemplate, Context context) {
@@ -86,18 +87,17 @@ public class NemoCoreAutoConfiguration {
 			}
 
 			@Override
-			public String interpolate(String messageTemplate, Context context,
-					Locale locale) {
-				
-				if(messageTemplate.indexOf("NotNull")>=0 || messageTemplate.indexOf("NotBlank")>=0){
+			public String interpolate(String messageTemplate, Context context, Locale locale) {
+
+				if (messageTemplate.indexOf("NotNull") >= 0 || messageTemplate.indexOf("NotBlank") >= 0) {
 					return " ${field} cannot be empty. ";
 				}
-				if(messageTemplate.indexOf("{")>=0){
+				if (messageTemplate.indexOf("{") >= 0) {
 					return " ${field} format error. ";
 				}
 				return messageTemplate;
 			}
-			
+
 		};
 	}
 
@@ -107,11 +107,11 @@ public class NemoCoreAutoConfiguration {
 		localValidatorFactoryBean.setMessageInterpolator(messageInterpolator);
 		return localValidatorFactoryBean;
 	}
-	
-	
+
 	@Bean
-	public MethodValidationPostProcessor methodValidationPostProcessor(LocalValidatorFactoryBean localValidatorFactoryBean){
-		NemoMethodValidationPostProcessor methodValidationPostProcessor =new NemoMethodValidationPostProcessor();
+	public MethodValidationPostProcessor methodValidationPostProcessor(
+			LocalValidatorFactoryBean localValidatorFactoryBean) {
+		NemoMethodValidationPostProcessor methodValidationPostProcessor = new NemoMethodValidationPostProcessor();
 		methodValidationPostProcessor.setValidatorFactory(localValidatorFactoryBean);
 		methodValidationPostProcessor.setOrder(1);
 		return methodValidationPostProcessor;
@@ -119,12 +119,10 @@ public class NemoCoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(StringRedisTemplate.class)
-	public StringRedisTemplate redisTemplate(
-			RedisConnectionFactory connectionFactory) {
-		
+	public StringRedisTemplate redisTemplate(RedisConnectionFactory connectionFactory) {
+
 		StringRedisTemplate template = new StringRedisTemplate(connectionFactory);
-		NemoJsonRedisSerializer nemoJsonRedisSerializer = new NemoJsonRedisSerializer(
-				Object.class);
+		NemoJsonRedisSerializer nemoJsonRedisSerializer = new NemoJsonRedisSerializer(Object.class);
 		ObjectMapper om = new ObjectMapper();
 		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
 		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -135,18 +133,18 @@ public class NemoCoreAutoConfiguration {
 		template.afterPropertiesSet();
 		return template;
 	}
-	
+
 	@Bean
 	public CacheManager cacheManager(StringRedisTemplate redisTemplate, RedisProperties redisProperties) {
 		RedisCacheManager redisCacheManager = new RedisCacheManager(redisTemplate);
 		redisCacheManager.setDefaultExpiration(300l);
-		Map<String,Long> map=new HashMap<String,Long>();
+		Map<String, Long> map = new HashMap<String, Long>();
 		map.put("day", 86400l);
 		map.put("default", 300l);
 		map.put("list", 1l);
-		if(redisProperties!=null&&redisProperties.getExpired()!=null){
+		if (redisProperties != null && redisProperties.getExpired() != null) {
 			Iterator<Entry<String, Long>> it = redisProperties.getExpired().entrySet().iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				Entry<String, Long> entry = it.next();
 				map.put(entry.getKey(), entry.getValue());
 			}
@@ -154,11 +152,10 @@ public class NemoCoreAutoConfiguration {
 		redisCacheManager.setExpires(map);
 		return redisCacheManager;
 	}
-	
+
 	@Bean
-	public NemoJsonKeyGennerator keyGenerator()
-	{
-	    return new NemoJsonKeyGennerator();
+	public NemoJsonKeyGennerator keyGenerator() {
+		return new NemoJsonKeyGennerator();
 	}
-	
+
 }

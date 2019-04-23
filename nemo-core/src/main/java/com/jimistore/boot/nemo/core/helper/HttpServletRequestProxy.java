@@ -1,4 +1,4 @@
-package com.jimistore.boot.nemo.security.helper;
+package com.jimistore.boot.nemo.core.helper;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -10,42 +10,53 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+/**
+ * HttpServletRequest代理类，优化request body只能读取一次
+ * 
+ * @author chenqi
+ * @date 2019年4月23日
+ *
+ */
 public class HttpServletRequestProxy extends HttpServletRequestWrapper {
-	
-	byte[] body;
+
+	String body;
 
 	public HttpServletRequestProxy(HttpServletRequest request) {
 		super(request);
-		try{
+		try {
 			StringBuilder sb = new StringBuilder();
 			BufferedReader br = request.getReader();
 			String str;
-			while((str = br.readLine()) != null){
-				if(sb.length()>0){
+			while ((str = br.readLine()) != null) {
+				if (sb.length() > 0) {
 					sb.append("\n");
 				}
 				sb.append(str);
 			}
-			body = sb.toString().getBytes();
-		}catch(Exception e){
-			
+			body = sb.toString();
+		} catch (Exception e) {
+
 		}
 	}
-	
-	@Override  
-    public BufferedReader getReader() throws IOException {  
-        return new BufferedReader(new InputStreamReader(getInputStream()));  
-    }  
-  
-    @Override  
-    public ServletInputStream getInputStream() throws IOException {
+
+	public String getBody() {
+		return body;
+	}
+
+	@Override
+	public BufferedReader getReader() throws IOException {
+		return new BufferedReader(new InputStreamReader(getInputStream()));
+	}
+
+	@Override
+	public ServletInputStream getInputStream() throws IOException {
 //    	return super.getInputStream();
-        return new ServletInputStreamProxy(new ByteArrayInputStream(body));
-    } 
-    
-    class ServletInputStreamProxy extends ServletInputStream{
-    	
-    	ByteArrayInputStream bais;
+		return new ServletInputStreamProxy(new ByteArrayInputStream(body.getBytes()));
+	}
+
+	class ServletInputStreamProxy extends ServletInputStream {
+
+		ByteArrayInputStream bais;
 
 		public ServletInputStreamProxy(ByteArrayInputStream bais) {
 			super();
@@ -64,7 +75,7 @@ public class HttpServletRequestProxy extends HttpServletRequestWrapper {
 
 		@Override
 		public void setReadListener(ReadListener listener) {
-			
+
 		}
 
 		@Override
@@ -76,7 +87,7 @@ public class HttpServletRequestProxy extends HttpServletRequestWrapper {
 		public int readLine(byte[] b, int off, int len) throws IOException {
 			return bais.read(b, off, len);
 		}
-    	
-    }
+
+	}
 
 }
