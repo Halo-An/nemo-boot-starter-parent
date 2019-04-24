@@ -29,15 +29,15 @@ public class InitContextFilter implements Filter {
 	 * @return
 	 */
 	private Object parse(HttpServletRequest request, String key) {
-		Object value = request.getParameter(key);
+		Object value = request.getHeader(key);
 		if (log.isTraceEnabled()) {
-			log.trace(String.format("request user of param is %s", value));
+			log.trace(String.format("request user of paramheader is %s", value));
 		}
 		if (value == null) {
-			value = request.getHeader(key);
+			value = request.getParameter(key);
 		}
 		if (log.isTraceEnabled()) {
-			log.trace(String.format("request user of header is %s", value));
+			log.trace(String.format("request user of param is %s", value));
 		}
 		if (value == null) {
 			HttpSession session = request.getSession();
