@@ -31,7 +31,7 @@ public class InitContextFilter implements Filter {
 	private Object parse(HttpServletRequest request, String key) {
 		Object value = request.getHeader(key);
 		if (log.isTraceEnabled()) {
-			log.trace(String.format("request user of paramheader is %s", value));
+			log.trace(String.format("request user of header is %s", value));
 		}
 		if (value == null) {
 			value = request.getParameter(key);
