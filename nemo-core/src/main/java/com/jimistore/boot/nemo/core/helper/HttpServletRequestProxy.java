@@ -19,6 +19,10 @@ import javax.servlet.http.HttpServletRequestWrapper;
  */
 public class HttpServletRequestProxy extends HttpServletRequestWrapper {
 
+	ServletInputStreamProxy servletInputStreamProxy;
+
+	BufferedReader bufferedReader;
+
 	String body;
 
 	public HttpServletRequestProxy(HttpServletRequest request) {
@@ -34,6 +38,8 @@ public class HttpServletRequestProxy extends HttpServletRequestWrapper {
 				sb.append(str);
 			}
 			body = sb.toString();
+			servletInputStreamProxy = new ServletInputStreamProxy(new ByteArrayInputStream(body.getBytes()));
+			bufferedReader = new BufferedReader(new InputStreamReader(getInputStream()));
 		} catch (Exception e) {
 
 		}
@@ -45,13 +51,12 @@ public class HttpServletRequestProxy extends HttpServletRequestWrapper {
 
 	@Override
 	public BufferedReader getReader() throws IOException {
-		return new BufferedReader(new InputStreamReader(getInputStream()));
+		return bufferedReader;
 	}
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
-//    	return super.getInputStream();
-		return new ServletInputStreamProxy(new ByteArrayInputStream(body.getBytes()));
+		return servletInputStreamProxy;
 	}
 
 	class ServletInputStreamProxy extends ServletInputStream {

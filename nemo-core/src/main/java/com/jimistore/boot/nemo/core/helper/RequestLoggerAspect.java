@@ -222,7 +222,10 @@ public class RequestLoggerAspect implements Filter {
 			chain.doFilter(request, response);
 			// after
 			log.get().setEnd(System.currentTimeMillis());
-			log.get().setResponse(response);
+			if (response instanceof HttpServletResponseProxy) {
+				HttpServletResponseProxy reqp = (HttpServletResponseProxy) response;
+				log.get().setResponse(reqp.getBody());
+			}
 			log.get().setCode("200");
 			logger.debug(JsonString.toJson(log.get()));
 		} catch (Exception e) {

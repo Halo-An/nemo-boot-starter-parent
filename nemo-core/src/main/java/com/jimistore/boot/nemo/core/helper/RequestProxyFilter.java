@@ -10,6 +10,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.core.annotation.Order;
 
@@ -19,7 +20,6 @@ public class RequestProxyFilter implements Filter {
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -27,7 +27,8 @@ public class RequestProxyFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		if (request instanceof HttpServletRequest) {
-			chain.doFilter(new HttpServletRequestProxy((HttpServletRequest) request), response);
+			chain.doFilter(new HttpServletRequestProxy((HttpServletRequest) request),
+					new HttpServletResponseProxy((HttpServletResponse) response));
 		} else {
 			chain.doFilter(request, response);
 		}
@@ -35,7 +36,6 @@ public class RequestProxyFilter implements Filter {
 
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
 
 	}
 
