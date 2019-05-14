@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>nemo-monitor-server</artifactId>
-	<packaging>jar</packaging>
+	<packaging>${build.packaging}</packaging>
 
 	<name>nemo-monitor-server</name>
 	<description>Demo project for Spring Boot</description>
@@ -12,7 +12,7 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.10.4-RELEASE</version>
+		<version>1.10.11-RELEASE</version>
 	</parent>
 
 	<dependencies>
