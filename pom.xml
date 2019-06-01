@@ -13,6 +13,7 @@
 		<module>nemo-core</module>
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
+		<module>nemo-monitor-server</module>
 		<!-- 
 		<module>nemo-rpc-eureka-server</module>
 		<module>nemo-monitor-server</module>
