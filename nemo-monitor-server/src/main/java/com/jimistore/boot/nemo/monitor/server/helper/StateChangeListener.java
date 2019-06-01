@@ -75,11 +75,7 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 					event.getApplication().getStatusInfo().getDetails()));
 		}
 		if (StringUtils.isEmpty(msg)) {
-			msg = " #{application.name} (#{application.id}) status changed from #{from.status} to #{to.status} #{application.healthUrl}";
-			Calendar time = Calendar.getInstance();
-			time.setTimeInMillis(event.getTimestamp());
-			msg = String.format("%s : %s",  sdf.format(time) , msg);
-			
+			msg = " #{application.name} (#{application.id}) status changed from #{from.status} to #{to.status} #{application.healthUrl}";			
 		}
 		if(event.getApplication()!=null && event.getApplication().getName()!=null){
 			if(event.getApplication().getName().toUpperCase().indexOf("PROTOCOL-SERVICE-V2-0-0")>=0 || 
@@ -104,7 +100,9 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 			}
 		}
 		if (detailMsg.length() > 0) {
-			message = String.format("%s \n \n %s", message, detailMsg.toString());
+			Calendar time = Calendar.getInstance();
+			time.setTimeInMillis(event.getTimestamp());
+			message = String.format("%s \n %s \n \n %s", sdf.format(time) , message, detailMsg.toString());
 		}
 		if (enabled) {
 			caller.sendRobotNotice(message, toRobot, toPhones);
