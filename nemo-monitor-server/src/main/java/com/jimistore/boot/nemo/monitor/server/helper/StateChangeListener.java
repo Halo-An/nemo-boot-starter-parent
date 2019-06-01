@@ -79,7 +79,8 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 		}
 		if(event.getApplication()!=null && event.getApplication().getName()!=null){
 			if(event.getApplication().getName().toUpperCase().indexOf("PROTOCOL-SERVICE-V2-0-0")>=0 || 
-					event.getApplication().getName().toUpperCase().indexOf("PROTOCOL-SERVICE-V1-0-0")>=0|| 
+					event.getApplication().getName().toUpperCase().indexOf("PROTOCOL-SERVICE-V1-0-0")>=0||
+					event.getApplication().getName().toUpperCase().indexOf("RISKCONTROL-SERVICE-V1-0-0")>=0|| 
 					event.getApplication().getName().toUpperCase().indexOf("PLATFORM-OPERATION-V1-0-0")>=0){
 				return ;
 			}
