@@ -76,7 +76,9 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 		}
 		if (StringUtils.isEmpty(msg)) {
 			msg = " #{application.name} (#{application.id}) status changed from #{from.status} to #{to.status} #{application.healthUrl}";
-			msg = String.format("%s : %s",  sdf.format(Calendar.getInstance().getTime()) , msg);
+			Calendar time = Calendar.getInstance();
+			time.setTimeInMillis(event.getTimestamp());
+			msg = String.format("%s : %s",  sdf.format(time) , msg);
 			
 		}
 		if(event.getApplication()!=null && event.getApplication().getName()!=null){
