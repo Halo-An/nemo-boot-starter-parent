@@ -71,14 +71,15 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 	@Override
 	protected void doNotify(ClientApplicationEvent event) throws Exception {
 		if (log.isDebugEnabled()) {
-			log.debug(String.format("application status has changed, application info is %s",
-					event.getApplication().getStatusInfo().getDetails()));
+			log.debug(String.format("application status has changed, application name is %s, application info is %s",
+					event.getApplication().getName(), event.getApplication().getStatusInfo().getDetails()));
 		}
 		if (StringUtils.isEmpty(msg)) {
 			msg = " #{application.name} (#{application.id}) status changed from #{from.status} to #{to.status} #{application.healthUrl}";			
 		}
 		if(event.getApplication()!=null && event.getApplication().getName()!=null){
 			if(event.getApplication().getName().toUpperCase().indexOf("PROTOCOL-SERVICE-V2-0-0")>=0 || 
+					event.getApplication().getName().toUpperCase().indexOf("PROTOCOL-SERVICE-V1-0-0")>=0|| 
 					event.getApplication().getName().toUpperCase().indexOf("PLATFORM-OPERATION-V1-0-0")>=0){
 				return ;
 			}
