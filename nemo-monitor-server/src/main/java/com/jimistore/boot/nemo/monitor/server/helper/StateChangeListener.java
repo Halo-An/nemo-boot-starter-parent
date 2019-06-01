@@ -1,6 +1,8 @@
 package com.jimistore.boot.nemo.monitor.server.helper;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -36,6 +38,8 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 
 	@Value("${alerm.dingding.msg:}")
 	String msg;
+	
+	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd,HH:mm:ss");
 
 	private final SpelExpressionParser parser = new SpelExpressionParser();
 
@@ -72,10 +76,12 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 		}
 		if (StringUtils.isEmpty(msg)) {
 			msg = " #{application.name} (#{application.id}) status changed from #{from.status} to #{to.status} #{application.healthUrl}";
+			msg = String.format("%s : %s",  sdf.format(Calendar.getInstance().getTime()) , msg);
+			
 		}
-		if(event.getApplication().getName()!=null){
-			if(event.getApplication().getName().indexOf("PROTOCOL-SERVICE-V2-0-0")>=0 || 
-					event.getApplication().getName().indexOf("PLATFORM-OPERATION-V1-0-0")>=0){
+		if(event.getApplication()!=null && event.getApplication().getName()!=null){
+			if(event.getApplication().getName().toUpperCase().indexOf("PROTOCOL-SERVICE-V2-0-0")>=0 || 
+					event.getApplication().getName().toUpperCase().indexOf("PLATFORM-OPERATION-V1-0-0")>=0){
 				return ;
 			}
 		}
