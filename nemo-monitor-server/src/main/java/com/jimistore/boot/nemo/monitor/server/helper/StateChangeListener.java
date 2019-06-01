@@ -73,6 +73,12 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 		if (StringUtils.isEmpty(msg)) {
 			msg = " #{application.name} (#{application.id}) status changed from #{from.status} to #{to.status} #{application.healthUrl}";
 		}
+		if(event.getApplication().getName()!=null){
+			if(event.getApplication().getName().indexOf("PROTOCOL-SERVICE-V2-0-0")>=0 || 
+					event.getApplication().getName().indexOf("PLATFORM-OPERATION-V1-0-0")>=0){
+				return ;
+			}
+		}
 		StandardEvaluationContext context = new StandardEvaluationContext(event);
 		String message = parser.parseExpression(msg, ParserContext.TEMPLATE_EXPRESSION).getValue(context, String.class);
 		StringBuilder detailMsg = new StringBuilder();
