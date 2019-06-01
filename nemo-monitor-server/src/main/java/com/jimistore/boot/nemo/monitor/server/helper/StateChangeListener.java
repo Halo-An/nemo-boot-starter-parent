@@ -102,7 +102,7 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 		if (detailMsg.length() > 0) {
 			Calendar time = Calendar.getInstance();
 			time.setTimeInMillis(event.getTimestamp());
-			message = String.format("%s \n %s \n \n %s", sdf.format(time) , message, detailMsg.toString());
+			message = String.format("%s \n %s \n \n %s", sdf.format(time.getTime()) , message, detailMsg.toString());
 		}
 		if (enabled) {
 			caller.sendRobotNotice(message, toRobot, toPhones);
