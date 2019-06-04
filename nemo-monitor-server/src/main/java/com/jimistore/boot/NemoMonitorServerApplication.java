@@ -4,12 +4,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 import de.codecentric.boot.admin.config.EnableAdminServer;
 
 @EnableAdminServer
 @EnableEurekaClient
+@EnableCaching
 @SpringBootApplication
 public class NemoMonitorServerApplication extends SpringBootServletInitializer {
 
