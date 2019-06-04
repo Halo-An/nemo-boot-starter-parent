@@ -133,10 +133,8 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 			String serviceName = event.getApplication().getName();
 			Set<String> whiteSet = whiteStorage.getWhiteServiceSet();
 			if (serviceName != null && whiteSet != null && whiteSet.size() > 0) {
-				for (String white : whiteSet) {
-					if (white != null && serviceName.toUpperCase().indexOf(white.toUpperCase()) >= 0) {
-						return true;
-					}
+				if (whiteSet.contains(serviceName)) {
+					return true;
 				}
 			}
 		}
