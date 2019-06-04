@@ -28,6 +28,11 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.jimistore.boot</groupId>
+			<artifactId>nemo-core</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>de.codecentric</groupId>
