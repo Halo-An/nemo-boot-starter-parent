@@ -4,10 +4,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "hibernate")
 public class HibernateProperties {
-	
-	public static class Hbm2ddl{
-		
-		String auto="update";
+
+	public static class Hbm2ddl {
+
+		String auto = "update";
 
 		public String getAuto() {
 			return auto;
@@ -16,18 +16,18 @@ public class HibernateProperties {
 		public void setAuto(String auto) {
 			this.auto = auto;
 		}
-		
+
 	}
 
-	String show_sql="true";
-	
-	String packagesToScan="*";
-	
-	String dialect="";
-	
-	Boolean nameStrategyUnder=false;
-	
-	Hbm2ddl hbm2ddl=new Hbm2ddl();
+	String show_sql = "false";
+
+	String packagesToScan = "*";
+
+	String dialect = "";
+
+	Boolean nameStrategyUnder = false;
+
+	Hbm2ddl hbm2ddl = new Hbm2ddl();
 
 	public String getShow_sql() {
 		return show_sql;
@@ -68,6 +68,5 @@ public class HibernateProperties {
 	public void setNameStrategyUnder(Boolean nameStrategyUnder) {
 		this.nameStrategyUnder = nameStrategyUnder;
 	}
-	
-	
+
 }
