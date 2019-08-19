@@ -13,6 +13,7 @@ import com.jimistore.boot.nemo.fuse.exception.TimeOutException;
 import com.jimistore.boot.nemo.sliding.window.core.ILogicSubscriber;
 import com.jimistore.boot.nemo.sliding.window.core.INotice;
 import com.jimistore.boot.nemo.sliding.window.core.INoticeEvent;
+import com.jimistore.boot.nemo.sliding.window.core.NoticeLogicEvent;
 import com.jimistore.boot.nemo.sliding.window.core.PublishEvent;
 import com.jimistore.boot.nemo.sliding.window.core.SlidingWindowTemplate;
 import com.jimistore.boot.nemo.sliding.window.core.Topic;
@@ -107,8 +108,15 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 		FuseState state = fuseInfo.getFuseState();
 		if (state.equals(FuseState.CONNECT)) {
 			Double value = event.getValue().get(0).doubleValue();
-			// 如果调用的异常率大于50%，则断开
-			if (value != null && !value.isNaN() && value >= fuseProperties.getOpenRatioThreshold()) {
+			NoticeLogicEvent<?> logicEvent = (NoticeLogicEvent<?>) event;
+			String requestKey = String.format(REQUEST_KEY_FORMAT, fuseInfo.getKey());
+			if (logicEvent.getOriginMap() == null || logicEvent.getOriginMap().size() == 0) {
+				return;
+			}
+			int openCount = logicEvent.getOriginMap().get(0).get(requestKey).intValue();
+			// 如果调用的异常率大于50%且大于等于调用量，则断开
+			if (value != null && !value.isNaN() && value >= fuseProperties.getOpenRatioThreshold()
+					&& openCount >= fuseProperties.getOpenCountThreshold()) {
 				if (fuseInfo instanceof FuseInfo) {
 					log.debug(String.format("fuse state changing, the key is %s, %s==>%s", fuseInfo.getKey(),
 							fuseInfo.getFuseState(), FuseState.OPEN));

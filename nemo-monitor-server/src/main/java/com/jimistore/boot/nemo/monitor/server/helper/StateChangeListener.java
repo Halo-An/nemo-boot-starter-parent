@@ -89,7 +89,7 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 
 		// 发送通知
 		if (enabled) {
-			caller.sendRobotNotice(message, toRobot, toPhones);
+			caller.sendRobotNotice("监控到异常报警", message, toRobot, toPhones);
 		}
 	}
 

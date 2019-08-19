@@ -21,40 +21,41 @@ import com.jimistore.boot.nemo.sliding.window.helper.NoticeEventHelper;
 
 /**
  * 调度器
+ * 
  * @author chenqi
  * @Date 2018年7月19日
  *
  */
 public class Dispatcher implements IDispatcher {
-	
+
 	private static final Logger log = Logger.getLogger(Dispatcher.class);
-	
+
 	public static final Long INTERVAL = 1000l;
-	
+
 	protected List<IPublishHandler> publishHandlerList = new ArrayList<IPublishHandler>();
-	
+
 	protected List<INoticeHandler> noticeHandlerList = new ArrayList<INoticeHandler>();
-	
+
 	protected ICounterContainer counterContainer;
-	
+
 	protected IChannelContainer channelContainer;
-	
+
 	protected IPublisherContainer publisherContainer;
-	
+
 	protected ITopicContainer topicContainer;
-	
+
 	protected SlidingWindowProperties slidingWindowProperties;
-	
+
 	protected Executor executor;
-	
+
 	protected LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
-	
-	//队列线程
-	Thread queueThread = new Thread("nemo-sliding-window-counter-container-queue"){
+
+	// 队列线程
+	Thread queueThread = new Thread("nemo-sliding-window-counter-container-queue") {
 
 		@Override
 		public void run() {
-			while(true){
+			while (true) {
 				try {
 					Runnable task = queue.take();
 					task.run();
@@ -63,14 +64,14 @@ public class Dispatcher implements IDispatcher {
 				}
 			}
 		}
-		
+
 	};
-	
-	//心跳线程
-	Thread heartbeatThread = new Thread("nemo-sliding-window-heartbeat"){
+
+	// 心跳线程
+	Thread heartbeatThread = new Thread("nemo-sliding-window-heartbeat") {
 		@Override
 		public void run() {
-			while(true){
+			while (true) {
 				try {
 					heartbeat();
 					Thread.sleep(INTERVAL);
@@ -79,19 +80,19 @@ public class Dispatcher implements IDispatcher {
 				}
 			}
 		}
-		
+
 	};
-	
-	//窗口调度线程
-	Thread schedulerThread = new Thread("nemo-sliding-window-scheduler"){
+
+	// 窗口调度线程
+	Thread schedulerThread = new Thread("nemo-sliding-window-scheduler") {
 		@Override
 		public void run() {
-			while(true){
-				try{
+			while (true) {
+				try {
 					scheduler();
-				}catch(Exception e){
+				} catch (Exception e) {
 					e.printStackTrace();
-				}finally{
+				} finally {
 
 					try {
 						Thread.sleep(INTERVAL);
@@ -101,10 +102,10 @@ public class Dispatcher implements IDispatcher {
 				}
 			}
 		}
-		
+
 	};
-	
-	public Dispatcher(){
+
+	public Dispatcher() {
 	}
 
 	public Dispatcher setSlidingWindowProperties(SlidingWindowProperties slidingWindowProperties) {
@@ -139,7 +140,7 @@ public class Dispatcher implements IDispatcher {
 		heartbeatThread.start();
 		schedulerThread.start();
 		queueThread.start();
-		
+
 		executor = Executors.newFixedThreadPool(slidingWindowProperties.getMaxNoticeThreadSize());
 		return this;
 	}
@@ -177,54 +178,63 @@ public class Dispatcher implements IDispatcher {
 		noticeHandlerList.add(noticeHandler);
 		return this;
 	}
-	
+
 	/**
 	 * 核心驱动线程实现
 	 */
-	protected void scheduler(){
-		if(counterContainer==null){
-			return ;
+	protected void scheduler() {
+		if (counterContainer == null) {
+			return;
 		}
 		long eventTime = System.currentTimeMillis();
-		try{
-			for(IChannel channel:channelContainer.listAllChannel()){
-				if(!channel.ready()){
+		try {
+			for (IChannel channel : channelContainer.listAllChannel()) {
+				if (!channel.ready()) {
 					continue;
 				}
 				this.execute(eventTime, channel);
 			}
-		}finally{
-			if(log.isTraceEnabled()){
-				log.trace(String.format("request scheduler end , cost time is %s", System.currentTimeMillis() - eventTime));
+		} finally {
+			if (log.isTraceEnabled()) {
+				log.trace(String.format("request scheduler end , cost time is %s",
+						System.currentTimeMillis() - eventTime));
 			}
 		}
 	}
-	
+
 	/**
 	 * 解析事件数据
+	 * 
 	 * @param channel
 	 * @param time
 	 * @return
-	 */	
-	protected INoticeEvent<?> parseValue(IChannel channel, Long time){
+	 */
+	protected INoticeEvent<?> parseValue(IChannel channel, Long time) {
 		ISubscriber subscriber = channel.getSubscriber();
 		String key = null;
 		List<Number> value = null;
-		
-		//是否是逻辑主体订阅
-		if(subscriber instanceof ILogicSubscriber){
+		List<Map<String, Number>> logicMapList = null;
+
+		// 是否是逻辑主体订阅
+		if (subscriber instanceof ILogicSubscriber) {
 			ILogicSubscriber logicSubscriber = (ILogicSubscriber) subscriber;
 			key = logicSubscriber.getTopicMatch();
-			value = this.getLogicValue(logicSubscriber);
-		}else{
+			logicMapList = this.getLogicMapList(logicSubscriber);
+			value = this.parseLogicValue(logicSubscriber, logicMapList);
+		} else {
 			key = channel.getTopicList().get(0);
-			value = this.getValueByBuffered(key, subscriber.getTimeUnit(), subscriber.getLength(), subscriber.getValueType());
-			//合并二级窗口
+			value = this.getValueByBuffered(key, subscriber.getTimeUnit(), subscriber.getLength(),
+					subscriber.getValueType());
+			// 合并二级窗口
 			value = NoticeEventHelper.mergeWindow(value, subscriber.getSecondWindowLength());
 		}
 		NoticeEvent<Number> event = new NoticeEvent<Number>().setTopicKey(key).setValue(value).setTime(time);
-		//是否是预警订阅
-		if(subscriber instanceof IWarnSubscriber){
+		// 是否是逻辑订阅
+		if (subscriber instanceof IWarnSubscriber) {
+			return new NoticeLogicEvent<Number>(event).setOriginMap(logicMapList);
+		}
+		// 是否是预警订阅
+		if (subscriber instanceof IWarnSubscriber) {
 			return new NoticeStatisticsEvent<Number>(event);
 		}
 		return event;
@@ -232,6 +242,7 @@ public class Dispatcher implements IDispatcher {
 
 	/**
 	 * 数据缓冲处理
+	 * 
 	 * @param key
 	 * @param timeUnit
 	 * @param length
@@ -240,126 +251,162 @@ public class Dispatcher implements IDispatcher {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	protected List<Number> getValueByBuffered(String key, TimeUnit timeUnit, Integer length, Class<?> valueType){
-		//TODO 缺缓冲实现
-		return (List<Number>)counterContainer.window(key, timeUnit, length, valueType);
+	protected List<Number> getValueByBuffered(String key, TimeUnit timeUnit, Integer length, Class<?> valueType) {
+		// TODO 缺缓冲实现
+		return (List<Number>) counterContainer.window(key, timeUnit, length, valueType);
 	}
-	
+
 	/**
 	 * 获取逻辑主体的数据处理
+	 * 
 	 * @param logicSubscriber
 	 * @return
 	 */
-	protected List<Number> getLogicValue(ILogicSubscriber logicSubscriber){
+	protected List<Map<String, Number>> getLogicMapList(ILogicSubscriber logicSubscriber) {
 		long old = System.currentTimeMillis();
-		List<Number> valueList = new ArrayList<Number>();
-		try{
-			
+		List<Map<String, Number>> valueList = new ArrayList<Map<String, Number>>();
+		try {
+
 			List<Number> min = null;
 			Class<?> valueType = logicSubscriber.getValueType();
 			Map<String, String> variableMap = logicSubscriber.getTopicVariableMap();
 			Map<String, List<Number>> dataMap = new HashMap<String, List<Number>>();
-			
-			//读取所有需要参与计算的数据
-			for(Entry<String, String> entry:variableMap.entrySet()){
-				if(valueType==null){
+
+			// 读取所有需要参与计算的数据
+			for (Entry<String, String> entry : variableMap.entrySet()) {
+				if (valueType == null) {
 					Topic topic = topicContainer.getTopic(entry.getKey());
 					valueType = topic.getValueType();
 				}
-				List<Number> temp = this.getValueByBuffered(entry.getKey(), logicSubscriber.getTimeUnit(), logicSubscriber.getLength() + logicSubscriber.getSecondWindowLength() -1, valueType);
+				List<Number> temp = this.getValueByBuffered(entry.getKey(), logicSubscriber.getTimeUnit(),
+						logicSubscriber.getLength() + logicSubscriber.getSecondWindowLength() - 1, valueType);
 
-				//合并二级窗口
+				// 合并二级窗口
 				temp = NoticeEventHelper.mergeWindow(temp, logicSubscriber.getSecondWindowLength());
-				if(temp==null){
-					//如果其中有一个数据集是空的，那么返回空的
+				if (temp == null) {
+					// 如果其中有一个数据集是空的，那么返回空的
 					return valueList;
 				}
-				if(min==null||temp.size()<min.size()){
+				if (min == null || temp.size() < min.size()) {
 					min = temp;
 				}
 				dataMap.put(entry.getKey(), temp);
 			}
-			//计算逻辑的
-			for(int i=0;i<min.size();i++){
+			// 计算逻辑的
+			for (int i = 0; i < min.size(); i++) {
+				Map<String, Number> logicMap = new HashMap<String, Number>();
+				for (Entry<String, String> entry : variableMap.entrySet()) {
+					logicMap.put(entry.getKey(), dataMap.get(entry.getKey()).get(i));
+				}
+				valueList.add(logicMap);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+
+		} finally {
+
+			if (log.isTraceEnabled()) {
+				log.trace(String.format("get logic topic map , cost time is %s", System.currentTimeMillis() - old));
+			}
+		}
+
+		return valueList;
+	}
+
+	/**
+	 * 获取逻辑主体的数据处理
+	 * 
+	 * @param logicSubscriber
+	 * @return
+	 */
+	protected List<Number> parseLogicValue(ILogicSubscriber logicSubscriber, List<Map<String, Number>> logicMapList) {
+		long old = System.currentTimeMillis();
+		List<Number> valueList = new ArrayList<Number>();
+		Class<?> valueType = logicSubscriber.getValueType();
+		Map<String, String> variableMap = logicSubscriber.getTopicVariableMap();
+		try {
+			// 计算逻辑的
+			for (int i = 0; i < logicMapList.size(); i++) {
+				Map<String, Number> dataMap = logicMapList.get(i);
 				StandardEvaluationContext context = new StandardEvaluationContext();
-				for(Entry<String, String> entry:variableMap.entrySet()){
-					context.setVariable(entry.getValue(), dataMap.get(entry.getKey()).get(i));
+				for (Entry<String, String> entry : variableMap.entrySet()) {
+					context.setVariable(entry.getValue(), dataMap.get(entry.getKey()));
 				}
 				Number value = 0;
-				try{
+				try {
 					value = (Number) this.parseExpression(context, logicSubscriber.getTopicMatch(), valueType);
-				}catch(Exception e){
+				} catch (Exception e) {
 					log.error(e.getMessage(), e);
 				}
 				valueList.add(value);
 			}
-		}catch(Exception e){
+		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			
-		}finally {
 
-			if(log.isTraceEnabled()){
+		} finally {
+
+			if (log.isTraceEnabled()) {
 				log.trace(String.format("get logic topic value , cost time is %s", System.currentTimeMillis() - old));
 			}
 		}
-		
+
 		return valueList;
 	}
-	
-	
+
 	/**
 	 * 执行任务
+	 * 
 	 * @param event
 	 * @param subscriber
 	 */
-	protected void execute(Long eventTime, IChannel channel){
-		
-		executor.execute(new Runnable(){
+	protected void execute(Long eventTime, IChannel channel) {
+
+		executor.execute(new Runnable() {
 			@Override
 			public void run() {
 				long old = System.currentTimeMillis();
-				
+
 				ISubscriber subscriber = channel.getSubscriber();
 				String key = subscriber.getTopicMatch();
-				try{
-					if(log.isDebugEnabled()){
+				try {
+					if (log.isDebugEnabled()) {
 						log.debug(String.format("call notice of subscriber[%s] start", key));
 					}
 					INoticeEvent<?> event = parseValue(channel, eventTime);
-					
-					//是否做预警判断
-					if(subscriber instanceof IWarnSubscriber){
+
+					// 是否做预警判断
+					if (subscriber instanceof IWarnSubscriber) {
 						IWarnSubscriber wsub = (IWarnSubscriber) subscriber;
 						StandardEvaluationContext context = getContextByEvent(event);
-						boolean result = parseExpression(context, wsub.getCondition() , Boolean.class);
-						((NoticeStatisticsEvent<?>)event).setWarn(result);
-						if(wsub.isOnlyNoticeWarn()&&!result){
-							return ;
+						boolean result = parseExpression(context, wsub.getCondition(), Boolean.class);
+						((NoticeStatisticsEvent<?>) event).setWarn(result);
+						if (wsub.isOnlyNoticeWarn() && !result) {
+							return;
 						}
 					}
-					
+
 					subscriber.getNotice().notice(event);
-				}catch(Exception e){
+				} catch (Exception e) {
 					log.error(e.getMessage(), e);
-				}finally{
+				} finally {
 					long diff = System.currentTimeMillis() - old;
-					if(log.isDebugEnabled()){
+					if (log.isDebugEnabled()) {
 						log.debug(String.format("call notice of subscriber[%s] end, cost time is %sms", key, diff));
 					}
 				}
 			}
-			
+
 		});
 	}
-	
+
 	/**
 	 * 计数心跳
 	 */
-	public void heartbeat(){
+	public void heartbeat() {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if(counterContainer!=null){
+				if (counterContainer != null) {
 					counterContainer.heartbeat();
 				}
 			}
@@ -371,7 +418,7 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if(log.isDebugEnabled()){
+				if (log.isDebugEnabled()) {
 					log.debug(String.format("create counter %s", topic.getKey()));
 				}
 				counterContainer.createCounter(topic);
@@ -380,8 +427,8 @@ public class Dispatcher implements IDispatcher {
 		});
 		return this;
 	}
-	
-	protected void createQueueTask(Runnable runnable){
+
+	protected void createQueueTask(Runnable runnable) {
 		try {
 			queue.put(runnable);
 		} catch (InterruptedException e) {
@@ -394,7 +441,7 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if(log.isDebugEnabled()){
+				if (log.isDebugEnabled()) {
 					log.debug(String.format("create topic %s", topic.getKey()));
 				}
 				topicContainer.createTopic(topic);
@@ -410,7 +457,7 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if(log.isDebugEnabled()){
+				if (log.isDebugEnabled()) {
 					log.debug(String.format("delete topic %s", topic));
 				}
 				topicContainer.deleteTopic(topic);
@@ -426,42 +473,44 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if(counterContainer!=null){
+				if (counterContainer != null) {
 					counterContainer.deleteCounter(key);
 				}
 			}
 		});
 		return this;
 	}
-	
+
 	/**
 	 * 获取函数spel对应初始化的上下文
+	 * 
 	 * @param joinPoint
 	 * @return
 	 */
-	protected StandardEvaluationContext getContextByEvent(INoticeEvent<?> event){
-		
+	protected StandardEvaluationContext getContextByEvent(INoticeEvent<?> event) {
+
 		StandardEvaluationContext context = new StandardEvaluationContext();
 		context.setVariable("event", event);
-		if(event instanceof INoticeStatisticsEvent){
+		if (event instanceof INoticeStatisticsEvent) {
 			INoticeStatisticsEvent<?> sevent = (INoticeStatisticsEvent<?>) event;
 			context.setVariable("max", sevent.getMax());
 			context.setVariable("min", sevent.getMin());
 			context.setVariable("sum", sevent.getSum());
-			context.setVariable("avg", sevent.getAvg());			
+			context.setVariable("avg", sevent.getAvg());
 			context.setVariable("cur", sevent.getCur());
 		}
 
 		return context;
 	}
-	
+
 	/**
 	 * spel格式化
+	 * 
 	 * @param context
 	 * @param str
 	 * @return
 	 */
-	protected <T> T parseExpression(StandardEvaluationContext context,String str, Class<T> clazz){
+	protected <T> T parseExpression(StandardEvaluationContext context, String str, Class<T> clazz) {
 		return new SpelExpressionParser().parseExpression(str).getValue(context, clazz);
 	}
 
