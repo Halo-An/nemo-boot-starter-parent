@@ -35,4 +35,8 @@ public class MutilHibernateQueryDao extends MutilHibernateDao {
 		return query.list();
 	}
 
+	public int execute(String sql) {
+		return this.getSession().createSQLQuery(sql).executeUpdate();
+	}
+
 }

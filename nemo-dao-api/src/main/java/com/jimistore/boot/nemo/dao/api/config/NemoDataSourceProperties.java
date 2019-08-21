@@ -1,41 +1,47 @@
-package com.jimistore.boot.nemo.dao.hibernate.config;
+package com.jimistore.boot.nemo.dao.api.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "datasource")
-public class DataSourceProperties {
-	
-	private String driverClass;
-	
-	private String jdbcUrl;
-	
-	private String user="root";
-	
-	private String password="root";
+public class NemoDataSourceProperties {
 
-	private Integer minPoolSize=5;
-	
-	private Integer maxPoolSize=100;
-	
-	private Integer maxIdleTime=300;
-	
-	private Integer acquireIncrement=2;
-	
-	private Integer maxStatements=0;
-	
-	private Integer initialPoolSize=5;
-	
-	private Integer idleConnectionTestPeriod=300;
-	
-	private Integer acquireRetryAttempts=30;
-	
-	private Boolean breakAfterAcquireFailure=false;
-	
-	private Boolean testConnectionOnCheckout=false;
-	
-	private Boolean testConnectionOnCheckin=false;
-	
-	private String characterEncoding="UTF-8";
+	private String type;
+
+	private String driverClass;
+
+	private String jdbcUrl;
+
+	private String user = "root";
+
+	private String password = "root";
+
+	private Integer minPoolSize = 5;
+
+	private Integer maxPoolSize = 100;
+
+	private Integer maxIdleTime = 300;
+
+	private Integer acquireIncrement = 2;
+
+	private Integer maxStatements = 0;
+
+	private Integer initialPoolSize = 5;
+
+	private Integer idleConnectionTestPeriod = 300;
+
+	private Integer checkoutTimeout = 0;
+
+	private Integer acquireRetryAttempts = 30;
+
+	private Boolean breakAfterAcquireFailure = false;
+
+	private Boolean testConnectionOnCheckout = false;
+
+	private Boolean testConnectionOnCheckin = false;
+
+	private String characterEncoding = "UTF-8";
+
+	private String connectionInitSql;
 
 	public String getDriverClass() {
 		return driverClass;
@@ -164,6 +170,32 @@ public class DataSourceProperties {
 	public void setTestConnectionOnCheckin(Boolean testConnectionOnCheckin) {
 		this.testConnectionOnCheckin = testConnectionOnCheckin;
 	}
-	
-	
+
+	public String getConnectionInitSql() {
+		return connectionInitSql;
+	}
+
+	public NemoDataSourceProperties setConnectionInitSql(String connectionInitSql) {
+		this.connectionInitSql = connectionInitSql;
+		return this;
+	}
+
+	public Integer getCheckoutTimeout() {
+		return checkoutTimeout;
+	}
+
+	public NemoDataSourceProperties setCheckoutTimeout(Integer checkoutTimeout) {
+		this.checkoutTimeout = checkoutTimeout;
+		return this;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public NemoDataSourceProperties setType(String type) {
+		this.type = type;
+		return this;
+	}
+
 }
