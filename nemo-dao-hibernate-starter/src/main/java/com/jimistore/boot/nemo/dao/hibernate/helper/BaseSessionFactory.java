@@ -8,20 +8,20 @@ import org.hibernate.cfg.NamingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 
-import com.jimistore.boot.nemo.dao.hibernate.config.DataSourceProperties;
+import com.jimistore.boot.nemo.dao.api.config.NemoDataSourceProperties;
 import com.jimistore.boot.nemo.dao.hibernate.config.HibernateProperties;
 
 @SuppressWarnings("deprecation")
 public class BaseSessionFactory extends LocalSessionFactoryBean {
-	
+
 	String key;
-	
+
 	HibernateProperties hibernatePropertie;
-	
-	DataSourceProperties dataSourcePropertie;
-	
+
+	NemoDataSourceProperties dataSourcePropertie;
+
 	DataSource dataSource;
-	
+
 	NamingStrategy namingStrategy;
 
 	@Autowired
@@ -54,42 +54,40 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 	}
 
-	public void setDataSourcePropertie(DataSourceProperties dataSourcePropertie){
+	public void setDataSourcePropertie(NemoDataSourceProperties dataSourcePropertie) {
 		this.dataSourcePropertie = dataSourcePropertie;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws IOException {
-		
+
 		super.setPackagesToScan(hibernatePropertie.getPackagesToScan());
 
 		this.getHibernateProperties().setProperty("hibernate.show_sql", hibernatePropertie.getShow_sql());
 		this.getHibernateProperties().setProperty("hibernate.hbm2ddl.auto", hibernatePropertie.getHbm2ddl().getAuto());
-		
 
 		String driverClass = dataSourcePropertie.getDriverClass();
 		String characterEncoding = dataSourcePropertie.getCharacterEncoding();
 		this.getHibernateProperties().setProperty("connection.characterEncoding", characterEncoding);
-		
-		try{
-			if(driverClass.indexOf("mysql")>=0){
+
+		try {
+			if (driverClass.indexOf("mysql") >= 0) {
 				this.getHibernateProperties().setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-			}else if(driverClass.indexOf("oracle")>=0){
+			} else if (driverClass.indexOf("oracle") >= 0) {
 				this.getHibernateProperties().setProperty("hibernate.dialect", "org.hibernate.dialect.OracleDialect");
-			}else if(driverClass.indexOf("sqlserver")>=0||driverClass.indexOf("jtds")>=0){
-				this.getHibernateProperties().setProperty("hibernate.dialect", "org.hibernate.dialect.SQLServerDialect");
+			} else if (driverClass.indexOf("sqlserver") >= 0 || driverClass.indexOf("jtds") >= 0) {
+				this.getHibernateProperties().setProperty("hibernate.dialect",
+						"org.hibernate.dialect.SQLServerDialect");
 			}
-		}catch(Exception e){
-			
+		} catch (Exception e) {
+
 		}
-		
 
 		String dialect = hibernatePropertie.getDialect();
 		if (dialect != null && dialect.trim().length() > 0) {
 			this.getHibernateProperties().setProperty("hibernate.dialect", dialect);
 		}
-		
-		
+
 		super.afterPropertiesSet();
 	}
 
@@ -101,7 +99,7 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 		return hibernatePropertie;
 	}
 
-	public DataSourceProperties getDataSourcePropertie() {
+	public NemoDataSourceProperties getDataSourcePropertie() {
 		return dataSourcePropertie;
 	}
 

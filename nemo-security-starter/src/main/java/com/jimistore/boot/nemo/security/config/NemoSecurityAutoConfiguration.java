@@ -39,7 +39,7 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 						new ApiAuth.ApiAuthConfig().setAppid(dsPrefix).setSecret(dsMap.get("secret").toString())
 								.setMatch(StringUtil.split(dsMap.get("match").toString(), StringUtil.SPLIT_STR)));
 			} catch (Exception e) {
-
+				e.printStackTrace();
 			}
 		}
 	}

@@ -7,13 +7,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.jimistore.boot.nemo.dao.api.config.NemoDataSourceProperties;
+import com.jimistore.boot.nemo.dao.api.core.INemoDataSourceRegister;
 import com.jimistore.boot.nemo.dao.api.dao.IDao;
 import com.jimistore.boot.nemo.dao.api.validator.IQueryValidator;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 import com.jimistore.boot.nemo.dao.hibernate.dao.MutilHibernateQueryDao;
 import com.jimistore.boot.nemo.dao.hibernate.helper.BaseSessionFactory;
+import com.jimistore.boot.nemo.dao.hibernate.helper.C3P0DataSourceRegister;
+import com.jimistore.boot.nemo.dao.hibernate.helper.DataSourceSelector;
 import com.jimistore.boot.nemo.dao.hibernate.helper.IQueryParser;
 import com.jimistore.boot.nemo.dao.hibernate.helper.ISpelExtendFunc;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilDaoAccessAspect;
@@ -31,7 +36,7 @@ import com.jimistore.boot.nemo.dao.hibernate.validator.InjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.XSSValidator;
 
 @Configuration
-@EnableConfigurationProperties({ HibernateProperties.class, DataSourceProperties.class,
+@EnableConfigurationProperties({ HibernateProperties.class, NemoDataSourceProperties.class,
 		MutilDataSourceProperties.class })
 @EnableTransactionManagement(proxyTargetClass = true)
 @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true", matchIfMissing = true)
@@ -39,12 +44,12 @@ public class NemoDaoHibernateAutoConfiguration {
 
 	HibernateProperties hibernateProperties;
 
-	DataSourceProperties dataSourceProperties;
+	NemoDataSourceProperties dataSourceProperties;
 
 	private MutilDataSourceProperties mutilDataSourceProperties;
 
 	public NemoDaoHibernateAutoConfiguration(HibernateProperties hibernateProperties,
-			DataSourceProperties dataSourceProperties, MutilDataSourceProperties mutilDataSourceProperties) {
+			NemoDataSourceProperties dataSourceProperties, MutilDataSourceProperties mutilDataSourceProperties) {
 		super();
 		this.hibernateProperties = hibernateProperties;
 		this.dataSourceProperties = dataSourceProperties;
@@ -58,9 +63,22 @@ public class NemoDaoHibernateAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(C3P0DataSourceRegister.class)
+	public C3P0DataSourceRegister c3P0DataSourceRegister() {
+		return new C3P0DataSourceRegister();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(DataSourceSelector.class)
+	public DataSourceSelector dataSourceSelector(@Lazy List<INemoDataSourceRegister> nemoDataSourceRegisterList) {
+		return new DataSourceSelector().setNemoDataSourceRegisterList(nemoDataSourceRegisterList);
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(MutilSessionFactory.class)
-	public MutilSessionFactory mutilSessionFactory() {
-		return new MutilSessionFactory().setMutilDataSourceProperties(mutilDataSourceProperties);
+	public MutilSessionFactory mutilSessionFactory(DataSourceSelector dataSourceSelector) {
+		return new MutilSessionFactory().setMutilDataSourceProperties(mutilDataSourceProperties)
+				.setDataSourceSelector(dataSourceSelector);
 	}
 
 	@Bean
@@ -79,7 +97,8 @@ public class NemoDaoHibernateAutoConfiguration {
 
 	@Bean("db")
 	@ConditionalOnMissingBean(MutilDataSourceHealthEndPoint.class)
-	public MutilDataSourceHealthEndPoint butilDataSourceHealthEndPoint(List<BaseSessionFactory> sessionFactoryList) {
+	public MutilDataSourceHealthEndPoint mutilDataSourceHealthEndPoint(
+			@Lazy List<BaseSessionFactory> sessionFactoryList) {
 		return new MutilDataSourceHealthEndPoint().setSessionFactoryList(sessionFactoryList);
 	}
 
@@ -142,4 +161,5 @@ public class NemoDaoHibernateAutoConfiguration {
 	public QueryAspect QueryAspect(QueryHelper queryHelper) {
 		return new QueryAspect().setQueryHelper(queryHelper);
 	}
+
 }

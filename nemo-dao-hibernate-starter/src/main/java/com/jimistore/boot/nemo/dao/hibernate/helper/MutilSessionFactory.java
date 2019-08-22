@@ -1,6 +1,5 @@
 package com.jimistore.boot.nemo.dao.hibernate.helper;
 
-import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.util.HashMap;
@@ -11,7 +10,6 @@ import java.util.Set;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
-import org.apache.log4j.Logger;
 import org.hibernate.Cache;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -24,6 +22,8 @@ import org.hibernate.engine.spi.FilterDefinition;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.stat.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -34,25 +34,31 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import com.jimistore.boot.nemo.core.helper.Context;
-import com.jimistore.boot.nemo.dao.hibernate.config.DataSourceProperties;
+import com.jimistore.boot.nemo.dao.api.config.NemoDataSourceProperties;
 import com.jimistore.boot.nemo.dao.hibernate.config.HibernateProperties;
 import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-@SuppressWarnings({ "deprecation", "serial" })
+@SuppressWarnings({ "deprecation", "serial", "rawtypes" })
 public class MutilSessionFactory implements ApplicationContextAware, InitializingBean, SessionFactory {
 
 	Map<String, SessionFactory> sessionFactoryMap = new HashMap<String, SessionFactory>();
 
 	static Map<String, HibernateNamingStrategy> hibernateNamingStrategyMap = new HashMap<String, HibernateNamingStrategy>();
 
+	DataSourceSelector dataSourceSelector;
+
 	private MutilDataSourceProperties mutilDataSourceProperties;
 
 	ApplicationContext applicationContext;
 
-	private static final Logger log = Logger.getLogger(MutilSessionFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(MutilSessionFactory.class);
 
 	public MutilSessionFactory() {
+	}
+
+	public MutilSessionFactory setDataSourceSelector(DataSourceSelector dataSourceSelector) {
+		this.dataSourceSelector = dataSourceSelector;
+		return this;
 	}
 
 	public MutilSessionFactory setMutilDataSourceProperties(MutilDataSourceProperties mutilDataSourceProperties) {
@@ -68,49 +74,36 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		DefaultListableBeanFactory dlbf = (DefaultListableBeanFactory) beanFactory;
 
-		Map<String, DataSourceProperties> dataSourceMap = mutilDataSourceProperties.getDatasource();
+		Map<String, NemoDataSourceProperties> dataSourceMap = mutilDataSourceProperties.getDatasource();
 		Map<String, HibernateProperties> hibernateMap = mutilDataSourceProperties.getHibernate();
-		for (Entry<String, DataSourceProperties> entry : dataSourceMap.entrySet()) {
+		for (Entry<String, NemoDataSourceProperties> entry : dataSourceMap.entrySet()) {
 
-			DataSourceProperties dataSourceProperties = entry.getValue();
+			NemoDataSourceProperties dataSourceProperties = entry.getValue();
 			HibernateProperties hibernateProperties = hibernateMap.get(entry.getKey());
-			ComboPooledDataSource dataSource = new ComboPooledDataSource();
-			try {
-				dataSource.setDriverClass(dataSourceProperties.getDriverClass());
-			} catch (PropertyVetoException e) {
-				throw new RuntimeException(e);
-			}
-
-			dataSource.setJdbcUrl(dataSourceProperties.getJdbcUrl());
-			dataSource.setUser(dataSourceProperties.getUser());
-			dataSource.setPassword(dataSourceProperties.getPassword());
-
-			dataSource.setMinPoolSize(dataSourceProperties.getMinPoolSize());
-			dataSource.setMaxPoolSize(dataSourceProperties.getMaxPoolSize());
-			dataSource.setMaxIdleTime(dataSourceProperties.getMaxIdleTime());
-			dataSource.setAcquireIncrement(dataSourceProperties.getAcquireIncrement());
-			dataSource.setMaxStatements(dataSourceProperties.getMaxStatements());
-			dataSource.setInitialPoolSize(dataSourceProperties.getInitialPoolSize());
-			dataSource.setIdleConnectionTestPeriod(dataSourceProperties.getIdleConnectionTestPeriod());
-			dataSource.setAcquireRetryAttempts(dataSourceProperties.getAcquireRetryAttempts());
-			dataSource.setBreakAfterAcquireFailure(dataSourceProperties.getBreakAfterAcquireFailure());
-			dataSource.setTestConnectionOnCheckout(dataSourceProperties.getTestConnectionOnCheckout());
 
 			HibernateNamingStrategy hibernateNamingStrategy = new HibernateNamingStrategy();
 			hibernateNamingStrategy.setHibernateProperties(hibernateProperties);
 			hibernateNamingStrategyMap.put(entry.getKey(), hibernateNamingStrategy);
 
-			// 注册sessionfactory
-			String sessionFactoryName = String.format("MutilSessionFactory-%s", entry.getKey());
+			// 注册datasource
+			String dataSourceName = String.format("nemo-data-source-%s", entry.getKey());
 			BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
-					.rootBeanDefinition(BaseSessionFactory.class).addPropertyValue("key", entry.getKey())
-					.addPropertyValue("dataSource", dataSource)
+					.rootBeanDefinition(
+							dataSourceSelector.getNemoDataSourceFactoryClass(dataSourceProperties.getType()))
+					.addPropertyValue("nemoDataSourceProperties", dataSourceProperties);
+			dlbf.registerBeanDefinition(dataSourceName, beanDefinitionBuilder.getBeanDefinition());
+
+			// 注册sessionfactory
+			String sessionFactoryName = String.format("nemo-mutil-session-factory-%s", entry.getKey());
+			beanDefinitionBuilder = BeanDefinitionBuilder.rootBeanDefinition(BaseSessionFactory.class)
+					.addPropertyValue("key", entry.getKey()).addPropertyReference("dataSource", dataSourceName)
 					.addPropertyValue("namingStrategy", hibernateNamingStrategy)
 					.addPropertyValue("hibernatePropertie", hibernateMap.get(entry.getKey()))
-					.addPropertyValue("dataSourcePropertie", entry.getValue());
+					.addPropertyValue("dataSourcePropertie", dataSourceProperties);
 			dlbf.registerBeanDefinition(sessionFactoryName, beanDefinitionBuilder.getBeanDefinition());
 
 		}
+
 	}
 
 	@Override
@@ -204,7 +197,6 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 		return this.getSessionFactory().openStatelessSession(connection);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public ClassMetadata getClassMetadata(Class entityClass) {
 
@@ -229,7 +221,6 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 		return this.getSessionFactory().getAllClassMetadata();
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public Map getAllCollectionMetadata() {
 
@@ -260,14 +251,12 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 		return this.getSessionFactory().getCache();
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void evict(Class persistentClass) throws HibernateException {
 
 		this.getSessionFactory().evict(persistentClass);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void evict(Class persistentClass, Serializable id) throws HibernateException {
 

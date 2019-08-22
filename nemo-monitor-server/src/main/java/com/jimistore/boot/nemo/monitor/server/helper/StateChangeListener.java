@@ -1,8 +1,11 @@
 package com.jimistore.boot.nemo.monitor.server.helper;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,9 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 	@Autowired
 	DingDingCaller caller;
 
+	@Autowired
+	IWhiteStorage whiteStorage;
+
 	@Value("${alerm.dingding.enabled:false}")
 	boolean enabled;
 
@@ -36,6 +42,8 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 
 	@Value("${alerm.dingding.msg:}")
 	String msg;
+
+	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd,HH:mm:ss");
 
 	private final SpelExpressionParser parser = new SpelExpressionParser();
 
@@ -67,9 +75,31 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 	@Override
 	protected void doNotify(ClientApplicationEvent event) throws Exception {
 		if (log.isDebugEnabled()) {
-			log.debug(String.format("application status has changed, application info is %s",
-					event.getApplication().getStatusInfo().getDetails()));
+			log.debug(String.format("application status has changed, application name is %s, application info is %s",
+					event.getApplication().getName(), event.getApplication().getStatusInfo().getDetails()));
 		}
+
+		// 校验白名单
+		if (this.matchWhiteList(event)) {
+			return;
+		}
+
+		// 拼装推送内容
+		String message = this.parseMsg(event);
+
+		// 发送通知
+		if (enabled) {
+			caller.sendRobotNotice("监控到异常报警", message, toRobot, toPhones);
+		}
+	}
+
+	/**
+	 * 拼装推送消息内容
+	 * 
+	 * @param event
+	 * @return
+	 */
+	private String parseMsg(ClientApplicationEvent event) {
 		if (StringUtils.isEmpty(msg)) {
 			msg = " #{application.name} (#{application.id}) status changed from #{from.status} to #{to.status} #{application.healthUrl}";
 		}
@@ -92,9 +122,23 @@ public class StateChangeListener extends AbstractStatusChangeNotifier {
 		if (detailMsg.length() > 0) {
 			message = String.format("%s \n \n %s", message, detailMsg.toString());
 		}
-		if (enabled) {
-			caller.sendRobotNotice(message, toRobot, toPhones);
+		Calendar time = Calendar.getInstance();
+		time.setTimeInMillis(event.getTimestamp());
+		message = String.format("%s \n %s", sdf.format(time.getTime()), message);
+		return message;
+	}
+
+	private boolean matchWhiteList(ClientApplicationEvent event) {
+		if (event != null && event.getApplication() != null && event.getApplication().getName() != null) {
+			String serviceName = event.getApplication().getName();
+			Set<String> whiteSet = whiteStorage.getWhiteServiceSet();
+			if (serviceName != null && whiteSet != null && whiteSet.size() > 0) {
+				if (whiteSet.contains(serviceName)) {
+					return true;
+				}
+			}
 		}
+		return false;
 	}
 
 }

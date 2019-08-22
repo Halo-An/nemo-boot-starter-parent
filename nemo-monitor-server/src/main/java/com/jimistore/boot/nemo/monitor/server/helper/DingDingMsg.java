@@ -1,11 +1,17 @@
 package com.jimistore.boot.nemo.monitor.server.helper;
 
 public class DingDingMsg {
-	
+
+	public static final String MSG_TYPE_TEXT = "text";
+
+	public static final String MSG_TYPE_MARKDOWN = "markdown";
+
 	String msgtype;
-	
+
 	Text text;
-	
+
+	Markdown markdown;
+
 	At at;
 
 	public String getMsgtype() {
@@ -35,10 +41,45 @@ public class DingDingMsg {
 		return this;
 	}
 
+	public Markdown getMarkdown() {
+		return markdown;
+	}
+
+	public DingDingMsg setMarkdown(Markdown markdown) {
+		this.markdown = markdown;
+		return this;
+	}
+
 }
 
-class Text{
-	
+class Markdown {
+
+	String title;
+
+	String text;
+
+	public String getTitle() {
+		return title;
+	}
+
+	public Markdown setTitle(String title) {
+		this.title = title;
+		return this;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public Markdown setText(String text) {
+		this.text = text;
+		return this;
+	}
+
+}
+
+class Text {
+
 	String content;
 
 	public String getContent() {
@@ -49,13 +90,13 @@ class Text{
 		this.content = content;
 		return this;
 	}
-	
-	
+
 }
-class At{
-	
+
+class At {
+
 	String[] atMobiles;
-	
+
 	boolean isAtAll;
 
 	public String[] getAtMobiles() {
@@ -75,5 +116,5 @@ class At{
 		this.isAtAll = isAtAll;
 		return this;
 	}
-	
+
 }

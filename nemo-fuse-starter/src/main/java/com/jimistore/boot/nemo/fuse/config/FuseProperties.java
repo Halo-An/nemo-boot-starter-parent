@@ -4,13 +4,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("nemo.fuse")
 public class FuseProperties {
-	
+
 	int maxExecutorThreadSize = 100;
-	
+
 	double tryRatioThreshold = 0d;
-	
+
 	double openRatioThreshold = 0.5d;
-	
+
+	int openCountThreshold = 2;
+
 	long checkInterval = 10000l;
 
 	public int getMaxExecutorThreadSize() {
@@ -50,4 +52,12 @@ public class FuseProperties {
 		return this;
 	}
 
+	public int getOpenCountThreshold() {
+		return openCountThreshold;
+	}
+
+	public FuseProperties setOpenCountThreshold(int openCountThreshold) {
+		this.openCountThreshold = openCountThreshold;
+		return this;
+	}
 }

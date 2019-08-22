@@ -17,12 +17,13 @@ public class DingDingCaller {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	public void sendRobotNotice(String msg, String toRobot, String... toPhones) {
+	public void sendRobotNotice(String title, String msg, String toRobot, String... toPhones) {
 		if (log.isDebugEnabled()) {
 			log.debug(
 					String.format("call sendRobotNotice of dingding, the toRobot is %s, the msg is %s", toRobot, msg));
 		}
-		DingDingMsg dingDingMsg = new DingDingMsg().setMsgtype("text").setText(new Text().setContent(msg));
+		DingDingMsg dingDingMsg = new DingDingMsg().setMsgtype(DingDingMsg.MSG_TYPE_MARKDOWN)
+				.setMarkdown(new Markdown().setTitle(title).setText(msg));
 
 		if (toPhones == null) {
 			dingDingMsg.setAt(new At().setAtAll(true));
