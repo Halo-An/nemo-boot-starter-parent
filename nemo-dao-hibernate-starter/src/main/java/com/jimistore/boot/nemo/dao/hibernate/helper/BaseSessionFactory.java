@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.sql.DataSource;
 
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.NamingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
@@ -63,8 +64,14 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 		super.setPackagesToScan(hibernatePropertie.getPackagesToScan());
 
-		this.getHibernateProperties().setProperty("hibernate.show_sql", hibernatePropertie.getShow_sql());
-		this.getHibernateProperties().setProperty("hibernate.hbm2ddl.auto", hibernatePropertie.getHbm2ddl().getAuto());
+		this.getHibernateProperties().setProperty(AvailableSettings.SHOW_SQL, hibernatePropertie.getShow_sql());
+		this.getHibernateProperties().setProperty(AvailableSettings.HBM2DDL_AUTO,
+				hibernatePropertie.getHbm2ddl().getAuto());
+
+		this.getHibernateProperties().setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE,
+				hibernatePropertie.getQuery().getPlan_cache_max_size());
+		this.getHibernateProperties().setProperty(AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE,
+				hibernatePropertie.getQuery().getPlan_parameter_metadata_max_size());
 
 		String driverClass = dataSourcePropertie.getDriverClass();
 		String characterEncoding = dataSourcePropertie.getCharacterEncoding();
@@ -72,11 +79,13 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 		try {
 			if (driverClass.indexOf("mysql") >= 0) {
-				this.getHibernateProperties().setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+				this.getHibernateProperties().setProperty(AvailableSettings.DIALECT,
+						"org.hibernate.dialect.MySQLDialect");
 			} else if (driverClass.indexOf("oracle") >= 0) {
-				this.getHibernateProperties().setProperty("hibernate.dialect", "org.hibernate.dialect.OracleDialect");
+				this.getHibernateProperties().setProperty(AvailableSettings.DIALECT,
+						"org.hibernate.dialect.OracleDialect");
 			} else if (driverClass.indexOf("sqlserver") >= 0 || driverClass.indexOf("jtds") >= 0) {
-				this.getHibernateProperties().setProperty("hibernate.dialect",
+				this.getHibernateProperties().setProperty(AvailableSettings.DIALECT,
 						"org.hibernate.dialect.SQLServerDialect");
 			}
 		} catch (Exception e) {
@@ -85,7 +94,7 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 		String dialect = hibernatePropertie.getDialect();
 		if (dialect != null && dialect.trim().length() > 0) {
-			this.getHibernateProperties().setProperty("hibernate.dialect", dialect);
+			this.getHibernateProperties().setProperty(AvailableSettings.DIALECT, dialect);
 		}
 
 		super.afterPropertiesSet();

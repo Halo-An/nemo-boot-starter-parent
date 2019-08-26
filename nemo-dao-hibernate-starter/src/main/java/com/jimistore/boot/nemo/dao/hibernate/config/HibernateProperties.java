@@ -19,6 +19,32 @@ public class HibernateProperties {
 
 	}
 
+	public static class Query {
+
+		String plan_cache_max_size = "128";
+
+		String plan_parameter_metadata_max_size = "128";
+
+		public String getPlan_cache_max_size() {
+			return plan_cache_max_size;
+		}
+
+		public Query setPlan_cache_max_size(String plan_cache_max_size) {
+			this.plan_cache_max_size = plan_cache_max_size;
+			return this;
+		}
+
+		public String getPlan_parameter_metadata_max_size() {
+			return plan_parameter_metadata_max_size;
+		}
+
+		public Query setPlan_parameter_metadata_max_size(String plan_parameter_metadata_max_size) {
+			this.plan_parameter_metadata_max_size = plan_parameter_metadata_max_size;
+			return this;
+		}
+
+	}
+
 	String show_sql = "false";
 
 	String packagesToScan = "*";
@@ -28,6 +54,8 @@ public class HibernateProperties {
 	Boolean nameStrategyUnder = false;
 
 	Hbm2ddl hbm2ddl = new Hbm2ddl();
+
+	Query query = new Query();
 
 	public String getShow_sql() {
 		return show_sql;
@@ -67,6 +95,15 @@ public class HibernateProperties {
 
 	public void setNameStrategyUnder(Boolean nameStrategyUnder) {
 		this.nameStrategyUnder = nameStrategyUnder;
+	}
+
+	public Query getQuery() {
+		return query;
+	}
+
+	public HibernateProperties setQuery(Query query) {
+		this.query = query;
+		return this;
 	}
 
 }
