@@ -5,12 +5,24 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("nemo.fuse")
 public class FuseProperties {
 
+	/**
+	 * 最大线程数
+	 */
 	int maxExecutorThreadSize = 100;
 
+	/**
+	 * 熔断器重新尝试打调用异常比
+	 */
 	double tryRatioThreshold = 0d;
 
+	/**
+	 * 熔断器断开的调用异常比
+	 */
 	double openRatioThreshold = 0.5d;
 
+	/**
+	 * 熔断器断开调用量阈值(结合调用异常比一起使用)
+	 */
 	int openCountThreshold = 2;
 
 	long checkInterval = 10000l;
