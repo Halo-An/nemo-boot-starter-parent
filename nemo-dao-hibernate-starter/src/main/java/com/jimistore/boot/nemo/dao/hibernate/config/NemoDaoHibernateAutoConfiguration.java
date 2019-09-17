@@ -75,24 +75,25 @@ public class NemoDaoHibernateAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(MutilSessionFactoryHelper.class)
+	public MutilSessionFactoryHelper mutilSessionFactoryHelper(
+//			MutilSessionFactory mutilSessionFactory,
+			DataSourceSelector dataSourceSelector) {
+		return new MutilSessionFactoryHelper()
+//				.setMutilSessionFactory(mutilSessionFactory)
+				.setMutilDataSourceProperties(mutilDataSourceProperties).setDataSourceSelector(dataSourceSelector);
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(MutilSessionFactory.class)
-	public MutilSessionFactory mutilSessionFactory(DataSourceSelector dataSourceSelector) {
-		return new MutilSessionFactory().setMutilDataSourceProperties(mutilDataSourceProperties)
-				.setDataSourceSelector(dataSourceSelector);
+	public MutilSessionFactory mutilSessionFactory(@Lazy List<BaseSessionFactory> sessionFactoryList) {
+		return new MutilSessionFactory().setSessionFactoryList(sessionFactoryList);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(MutilTransactionManager.class)
-	public MutilTransactionManager mutilTransactionManager() {
-		return new MutilTransactionManager();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(MutilSessionFactoryHelper.class)
-	public MutilSessionFactoryHelper mutilSessionFactoryHelper(MutilSessionFactory mutilSessionFactory,
-			MutilTransactionManager mutilTransactionManager) {
-		return new MutilSessionFactoryHelper().setMutilSessionFactory(mutilSessionFactory)
-				.setMutilTransactionManager(mutilTransactionManager);
+	public MutilTransactionManager mutilTransactionManager(@Lazy List<BaseSessionFactory> sessionFactoryList) {
+		return new MutilTransactionManager().setSessionFactoryList(sessionFactoryList);
 	}
 
 	@Bean("db")

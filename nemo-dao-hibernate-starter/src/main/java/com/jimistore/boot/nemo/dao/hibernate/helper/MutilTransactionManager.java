@@ -1,6 +1,7 @@
 package com.jimistore.boot.nemo.dao.hibernate.helper;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -10,12 +11,13 @@ import org.hibernate.Interceptor;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
 
 import com.jimistore.boot.nemo.core.helper.Context;
 import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 
-public class MutilTransactionManager extends HibernateTransactionManager {
+public class MutilTransactionManager extends HibernateTransactionManager implements InitializingBean {
 
 	/**
 	 * 
@@ -26,12 +28,23 @@ public class MutilTransactionManager extends HibernateTransactionManager {
 
 	BeanFactory beanFactory;
 
-	public void putSessionFactory(BaseSessionFactory baseSessionFactory) {
-		HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
-		hibernateTransactionManager.setSessionFactory(baseSessionFactory.getObject());
-		hibernateTransactionManager.setBeanFactory(beanFactory);
-		hibernateTransactionManager.afterPropertiesSet();
-		hibernateTransactionManagerMap.put(baseSessionFactory.getKey(), hibernateTransactionManager);
+	List<BaseSessionFactory> sessionFactoryList;
+
+	public MutilTransactionManager setSessionFactoryList(List<BaseSessionFactory> sessionFactoryList) {
+		this.sessionFactoryList = sessionFactoryList;
+		return this;
+	}
+
+	@Override
+	public void afterPropertiesSet() {
+		for (BaseSessionFactory sessionFactory : sessionFactoryList) {
+			HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
+			hibernateTransactionManager.setSessionFactory(sessionFactory.getObject());
+			hibernateTransactionManager.setBeanFactory(beanFactory);
+			hibernateTransactionManager.afterPropertiesSet();
+			hibernateTransactionManagerMap.put(sessionFactory.getKey(), hibernateTransactionManager);
+
+		}
 	}
 
 	protected HibernateTransactionManager getProxy() {
@@ -48,10 +61,6 @@ public class MutilTransactionManager extends HibernateTransactionManager {
 		for (Entry<String, HibernateTransactionManager> entry : hibernateTransactionManagerMap.entrySet()) {
 			entry.getValue().setBeanFactory(beanFactory);
 		}
-	}
-
-	@Override
-	public void afterPropertiesSet() {
 	}
 
 	@Override

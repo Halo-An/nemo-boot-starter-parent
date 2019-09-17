@@ -3,8 +3,8 @@ package com.jimistore.boot.nemo.dao.hibernate.helper;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.naming.NamingException;
@@ -24,98 +24,41 @@ import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.stat.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import com.jimistore.boot.nemo.core.helper.Context;
-import com.jimistore.boot.nemo.dao.api.config.NemoDataSourceProperties;
-import com.jimistore.boot.nemo.dao.hibernate.config.HibernateProperties;
 import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 
 @SuppressWarnings({ "deprecation", "serial", "rawtypes" })
-public class MutilSessionFactory implements ApplicationContextAware, InitializingBean, SessionFactory {
+public class MutilSessionFactory implements SessionFactory, InitializingBean {
+
+	private static final Logger log = LoggerFactory.getLogger(MutilSessionFactory.class);
 
 	Map<String, SessionFactory> sessionFactoryMap = new HashMap<String, SessionFactory>();
 
-	static Map<String, HibernateNamingStrategy> hibernateNamingStrategyMap = new HashMap<String, HibernateNamingStrategy>();
+	List<BaseSessionFactory> sessionFactoryList;
 
-	DataSourceSelector dataSourceSelector;
-
-	private MutilDataSourceProperties mutilDataSourceProperties;
-
-	ApplicationContext applicationContext;
-
-	private static final Logger log = LoggerFactory.getLogger(MutilSessionFactory.class);
+	public MutilSessionFactory setSessionFactoryList(List<BaseSessionFactory> sessionFactoryList) {
+		this.sessionFactoryList = sessionFactoryList;
+		return this;
+	}
 
 	public MutilSessionFactory() {
 	}
 
-	public MutilSessionFactory setDataSourceSelector(DataSourceSelector dataSourceSelector) {
-		this.dataSourceSelector = dataSourceSelector;
-		return this;
-	}
-
-	public MutilSessionFactory setMutilDataSourceProperties(MutilDataSourceProperties mutilDataSourceProperties) {
-		this.mutilDataSourceProperties = mutilDataSourceProperties;
-		return this;
-	}
-
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
-
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		DefaultListableBeanFactory dlbf = (DefaultListableBeanFactory) beanFactory;
-
-		Map<String, NemoDataSourceProperties> dataSourceMap = mutilDataSourceProperties.getDatasource();
-		Map<String, HibernateProperties> hibernateMap = mutilDataSourceProperties.getHibernate();
-		for (Entry<String, NemoDataSourceProperties> entry : dataSourceMap.entrySet()) {
-
-			NemoDataSourceProperties dataSourceProperties = entry.getValue();
-			HibernateProperties hibernateProperties = hibernateMap.get(entry.getKey());
-
-			HibernateNamingStrategy hibernateNamingStrategy = new HibernateNamingStrategy();
-			hibernateNamingStrategy.setHibernateProperties(hibernateProperties);
-			hibernateNamingStrategyMap.put(entry.getKey(), hibernateNamingStrategy);
-
-			// 注册datasource
-			String dataSourceName = String.format("nemo-data-source-%s", entry.getKey());
-			BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
-					.rootBeanDefinition(
-							dataSourceSelector.getNemoDataSourceFactoryClass(dataSourceProperties.getType()))
-					.addPropertyValue("nemoDataSourceProperties", dataSourceProperties);
-			dlbf.registerBeanDefinition(dataSourceName, beanDefinitionBuilder.getBeanDefinition());
-
-			// 注册sessionfactory
-			String sessionFactoryName = String.format("nemo-mutil-session-factory-%s", entry.getKey());
-			beanDefinitionBuilder = BeanDefinitionBuilder.rootBeanDefinition(BaseSessionFactory.class)
-					.addPropertyValue("key", entry.getKey()).addPropertyReference("dataSource", dataSourceName)
-					.addPropertyValue("namingStrategy", hibernateNamingStrategy)
-					.addPropertyValue("hibernatePropertie", hibernateMap.get(entry.getKey()))
-					.addPropertyValue("dataSourcePropertie", dataSourceProperties);
-			dlbf.registerBeanDefinition(sessionFactoryName, beanDefinitionBuilder.getBeanDefinition());
-
+	public void afterPropertiesSet() {
+		for (BaseSessionFactory sessionFactory : sessionFactoryList) {
+			sessionFactoryMap.put(sessionFactory.getKey(), sessionFactory.getObject());
 		}
-
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		ConfigurableApplicationContext context = (ConfigurableApplicationContext) applicationContext;
-		// Bean的实例工厂
-		DefaultListableBeanFactory dbf = (DefaultListableBeanFactory) context.getBeanFactory();
-		this.postProcessBeanFactory(dbf);
-	}
-
-	public void put(String key, SessionFactory value) {
-		sessionFactoryMap.put(key, value);
+	private static String getDataSourceKey() {
+		String key = (String) Context.get(MutilDataSourceProperties.DATASROUCE_KEY);
+		if (key == null) {
+			key = MutilDataSourceProperties.DEFAULT_DATASOURCE;
+		}
+		return key;
 	}
 
 	public SessionFactory getSessionFactory() {
@@ -129,24 +72,6 @@ public class MutilSessionFactory implements ApplicationContextAware, Initializin
 			throw new RuntimeException(String.format("can not find datasource[%s] in configuration", key));
 		}
 		return sessionFactory;
-	}
-
-	private static String getDataSourceKey() {
-		String key = (String) Context.get(MutilDataSourceProperties.DATASROUCE_KEY);
-		if (key == null) {
-			key = MutilDataSourceProperties.DEFAULT_DATASOURCE;
-		}
-		return key;
-	}
-
-	public static HibernateNamingStrategy getHibernateNamingStrategy() {
-		String key = getDataSourceKey();
-		HibernateNamingStrategy hibernateNamingStrategy = hibernateNamingStrategyMap.get(key);
-		if (hibernateNamingStrategy == null) {
-			throw new RuntimeException(String.format("can not find datasource[%s] in configuration", key));
-		}
-		return hibernateNamingStrategy;
-
 	}
 
 	@Override
