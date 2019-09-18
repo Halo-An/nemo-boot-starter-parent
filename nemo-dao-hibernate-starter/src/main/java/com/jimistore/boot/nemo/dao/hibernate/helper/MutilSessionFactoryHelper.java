@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -17,7 +18,7 @@ import com.jimistore.boot.nemo.dao.api.config.NemoDataSourceProperties;
 import com.jimistore.boot.nemo.dao.hibernate.config.HibernateProperties;
 import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 
-public class MutilSessionFactoryHelper implements ApplicationContextAware, InitializingBean {
+public class MutilSessionFactoryHelper implements BeanPostProcessor, ApplicationContextAware, InitializingBean {
 
 	private static final Logger log = Logger.getLogger(MutilSessionFactoryHelper.class);
 
@@ -94,6 +95,18 @@ public class MutilSessionFactoryHelper implements ApplicationContextAware, Initi
 
 		}
 
+	}
+
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		// TODO Auto-generated method stub
+		return bean;
+	}
+
+	@Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+		// TODO Auto-generated method stub
+		return bean;
 	}
 
 }

@@ -233,14 +233,13 @@ public class SignatureValidateAspect {
 					sb.append(str);
 				}
 				if (sb.length() > 0) {
-					body = Base64.encodeBase64String(sb.toString().getBytes());
+					body = sb.toString();
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		return body;
+		return Base64.encodeBase64String(body.getBytes());
 
 	}
 

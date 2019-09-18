@@ -3,13 +3,8 @@ package com.jimistore.boot.nemo.dao.hibernate.config;
 import java.util.List;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.jimistore.boot.nemo.dao.api.config.NemoDataSourceProperties;
 import com.jimistore.boot.nemo.dao.api.core.INemoDataSourceRegister;
@@ -31,17 +26,16 @@ import com.jimistore.boot.nemo.dao.hibernate.helper.NotEmptySpelFunc;
 import com.jimistore.boot.nemo.dao.hibernate.helper.QueryAspect;
 import com.jimistore.boot.nemo.dao.hibernate.helper.QueryHelper;
 import com.jimistore.boot.nemo.dao.hibernate.helper.SpelExtendFuncAspect;
-import com.jimistore.boot.nemo.dao.hibernate.helper.TransactionManagerFactory;
 import com.jimistore.boot.nemo.dao.hibernate.validator.IInjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.InjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.XSSValidator;
 
-@Configuration
-@EnableConfigurationProperties({ HibernateProperties.class, NemoDataSourceProperties.class,
-		MutilDataSourceProperties.class })
-@EnableTransactionManagement(proxyTargetClass = true)
-@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true", matchIfMissing = true)
-public class NemoDaoHibernateAutoConfiguration {
+//@Configuration
+//@EnableConfigurationProperties({ HibernateProperties.class, NemoDataSourceProperties.class,
+//		MutilDataSourceProperties.class })
+//@EnableTransactionManagement(proxyTargetClass = true)
+//@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true", matchIfMissing = true)
+public class NemoDaoHibernateAutoConfiguration2 {
 
 	HibernateProperties hibernateProperties;
 
@@ -49,7 +43,7 @@ public class NemoDaoHibernateAutoConfiguration {
 
 	private MutilDataSourceProperties mutilDataSourceProperties;
 
-	public NemoDaoHibernateAutoConfiguration(HibernateProperties hibernateProperties,
+	public NemoDaoHibernateAutoConfiguration2(HibernateProperties hibernateProperties,
 			NemoDataSourceProperties dataSourceProperties, MutilDataSourceProperties mutilDataSourceProperties) {
 		super();
 		this.hibernateProperties = hibernateProperties;
@@ -76,10 +70,13 @@ public class NemoDaoHibernateAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(MutilSessionFactoryHelper.class)
-	public MutilSessionFactoryHelper mutilSessionFactoryHelper(DataSourceSelector dataSourceSelector) {
-		return new MutilSessionFactoryHelper().setMutilDataSourceProperties(mutilDataSourceProperties)
-				.setDataSourceSelector(dataSourceSelector);
+//	@ConditionalOnMissingBean(MutilSessionFactoryHelper.class)
+	public MutilSessionFactoryHelper mutilSessionFactoryHelper(
+//			MutilSessionFactory mutilSessionFactory,
+			DataSourceSelector dataSourceSelector) {
+		return new MutilSessionFactoryHelper()
+//				.setMutilSessionFactory(mutilSessionFactory)
+				.setMutilDataSourceProperties(mutilDataSourceProperties).setDataSourceSelector(dataSourceSelector);
 	}
 
 	@Bean
@@ -94,11 +91,11 @@ public class NemoDaoHibernateAutoConfiguration {
 //		return new MutilTransactionManager().setSessionFactoryList(sessionFactoryList);
 //	}
 
-	@Bean
-	@ConditionalOnMissingBean(PlatformTransactionManager.class)
-	public TransactionManagerFactory transactionManagerFactory(@Lazy List<BaseSessionFactory> sessionFactoryList) {
-		return new TransactionManagerFactory().setSessionFactoryList(sessionFactoryList);
-	}
+//	@Bean
+//	@ConditionalOnMissingBean(PlatformTransactionManager.class)
+//	public TransactionManagerFactory transactionManagerFactory(@Lazy List<BaseSessionFactory> sessionFactoryList) {
+//		return new TransactionManagerFactory().setSessionFactoryList(sessionFactoryList);
+//	}
 
 	@Bean("db")
 	@ConditionalOnMissingBean(MutilDataSourceHealthEndPoint.class)
