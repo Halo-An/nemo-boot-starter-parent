@@ -29,6 +29,7 @@ public class C3P0DataSourceFactory implements INemoDataSourceFactory<ComboPooled
 		dataSource.setAcquireIncrement(nemoDataSourceProperties.getAcquireIncrement());
 		dataSource.setMaxStatements(nemoDataSourceProperties.getMaxStatements());
 		dataSource.setInitialPoolSize(nemoDataSourceProperties.getInitialPoolSize());
+		dataSource.setPreferredTestQuery(nemoDataSourceProperties.getPreferredTestQuery());
 		dataSource.setIdleConnectionTestPeriod(nemoDataSourceProperties.getIdleConnectionTestPeriod());
 		dataSource.setAcquireRetryAttempts(nemoDataSourceProperties.getAcquireRetryAttempts());
 		dataSource.setBreakAfterAcquireFailure(nemoDataSourceProperties.getBreakAfterAcquireFailure());

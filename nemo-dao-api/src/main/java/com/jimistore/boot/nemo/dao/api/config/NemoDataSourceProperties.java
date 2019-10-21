@@ -29,6 +29,8 @@ public class NemoDataSourceProperties {
 
 	private Integer idleConnectionTestPeriod = 300;
 
+	private String preferredTestQuery = "select 1";
+
 	private Integer checkoutTimeout = 0;
 
 	private Integer acquireRetryAttempts = 30;
@@ -195,6 +197,15 @@ public class NemoDataSourceProperties {
 
 	public NemoDataSourceProperties setType(String type) {
 		this.type = type;
+		return this;
+	}
+
+	public String getPreferredTestQuery() {
+		return preferredTestQuery;
+	}
+
+	public NemoDataSourceProperties setPreferredTestQuery(String preferredTestQuery) {
+		this.preferredTestQuery = preferredTestQuery;
 		return this;
 	}
 
