@@ -34,6 +34,7 @@
 		<module>nemo-security-starter</module>
 		<module>nemo-sliding-window-starter</module>
 		<module>nemo-id-generator-starter</module>
+		<module>nemo-apollo-starter</module>
 
 	</modules>
 
@@ -77,7 +78,8 @@
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
 		<nemo.sliding.window.version>1.11.1-RELEASE</nemo.sliding.window.version>
 		<nemo.id.generator.version>1.9.21-RELEASE</nemo.id.generator.version>
-		
+		<nemo-apollo-starter.version>1.1.1-RELEASE</nemo-apollo-starter.version>
+
 	</properties>
 
 	<profiles>
