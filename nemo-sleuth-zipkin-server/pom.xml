@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>nemo-sleuth-zipkin-server</artifactId>
-	<packaging>jar</packaging>
+	<packaging>${build.packaging}</packaging>
 
 	<name>nemo-sleuth-zipkin-server</name>
 	<description>Demo project for Spring Boot</description>
