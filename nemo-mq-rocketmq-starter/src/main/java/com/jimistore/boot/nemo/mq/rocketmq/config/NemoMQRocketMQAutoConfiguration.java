@@ -1,8 +1,10 @@
 package com.jimistore.boot.nemo.mq.rocketmq.config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -19,14 +21,15 @@ import com.jimistore.boot.nemo.mq.core.helper.MQNameHelper;
 import com.jimistore.boot.nemo.mq.rocketmq.adapter.RocketAdapter;
 import com.jimistore.boot.nemo.mq.rocketmq.adapter.RocketMQNameHelper;
 import com.jimistore.boot.nemo.mq.rocketmq.adapter.RocketMQProperties;
+import com.jimistore.boot.nemo.mq.rocketmq.helper.MQResource;
 
 @Configuration
 @AutoConfigureBefore(NemoMQCoreConfiguration.class)
 @EnableConfigurationProperties(MutilRocketMQProperties.class)
 public class NemoMQRocketMQAutoConfiguration implements EnvironmentAware {
-	
+
 //	private List<RocketMQProperties> rocketMQPropertiesList=new ArrayList<RocketMQProperties>();
-	
+
 	@Override
 	public void setEnvironment(Environment environment) {
 //		RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(
@@ -54,7 +57,7 @@ public class NemoMQRocketMQAutoConfiguration implements EnvironmentAware {
 //			rocketMQPropertiesList.add(this.parse(dsMap).setKey(dsPrefix));
 //		}
 	}
-	
+
 //	private RocketMQProperties parse(Map<String,Object> map){
 //		RocketMQProperties rocketMQProperties = new RocketMQProperties();
 //		rocketMQProperties.setType(String.valueOf(map.get("type")));
@@ -66,24 +69,34 @@ public class NemoMQRocketMQAutoConfiguration implements EnvironmentAware {
 //		
 //		return rocketMQProperties;
 //	}
-	
+
 	@Bean
-	public MQNameHelper MQNameHelper(MutilRocketMQProperties mutilRocketMQProperties){
+	public MQNameHelper MQNameHelper(MutilRocketMQProperties mutilRocketMQProperties) {
 		return new RocketMQNameHelper().setMutilRocketMQProperties(mutilRocketMQProperties);
 	}
-	
+
 	@Bean
-	public MQDataSourceGroup initRocketDataSourceGroup(MutilRocketMQProperties mutilRocketMQProperties){
+	public MQResource mQResource() {
+		return new MQResource();
+	}
+
+	@Bean
+	public MQDataSourceGroup initRocketDataSourceGroup(MutilRocketMQProperties mutilRocketMQProperties,
+			MQResource mQResource) {
 		List<IMQDataSource> mQDataSourceList = new ArrayList<IMQDataSource>();
-		for(Entry<String, RocketMQProperties> entry:mutilRocketMQProperties.getRocketmq().entrySet()){
+
+		Set<RocketAdapter> rocketAdapterSet = new HashSet<RocketAdapter>();
+
+		for (Entry<String, RocketMQProperties> entry : mutilRocketMQProperties.getRocketmq().entrySet()) {
 			RocketMQProperties rocketMQProperties = entry.getValue();
 			rocketMQProperties.setKey(entry.getKey());
-			
+
 			RocketAdapter adapter = new RocketAdapter().setRocketMQProperties(rocketMQProperties);
 			mQDataSourceList.add(new MQDataSource().setSender(adapter).setListener(adapter)
-					.setType(rocketMQProperties.getType())
-					.setKey(rocketMQProperties.getKey()));
+					.setType(rocketMQProperties.getType()).setKey(rocketMQProperties.getKey()));
+			rocketAdapterSet.add(adapter);
 		}
+		mQResource.setRocketAdapterSet(rocketAdapterSet);
 		return new MQDataSourceGroup().setType(MutilRocketMQProperties.ROCKETMQ).setDataSourceList(mQDataSourceList);
 	}
 

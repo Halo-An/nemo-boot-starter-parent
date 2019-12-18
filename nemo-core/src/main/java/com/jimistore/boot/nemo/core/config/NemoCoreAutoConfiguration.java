@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.validation.MessageInterpolator;
 
@@ -14,6 +15,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -27,10 +29,14 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jimistore.boot.nemo.core.api.service.OfflineHandler;
+import com.jimistore.boot.nemo.core.api.service.OnlineHandler;
 import com.jimistore.boot.nemo.core.helper.InitContextFilter;
 import com.jimistore.boot.nemo.core.helper.NemoJsonKeyGennerator;
 import com.jimistore.boot.nemo.core.helper.NemoJsonRedisSerializer;
 import com.jimistore.boot.nemo.core.helper.NemoMethodValidationPostProcessor;
+import com.jimistore.boot.nemo.core.helper.OfflineRequestHandler;
+import com.jimistore.boot.nemo.core.helper.OnlineRequestHandler;
 import com.jimistore.boot.nemo.core.helper.RequestLoggerAspect;
 import com.jimistore.boot.nemo.core.helper.RequestProxyFilter;
 import com.jimistore.boot.nemo.core.helper.ResponseBodyWrapFactory;
@@ -156,6 +162,16 @@ public class NemoCoreAutoConfiguration {
 	@Bean
 	public NemoJsonKeyGennerator keyGenerator() {
 		return new NemoJsonKeyGennerator();
+	}
+
+	@Bean("/offline")
+	public OfflineRequestHandler OfflineRequestHandler(@Lazy Set<OfflineHandler> offlineSet) {
+		return new OfflineRequestHandler().setOfflineSet(offlineSet);
+	}
+
+	@Bean("/online")
+	public OnlineRequestHandler OnlineRequestHandler(@Lazy Set<OnlineHandler> onlineSet) {
+		return new OnlineRequestHandler().setOnlineSet(onlineSet);
 	}
 
 }

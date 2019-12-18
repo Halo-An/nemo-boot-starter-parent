@@ -193,6 +193,25 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 		log.debug("rocketmq client shutdowned");
 	}
 
+	public void start() {
+		log.debug("rocketmq client start");
+
+		if (producer != null) {
+			producer.start();
+		}
+		if (orderProducer != null) {
+			orderProducer.start();
+		}
+		if (consumer != null) {
+			consumer.start();
+		}
+		if (orderConsumer != null) {
+			orderConsumer.start();
+		}
+
+		log.debug("rocketmq client start");
+	}
+
 	@Override
 	public Action consume(Message message, ConsumeContext context) {
 		try {

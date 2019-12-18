@@ -19,103 +19,108 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jimistore.boot.nemo.rpc.eureka.helper.EurekaOfflineHandler;
 import com.jimistore.boot.nemo.rpc.eureka.helper.NemoAutoJsonRpcClientProxyCreatorHelper;
 import com.jimistore.boot.nemo.rpc.eureka.helper.NemoAutoJsonRpcServiceExporterHelper;
 import com.jimistore.boot.nemo.rpc.eureka.helper.NemoDynamicRpcServiceExporter;
 import com.jimistore.boot.nemo.rpc.eureka.helper.NemoRpcEurekaRibbonExporter;
 import com.jimistore.boot.nemo.rpc.eureka.helper.TextXmlMappingJackson2HttpMessageConverter;
+import com.netflix.appinfo.EurekaInstanceConfig;
 
 @Configuration
 @EnableConfigurationProperties(NemoRpcProperties.class)
 public class NemoRpcEurekaAutoConfiguration implements EnvironmentAware {
-	
-	
+
 	Map<String, NemoRpcItem> map = new HashMap<String, NemoRpcItem>();
 
 	@Override
 	public void setEnvironment(Environment environment) {
 
-		RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(
-				environment, "rpc.");
+		RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(environment, "rpc.");
 		// 获取到所有数据源的名称.
 		String dsPrefixs = propertyResolver.getProperty("names");
-		if(dsPrefixs==null){
-			return ;
+		if (dsPrefixs == null) {
+			return;
 		}
 		String[] dsPrefixsArr = dsPrefixs.split(",");
-		if(dsPrefixsArr==null){
-			return ;
+		if (dsPrefixsArr == null) {
+			return;
 		}
 		for (String dsPrefix : dsPrefixsArr) {
 			Map<String, Object> dsMap = propertyResolver.getSubProperties(dsPrefix + ".");
-			if(dsMap==null){
-				return ;
+			if (dsMap == null) {
+				return;
 			}
-			NemoRpcItem nemoRpcConfig=new NemoRpcItem();
-			try{
-			nemoRpcConfig.setScan(dsMap.get("scan").toString());
-			}catch(Exception e){}
-			try{
-			nemoRpcConfig.setVersion(dsMap.get("version").toString());
-			}catch(Exception e){}
+			NemoRpcItem nemoRpcConfig = new NemoRpcItem();
+			try {
+				nemoRpcConfig.setScan(dsMap.get("scan").toString());
+			} catch (Exception e) {
+			}
+			try {
+				nemoRpcConfig.setVersion(dsMap.get("version").toString());
+			} catch (Exception e) {
+			}
 			map.put(dsPrefix, nemoRpcConfig);
 		}
 	}
-	
-	
+
+	@Bean()
+	public EurekaOfflineHandler offlineHandler(EurekaInstanceConfig eurekaInstanceConfig) {
+		return new EurekaOfflineHandler().setEurekaInstanceConfig(eurekaInstanceConfig);
+	}
+
 	@Bean
-	public NemoRpcEurekaRibbonExporter NemoRpcClusterExporter(@Lazy LoadBalancerClient loadBalancerClient){
+	public NemoRpcEurekaRibbonExporter NemoRpcClusterExporter(@Lazy LoadBalancerClient loadBalancerClient) {
 		return new NemoRpcEurekaRibbonExporter().setLoadBalancerClient(loadBalancerClient);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(RestTemplate.class)
-	public RestTemplate restTemplate(NemoRpcProperties properties){
+	public RestTemplate restTemplate(NemoRpcProperties properties) {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setReadTimeout(properties.getReadTimeOut());
-        requestFactory.setConnectTimeout(properties.getConnectTimeOut());
+		requestFactory.setReadTimeout(properties.getReadTimeOut());
+		requestFactory.setConnectTimeout(properties.getConnectTimeOut());
 
-        //支持text/xml方式的json response
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
+		// 支持text/xml方式的json response
+		RestTemplate restTemplate = new RestTemplate(requestFactory);
 		restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-        restTemplate.getMessageConverters().add(new TextXmlMappingJackson2HttpMessageConverter());
+		restTemplate.getMessageConverters().add(new TextXmlMappingJackson2HttpMessageConverter());
 		return restTemplate;
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(NemoAutoJsonRpcServiceExporterHelper.class)
-	public NemoAutoJsonRpcServiceExporterHelper gennerateExporter(NemoRpcProperties properties){
+	public NemoAutoJsonRpcServiceExporterHelper gennerateExporter(NemoRpcProperties properties) {
 		ObjectMapper objectMapper = new ObjectMapper();
-		if(properties.isIgnoreVersionCompatible()){
+		if (properties.isIgnoreVersionCompatible()) {
 			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		}
 		NemoAutoJsonRpcServiceExporterHelper nemoAutoJsonRpcServiceExporter = new NemoAutoJsonRpcServiceExporterHelper();
 		nemoAutoJsonRpcServiceExporter.setObjectMapper(objectMapper);
 		return nemoAutoJsonRpcServiceExporter;
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(NemoAutoJsonRpcClientProxyCreatorHelper.class)
-	public NemoAutoJsonRpcClientProxyCreatorHelper gennerateCreator(NemoRpcProperties properties, RestTemplate restTemplate){
+	public NemoAutoJsonRpcClientProxyCreatorHelper gennerateCreator(NemoRpcProperties properties,
+			RestTemplate restTemplate) {
 		ObjectMapper objectMapper = new ObjectMapper();
-		if(properties.isIgnoreVersionCompatible()){
+		if (properties.isIgnoreVersionCompatible()) {
 			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		}
-		if(properties.getMap()!=null){
+		if (properties.getMap() != null) {
 			properties.getMap().putAll(map);
-		}else{
+		} else {
 			properties.setMap(map);
 		}
 		NemoAutoJsonRpcClientProxyCreatorHelper helper = new NemoAutoJsonRpcClientProxyCreatorHelper()
-				.setRestTemplate(restTemplate)
-				.setProperties(properties)
-				.setObjectMapper(objectMapper);
+				.setRestTemplate(restTemplate).setProperties(properties).setObjectMapper(objectMapper);
 		return helper;
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(NemoDynamicRpcServiceExporter.class)
-	public NemoDynamicRpcServiceExporter NemoDynamicRpcServiceExporter(NemoAutoJsonRpcClientProxyCreatorHelper helper){
+	public NemoDynamicRpcServiceExporter NemoDynamicRpcServiceExporter(NemoAutoJsonRpcClientProxyCreatorHelper helper) {
 		return new NemoDynamicRpcServiceExporter().setHelper(helper);
 	}
 
