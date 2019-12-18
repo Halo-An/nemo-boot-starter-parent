@@ -5,8 +5,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.11.5-RELEASE</version>
-	<packaging>pom</packaging>
+	<version>1.11.5-RELEASE</version><packaging>pom</packaging>
 
 	<modules>
 		<module>nemo-core-api</module>
@@ -17,7 +16,6 @@
 		<module>nemo-monitor-server</module>
 		<module>nemo-rpc-eureka-server</module>
 		<module>nemo-monitor-server</module>
-		<module>nemo-sleuth-zipkin-server</module>
 		<module>nemo-config-server</module>
 		 -->
 		<module>nemo-sleuth-starter</module>
@@ -34,6 +32,9 @@
 		<module>nemo-security-starter</module>
 		<module>nemo-sliding-window-starter</module>
 		<module>nemo-id-generator-starter</module>
+		<module>nemo-apollo-starter</module>
+		<module>nemo-hunter-starter</module>
+		<module>nemo-sleuth-zipkin-server</module>
 
 	</modules>
 
@@ -77,7 +78,9 @@
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
 		<nemo.sliding.window.version>1.11.1-RELEASE</nemo.sliding.window.version>
 		<nemo.id.generator.version>1.9.21-RELEASE</nemo.id.generator.version>
-		
+		<nemo.apollo.starter.version>1.1.1-RELEASE</nemo.apollo.starter.version>
+		<nemo.hunter.starter.version>1.0.0-RELEASE</nemo.hunter.starter.version>
+        <nemo.sleuth.starter.version>1.0.0-RELEASE</nemo.sleuth.starter.version>
 	</properties>
 
 	<profiles>

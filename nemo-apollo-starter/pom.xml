@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>nemo-apollo-starter</artifactId>
+    <packaging>jar</packaging>
+    <version>${nemo.apollo.starter.version}</version>
+
+    <parent>
+        <artifactId>nemo-boot-starter-parent</artifactId>
+        <groupId>com.jimistore.boot</groupId>
+        <version>1.11.3-RELEASE</version>
+    </parent>
+
+    <properties>
+        <apollo-client.version>1.5.1-RELEASE</apollo-client.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ctrip.framework.apollo</groupId>
+            <artifactId>apollo-client</artifactId>
+            <version>${apollo-client.version}</version>
+        </dependency>
+    </dependencies>
+</project>
