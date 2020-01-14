@@ -39,16 +39,19 @@ public class SignatureValidateAspectV1 {
 	}
 
 	@Pointcut("@annotation(org.springframework.web.bind.annotation.RequestMapping) || @annotation(org.springframework.web.bind.annotation.PostMapping) || @annotation(org.springframework.web.bind.annotation.GetMapping) || @annotation(org.springframework.web.bind.annotation.PutMapping) || @annotation(org.springframework.web.bind.annotation.DeleteMapping) || @annotation(org.springframework.web.bind.annotation.PatchMapping)")
-	public void auth() {
+	public void authOld() {
 	}
 
-	@Before("auth()")
+	@Before("authOld()")
 	public void before(JoinPoint joinPoint) throws Throwable {
-		if ((apiAuth == null) || (apiAuth.isEmpty())) {
-			return;
-		}
+
 		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		HttpServletRequest request = attributes.getRequest();
+
+		// 如果未开启配置或命中忽略策略
+		if (apiAuth == null || apiAuth.isEmpty() || this.checkIgnore(request)) {
+			return;
+		}
 
 		String newSign = request.getHeader("sign");
 		if (newSign != null) {
@@ -131,5 +134,24 @@ public class SignatureValidateAspectV1 {
 			throw new SignatureInvalidException();
 		}
 		throw new UnauthorizedException("don't have authorization to access");
+	}
+
+	private boolean checkIgnore(HttpServletRequest request) {
+		String url = request.getRequestURI().toString();
+		AntPathMatcher matcher = new AntPathMatcher();
+
+		// 匹配忽略url
+		String[] ignoreMatchs = apiAuth.getIgnoreMatch();
+		if (ignoreMatchs != null) {
+			for (String matchStr : ignoreMatchs) {
+				if (matchStr.trim().length() > 0 && matcher.match(matchStr, url)) {
+					if (log.isDebugEnabled()) {
+						log.debug(String.format("hit ignore strategy, the match is %s, url is %s ", matchStr, url));
+					}
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
