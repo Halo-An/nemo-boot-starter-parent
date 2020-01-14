@@ -27,7 +27,7 @@ import com.jimistore.util.format.string.SecurityUtil;
 
 @Aspect
 @Order(100)
-public class SignatureValidateAspect {
+public class SignatureValidateAspectV2 {
 
 	private final Logger log = Logger.getLogger(getClass());
 	public static final String APPID = "appId";
@@ -50,18 +50,18 @@ public class SignatureValidateAspect {
 	private int timeDev = 120;
 
 	@Value("${auth.time.max:100}")
-	public SignatureValidateAspect setMaxTimeErr(int maxTimeErr) {
+	public SignatureValidateAspectV2 setMaxTimeErr(int maxTimeErr) {
 		this.maxTimeErr = maxTimeErr;
 		return this;
 	}
 
 	@Value("${auth.time.timeout:120}")
-	public SignatureValidateAspect setTimeDev(int timeDev) {
+	public SignatureValidateAspectV2 setTimeDev(int timeDev) {
 		this.timeDev = timeDev;
 		return this;
 	}
 
-	public SignatureValidateAspect setApiAuth(IApiAuth apiAuth) {
+	public SignatureValidateAspectV2 setApiAuth(IApiAuth apiAuth) {
 		this.apiAuth = apiAuth;
 		return this;
 	}

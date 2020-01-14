@@ -14,7 +14,8 @@ import org.springframework.core.env.Environment;
 import com.jimistore.boot.nemo.security.helper.ApiAuth;
 import com.jimistore.boot.nemo.security.helper.IApiAuth;
 import com.jimistore.boot.nemo.security.helper.ITokenFactory;
-import com.jimistore.boot.nemo.security.helper.SignatureValidateAspect;
+import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV1;
+import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV2;
 import com.jimistore.boot.nemo.security.helper.TokenFactory;
 import com.jimistore.boot.nemo.security.helper.TokenValidateAspect;
 import com.jimistore.util.format.string.StringUtil;
@@ -84,9 +85,15 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(SignatureValidateAspect.class)
-	public SignatureValidateAspect SignatureValidateAspect(IApiAuth apiAuth) {
-		return new SignatureValidateAspect().setApiAuth(apiAuth);
+	@ConditionalOnMissingBean(SignatureValidateAspectV1.class)
+	public SignatureValidateAspectV1 signatureValidateAspectV1(IApiAuth apiAuth) {
+		return new SignatureValidateAspectV1().setApiAuth(apiAuth);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(SignatureValidateAspectV2.class)
+	public SignatureValidateAspectV2 signatureValidateAspectV2(IApiAuth apiAuth) {
+		return new SignatureValidateAspectV2().setApiAuth(apiAuth);
 	}
 
 	@Bean
