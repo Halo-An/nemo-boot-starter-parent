@@ -1,22 +1,24 @@
 package com.jimistore.boot.nemo.core.api.exception;
 
 public class ValidatedException extends BaseException {
-	
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ValidatedException(String message){
-		super("415",message);
-	}
-	
+	private static final String CODE = "415";
+	private static final String MSG = "参数校验异常";
 
-	public ValidatedException(){
-		super("415","缺少必填参数异常");
+	public ValidatedException(String message) {
+		super(CODE, String.format("%s：%s", MSG, message));
+	}
+
+	public ValidatedException() {
+		super(CODE, MSG);
 	}
 
 	public ValidatedException(String message, Throwable ex) {
-		super("415",message,ex);
+		super(CODE, String.format("%s：%s", MSG, message), ex);
 	}
 }
