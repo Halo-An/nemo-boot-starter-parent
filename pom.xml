@@ -5,7 +5,8 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.11.7-RELEASE</version><packaging>pom</packaging>
+	<version>1.11.8-RELEASE</version>
+	<packaging>pom</packaging>
 
 	<modules>
 		<module>nemo-core-api</module>
@@ -20,6 +21,7 @@
 		<module>nemo-config-server</module>
 		 -->
 		<module>nemo-sleuth-starter</module>
+		<module>nemo-validator</module>
 		<module>nemo-dao-api</module>
 		<module>nemo-dao-core</module>
 		<module>nemo-dao-hibernate-starter</module>
@@ -61,6 +63,7 @@
 
 		<nemo.core.api.version>1.11.5-RELEASE</nemo.core.api.version>
 		<nemo.core.version>1.11.5-RELEASE</nemo.core.version>
+		<nemo.validator.version>1.11.8-RELEASE</nemo.validator.version>
 		<nemo.dao.api.version>1.11.2-RELEASE</nemo.dao.api.version>
 		<nemo.dao.core.version>1.11.2-RELEASE</nemo.dao.core.version>
 		<nemo.dao.hibernate.version>1.11.2-RELEASE</nemo.dao.hibernate.version>
@@ -75,7 +78,7 @@
 		<nemo.security.version>1.11.7-RELEASE</nemo.security.version>
 		<nemo.fuse.version>1.11.1-RELEASE</nemo.fuse.version>
 		<nemo.monitor.server.version>1.10.11-RELEASE</nemo.monitor.server.version>
-		<nemo.rpc.eureka.server.version>1.10.11-RELEASE</nemo.rpc.eureka.server.version>
+		<nemo.rpc.eureka.server.version>1.11.5-RELEASE</nemo.rpc.eureka.server.version>
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
 		<nemo.sliding.window.version>1.11.1-RELEASE</nemo.sliding.window.version>
 		<nemo.id.generator.version>1.9.21-RELEASE</nemo.id.generator.version>
@@ -185,6 +188,11 @@
 				<groupId>com.jimistore.boot</groupId>
 				<artifactId>nemo-dao-api</artifactId>
 				<version>${nemo.dao.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jimistore.boot</groupId>
+				<artifactId>nemo-validator</artifactId>
+				<version>${nemo.validator.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.jimistore.boot</groupId>
