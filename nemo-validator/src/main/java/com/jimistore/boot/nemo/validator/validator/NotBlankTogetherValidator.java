@@ -1,4 +1,4 @@
-package com.jimistore.boot.nemo.validator.annotation;
+package com.jimistore.boot.nemo.validator.validator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +8,8 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorContextImpl;
+
+import com.jimistore.boot.nemo.validator.annotation.NotBlankTogether;
 
 public class NotBlankTogetherValidator implements ConstraintValidator<NotBlankTogether, String> {
 

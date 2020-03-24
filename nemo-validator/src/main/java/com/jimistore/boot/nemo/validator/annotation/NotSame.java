@@ -9,13 +9,13 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import com.jimistore.boot.nemo.validator.validator.NotBlankTogetherValidator;
+import com.jimistore.boot.nemo.validator.validator.NotSameValidator;
 
-@Constraint(validatedBy = NotBlankTogetherValidator.class)
+@Constraint(validatedBy = NotSameValidator.class)
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface NotBlankTogether {
+public @interface NotSame {
 
 	String message();
 
