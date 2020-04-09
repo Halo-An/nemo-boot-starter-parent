@@ -19,8 +19,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -31,6 +33,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.core.api.service.OfflineHandler;
 import com.jimistore.boot.nemo.core.api.service.OnlineHandler;
+import com.jimistore.boot.nemo.core.helper.DaoLoggerAspect;
 import com.jimistore.boot.nemo.core.helper.InitContextFilter;
 import com.jimistore.boot.nemo.core.helper.NemoJsonKeyGennerator;
 import com.jimistore.boot.nemo.core.helper.NemoJsonRedisSerializer;
@@ -41,6 +44,7 @@ import com.jimistore.boot.nemo.core.helper.RequestLoggerAspect;
 import com.jimistore.boot.nemo.core.helper.RequestProxyFilter;
 import com.jimistore.boot.nemo.core.helper.ResponseBodyWrapFactory;
 import com.jimistore.boot.nemo.core.helper.ResponseExceptionHandle;
+import com.jimistore.boot.nemo.core.helper.ServiceLoggerAspect;
 
 @Configuration
 @EnableCaching
@@ -55,6 +59,12 @@ public class NemoCoreAutoConfiguration {
 				registry.addMapping("/api/**");
 				registry.addMapping("/meta/**");
 			}
+
+			@Override
+			public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+				configurer.defaultContentType(MediaType.APPLICATION_JSON);
+			}
+
 		};
 	}
 
@@ -81,6 +91,16 @@ public class NemoCoreAutoConfiguration {
 	@Bean
 	public RequestLoggerAspect requestLoggerFilter() {
 		return new RequestLoggerAspect();
+	}
+
+	@Bean
+	public ServiceLoggerAspect serviceLoggerAspect() {
+		return new ServiceLoggerAspect();
+	}
+
+	@Bean
+	public DaoLoggerAspect daoLoggerAspect() {
+		return new DaoLoggerAspect();
 	}
 
 	@Bean
