@@ -4,8 +4,8 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public class TBaseBean<T> extends BaseBean<T>{
-	
+public class TBaseBean<T> extends BaseBean<T> {
+
 	/**
 	 * 
 	 */
@@ -17,8 +17,9 @@ public class TBaseBean<T> extends BaseBean<T>{
 		return id;
 	}
 
-	public void setId(T id) {
+	public TBaseBean<T> setId(T id) {
 		this.id = id;
+		return this;
 	}
-	
+
 }
