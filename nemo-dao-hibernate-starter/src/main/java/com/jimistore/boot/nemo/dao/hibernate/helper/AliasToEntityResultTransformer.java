@@ -2,6 +2,7 @@ package com.jimistore.boot.nemo.dao.hibernate.helper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -75,6 +76,23 @@ public class AliasToEntityResultTransformer<T> extends AliasedTupleSubsetResultT
 
 		String fieldName = field.getName();
 		String methodName = String.format("set%s%s", fieldName.substring(0, 1).toUpperCase(), fieldName.substring(1));
+		if (value instanceof BigDecimal) {
+			BigDecimal bd = (BigDecimal) value;
+			if (Long.class.isAssignableFrom(field.getType()) || long.class.isAssignableFrom(field.getType())) {
+				value = bd.longValue();
+			} else if (Integer.class.isAssignableFrom(field.getType()) || int.class.isAssignableFrom(field.getType())) {
+				value = bd.intValue();
+			} else if (Short.class.isAssignableFrom(field.getType()) || short.class.isAssignableFrom(field.getType())) {
+				value = bd.shortValue();
+			} else if (Byte.class.isAssignableFrom(field.getType()) || byte.class.isAssignableFrom(field.getType())) {
+				value = bd.byteValue();
+			} else if (Double.class.isAssignableFrom(field.getType())
+					|| double.class.isAssignableFrom(field.getType())) {
+				value = bd.doubleValue();
+			} else if (Float.class.isAssignableFrom(field.getType()) || float.class.isAssignableFrom(field.getType())) {
+				value = bd.floatValue();
+			}
+		}
 		entityClass.getMethod(methodName, field.getType()).invoke(target, value);
 	}
 
