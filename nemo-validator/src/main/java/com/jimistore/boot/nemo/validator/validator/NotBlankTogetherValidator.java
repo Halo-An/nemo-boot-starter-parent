@@ -11,9 +11,9 @@ import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintVa
 
 import com.jimistore.boot.nemo.validator.annotation.NotBlankTogether;
 
-public class NotBlankTogetherValidator implements ConstraintValidator<NotBlankTogether, String> {
+public class NotBlankTogetherValidator implements ConstraintValidator<NotBlankTogether, Object> {
 
-	ThreadLocal<Map<String, Map<String, String>>> tl = new ThreadLocal<Map<String, Map<String, String>>>();
+	ThreadLocal<Map<String, Map<String, Object>>> tl = new ThreadLocal<Map<String, Map<String, Object>>>();
 
 	private NotBlankTogether notBlankTogether;
 
@@ -23,18 +23,18 @@ public class NotBlankTogetherValidator implements ConstraintValidator<NotBlankTo
 	}
 
 	@Override
-	public boolean isValid(String value, ConstraintValidatorContext context) {
+	public boolean isValid(Object value, ConstraintValidatorContext context) {
 		ConstraintValidatorContextImpl con = (ConstraintValidatorContextImpl) context;
 
-		Map<String, Map<String, String>> map = tl.get();
+		Map<String, Map<String, Object>> map = tl.get();
 		if (map == null) {
-			map = new HashMap<String, Map<String, String>>();
+			map = new HashMap<String, Map<String, Object>>();
 			tl.set(map);
 		}
 		String group = notBlankTogether.value();
-		Map<String, String> params = map.get(group);
+		Map<String, Object> params = map.get(group);
 		if (params == null) {
-			params = new HashMap<String, String>();
+			params = new HashMap<String, Object>();
 			map.put(group, params);
 		}
 		String key = con.getConstraintViolationCreationContexts().get(0).getPath().asString();
@@ -45,8 +45,8 @@ public class NotBlankTogetherValidator implements ConstraintValidator<NotBlankTo
 		}
 
 		try {
-			for (Entry<String, String> entry : params.entrySet()) {
-				String val = entry.getValue();
+			for (Entry<String, Object> entry : params.entrySet()) {
+				String val = entry.getValue().toString();
 				if (val != null && !val.isEmpty()) {
 					return true;
 				}
