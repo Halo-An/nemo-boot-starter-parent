@@ -16,6 +16,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.jimistore.boot.nemo.core.api.exception.ValidatedException;
@@ -61,6 +62,8 @@ public class ResponseExceptionHandle implements HandlerExceptionResolver, Priori
 								.toString(), ex);
 					}
 				}
+			} else if (hmnre.getCause() instanceof JsonParseException) {
+				ex = new ValidatedException("request body must be json");
 			}
 		}
 

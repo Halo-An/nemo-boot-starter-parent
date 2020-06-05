@@ -13,7 +13,7 @@ import com.jimistore.boot.nemo.validator.annotation.NotBlankTogether;
 
 public class NotBlankTogetherValidator implements ConstraintValidator<NotBlankTogether, Object> {
 
-	ThreadLocal<Map<String, Map<String, Object>>> tl = new ThreadLocal<Map<String, Map<String, Object>>>();
+	static ThreadLocal<Map<String, Map<String, Object>>> tl = new ThreadLocal<Map<String, Map<String, Object>>>();
 
 	private NotBlankTogether notBlankTogether;
 
@@ -46,8 +46,8 @@ public class NotBlankTogetherValidator implements ConstraintValidator<NotBlankTo
 
 		try {
 			for (Entry<String, Object> entry : params.entrySet()) {
-				String val = entry.getValue().toString();
-				if (val != null && !val.isEmpty()) {
+				Object val = entry.getValue();
+				if (val != null && val.toString().length() > 0) {
 					return true;
 				}
 			}
