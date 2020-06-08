@@ -62,7 +62,8 @@ public class ResponseExceptionHandle implements HandlerExceptionResolver, Priori
 								.toString(), ex);
 					}
 				}
-			} else if (hmnre.getCause() instanceof JsonParseException) {
+			} else if (hmnre.getCause() instanceof JsonParseException || (hmnre.getCause().getCause() != null
+					&& hmnre.getCause().getCause() instanceof JsonParseException)) {
 				ex = new ValidatedException("request body must be json");
 			}
 		}
