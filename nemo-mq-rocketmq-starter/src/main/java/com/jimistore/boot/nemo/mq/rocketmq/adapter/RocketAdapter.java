@@ -1,9 +1,13 @@
 package com.jimistore.boot.nemo.mq.rocketmq.adapter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -157,8 +161,11 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 		}
 		Map<String, IMQReceiver> tagMap = receiverMap.get(key);
 		tagMap.put(mQReceiver.getTag(), mQReceiver);
+		Set<String> keySet = tagMap.keySet();
+		List<String> keyList = new ArrayList<>(keySet);
+		Collections.sort(keyList);
 		StringBuilder tags = new StringBuilder();
-		for (String tag : tagMap.keySet()) {
+		for (String tag : keyList) {
 			if (tags.length() > 0) {
 				tags.append(" || ");
 			}
