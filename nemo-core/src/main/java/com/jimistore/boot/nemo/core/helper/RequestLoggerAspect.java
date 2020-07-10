@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -203,9 +204,27 @@ public class RequestLoggerAspect implements Filter {
 				String value = req.getHeader(key);
 				map.put(key, value);
 			}
+			StringBuilder queryString = new StringBuilder();
+			for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+				if (queryString.length() > 0) {
+					queryString.append("&");
+				}
+
+				queryString.append(entry.getKey()).append("=");
+				if (entry.getValue() != null) {
+					StringBuilder value = new StringBuilder();
+					for (String str : entry.getValue()) {
+						if (value.length() > 0) {
+							value.append(",");
+						}
+						value.append(str);
+					}
+					queryString.append(value);
+				}
+			}
 
 			log.get().setUrl(req.getRequestURL().toString());
-			log.get().setParam(req.getQueryString());
+			log.get().setParam(queryString.toString());
 			log.get().setMethod(req.getMethod());
 			log.get().setIp(request.getRemoteAddr());
 			log.get().setUser((String) Context.get(Context.CONTEXT_REQUEST_USER));
