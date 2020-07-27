@@ -2,22 +2,20 @@ package com.jimistore.boot.nemo.security.helper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.annotation.Order;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.jimistore.boot.nemo.core.helper.HttpServletRequestProxy;
 import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
@@ -25,9 +23,8 @@ import com.jimistore.util.format.collection.MapUtil;
 import com.jimistore.util.format.exception.SignException;
 import com.jimistore.util.format.string.SecurityUtil;
 
-@Aspect
-@Order(100)
-public class SignatureValidateAspectV3 {
+@WebFilter(urlPatterns = "/*", filterName = "SignatureValidateFilter")
+public class SignatureValidateFilterV3 implements Filter {
 
 	private final Logger log = Logger.getLogger(getClass());
 	public static final String APPID = "appId";
@@ -41,48 +38,58 @@ public class SignatureValidateAspectV3 {
 
 	private IApiAuth apiAuth;
 
-	Map<String, Integer> timeErrMap = new HashMap<String, Integer>();
-
 	private int timeDev = 120;
 
 	@Value("${auth.time.timeout:120}")
-	public SignatureValidateAspectV3 setTimeDev(int timeDev) {
+	public SignatureValidateFilterV3 setTimeDev(int timeDev) {
 		this.timeDev = timeDev;
 		return this;
 	}
 
-	public SignatureValidateAspectV3 setApiAuth(IApiAuth apiAuth) {
+	public SignatureValidateFilterV3 setApiAuth(IApiAuth apiAuth) {
 		this.apiAuth = apiAuth;
 		return this;
 	}
 
-	@Pointcut("@annotation(org.springframework.web.bind.annotation.RequestMapping) || @annotation(org.springframework.web.bind.annotation.PostMapping) || @annotation(org.springframework.web.bind.annotation.GetMapping) || @annotation(org.springframework.web.bind.annotation.PutMapping) || @annotation(org.springframework.web.bind.annotation.DeleteMapping) || @annotation(org.springframework.web.bind.annotation.PatchMapping)")
-	public void auth() {
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+		// TODO Auto-generated method stub
+
 	}
 
-	@Before("auth()")
-	public void before(JoinPoint joinPoint) throws Throwable {
+	@Override
+	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
+			throws IOException, ServletException {
+		HttpServletRequest request = (HttpServletRequest) req;
 
-		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-		HttpServletRequest request = attributes.getRequest();
-
-		// 判断是否是本版本的签名
 		String signType = request.getHeader(SIGN_TYPE);
-		if (!SIGN_TYPE_MINE.equals(signType)) {
-			return;
+		// 判断是否是本版本的签名
+		if (SIGN_TYPE_MINE.equals(signType) && apiAuth != null && !apiAuth.isEmpty()) {
+			// 判断是否命中忽略策略
+			if (!this.checkIgnore(request)) {
+				// 判断访问的资源是否有权限
+				this.checkUrl(request);
+				// 判断访问是否过期
+				this.checkTime(request);
+				// 判断签名是否合法
+				this.checkSign(request);
+			}
 		}
+		chain.doFilter(req, resp);
+	}
 
-		// 如果未开启配置或命中忽略策略
-		if (apiAuth == null || apiAuth.isEmpty() || this.checkIgnore(request)) {
-			return;
-		}
-
-		this.checkUrl(request);
-		this.checkTime(request);
-		this.checkSign(request);
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
 
 	}
 
+	/**
+	 * 判断是否命中忽略策略
+	 * 
+	 * @param request
+	 * @return
+	 */
 	private boolean checkIgnore(HttpServletRequest request) {
 		String url = request.getRequestURI().toString();
 		AntPathMatcher matcher = new AntPathMatcher();

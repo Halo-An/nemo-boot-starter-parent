@@ -16,6 +16,7 @@ import com.jimistore.boot.nemo.security.helper.IApiAuth;
 import com.jimistore.boot.nemo.security.helper.ITokenFactory;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV1;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV2;
+import com.jimistore.boot.nemo.security.helper.SignatureValidateFilterV3;
 import com.jimistore.boot.nemo.security.helper.TokenFactory;
 import com.jimistore.boot.nemo.security.helper.TokenValidateAspect;
 import com.jimistore.util.format.string.StringUtil;
@@ -37,7 +38,8 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 			Map<String, Object> dsMap = entry.getValue();
 			try {
 				secretMap.put(dsPrefix,
-						new ApiAuth.ApiAuthConfig().setAppid(dsPrefix).setSecret(dsMap.get("secret").toString())
+						new ApiAuth.ApiAuthConfig().setAppid(dsPrefix)
+								.setSecret(dsMap.get("secret").toString())
 								.setMatch(StringUtil.split(dsMap.get("match").toString(), StringUtil.SPLIT_STR)));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -94,6 +96,12 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 	@ConditionalOnMissingBean(SignatureValidateAspectV2.class)
 	public SignatureValidateAspectV2 signatureValidateAspectV2(IApiAuth apiAuth) {
 		return new SignatureValidateAspectV2().setApiAuth(apiAuth);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(SignatureValidateFilterV3.class)
+	public SignatureValidateFilterV3 signatureValidateFilterV3(IApiAuth apiAuth) {
+		return new SignatureValidateFilterV3().setApiAuth(apiAuth);
 	}
 
 	@Bean

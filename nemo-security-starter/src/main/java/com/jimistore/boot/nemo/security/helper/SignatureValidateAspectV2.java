@@ -34,6 +34,7 @@ public class SignatureValidateAspectV2 {
 	public static final String PASSWORD = "password";
 	public static final String TIMESTAMP = "timestamp";
 	public static final String SIGNATURE = "sign";
+	public static final String SIGN_TYPE = "signType";
 	public static final String OLD_SIGN = "signature";
 	public static final String DEVICE = "deviceId";
 	public static final String OS = "OSVersion";
@@ -81,10 +82,14 @@ public class SignatureValidateAspectV2 {
 			return;
 		}
 
-		// 判断是否是老版本的签名
+		// 判断是否是本版本的签名
 		String signature = request.getHeader(SIGNATURE);
 		String oldSign = request.getHeader(OLD_SIGN);
+		String signType = request.getHeader(SIGN_TYPE);
 		if (signature == null && oldSign != null) {
+			return;
+		}
+		if (signType != null && signType.length() > 0) {
 			return;
 		}
 
