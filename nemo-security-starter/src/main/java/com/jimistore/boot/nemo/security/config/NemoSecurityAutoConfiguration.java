@@ -29,22 +29,21 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 	private void setSignatureConfig(Environment environment) {
 		Map<String, Map<String, Object>> map = this.parseEnv(environment, "auth", "appids");
 
-		if (map == null) {
-			throw new RuntimeException("can not find config of security");
-		}
-
-		for (Entry<String, Map<String, Object>> entry : map.entrySet()) {
-			String dsPrefix = entry.getKey();
-			Map<String, Object> dsMap = entry.getValue();
-			try {
-				secretMap.put(dsPrefix,
-						new ApiAuth.ApiAuthConfig().setAppid(dsPrefix)
-								.setSecret(dsMap.get("secret").toString())
-								.setMatch(StringUtil.split(dsMap.get("match").toString(), StringUtil.SPLIT_STR)));
-			} catch (Exception e) {
-				e.printStackTrace();
+		if (map != null) {
+			for (Entry<String, Map<String, Object>> entry : map.entrySet()) {
+				String dsPrefix = entry.getKey();
+				Map<String, Object> dsMap = entry.getValue();
+				try {
+					secretMap.put(dsPrefix,
+							new ApiAuth.ApiAuthConfig().setAppid(dsPrefix)
+									.setSecret(dsMap.get("secret").toString())
+									.setMatch(StringUtil.split(dsMap.get("match").toString(), StringUtil.SPLIT_STR)));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
+
 	}
 
 	@Override

@@ -12,23 +12,26 @@ import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.util.AntPathMatcher;
 
 import com.jimistore.boot.nemo.core.helper.HttpServletRequestProxy;
+import com.jimistore.boot.nemo.core.response.Response;
+import com.jimistore.boot.nemo.core.util.JsonString;
 import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
 import com.jimistore.util.format.collection.MapUtil;
 import com.jimistore.util.format.exception.SignException;
 import com.jimistore.util.format.string.SecurityUtil;
 
+@Order(100)
 @WebFilter(urlPatterns = "/*", filterName = "SignatureValidateFilter")
 public class SignatureValidateFilterV3 implements Filter {
 
 	private final Logger log = Logger.getLogger(getClass());
 	public static final String APPID = "appId";
-	public static final String PASSWORD = "password";
+	public static final String PASSWORD = "secret";
 	public static final String TIMESTAMP = "timestamp";
 	public static final String SIGNATURE = "sign";
 	public static final String SIGN_TYPE = "signType";
@@ -63,18 +66,27 @@ public class SignatureValidateFilterV3 implements Filter {
 		HttpServletRequest request = (HttpServletRequest) req;
 
 		String signType = request.getHeader(SIGN_TYPE);
-		// 判断是否是本版本的签名
-		if (SIGN_TYPE_MINE.equals(signType) && apiAuth != null && !apiAuth.isEmpty()) {
-			// 判断是否命中忽略策略
-			if (!this.checkIgnore(request)) {
-				// 判断访问的资源是否有权限
-				this.checkUrl(request);
-				// 判断访问是否过期
-				this.checkTime(request);
-				// 判断签名是否合法
-				this.checkSign(request);
+		try {
+			// 判断是否是本版本的签名
+			if (SIGN_TYPE_MINE.equals(signType) && apiAuth != null && !apiAuth.isEmpty()) {
+				// 判断是否命中忽略策略
+				if (!this.checkIgnore(request)) {
+					// 判断访问的资源是否有权限
+					this.checkUrl(request);
+					// 判断访问是否过期
+					this.checkTime(request);
+					// 判断签名是否合法
+					this.checkSign(request);
+				}
 			}
+		} catch (Exception e) {
+			Response<?> re = Response.error(e);
+			resp.setCharacterEncoding("utf-8");
+			resp.setContentType("application/json");
+			resp.getWriter().print(JsonString.toJson(re));
+			return;
 		}
+
 		chain.doFilter(req, resp);
 	}
 
@@ -217,7 +229,7 @@ public class SignatureValidateFilterV3 implements Filter {
 				e.printStackTrace();
 			}
 		}
-		return Base64.encodeBase64String(body.getBytes());
+		return body;
 
 	}
 
