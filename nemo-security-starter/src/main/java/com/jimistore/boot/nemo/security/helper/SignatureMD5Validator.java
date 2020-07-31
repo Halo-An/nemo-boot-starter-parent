@@ -129,7 +129,7 @@ public class SignatureMD5Validator implements ISignatureValidator {
 		try {
 			timestamp = Long.parseLong(request.getHeader(Constant.TIMESTAMP));
 		} catch (Exception e) {
-			throw new SignatureInvalidException(e);
+			throw new SignatureInvalidException();
 		}
 		// 校验时间戳
 		long now = System.currentTimeMillis() / 1000;
