@@ -1,10 +1,12 @@
 package com.jimistore.boot.nemo.security.config;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.bind.RelaxedPropertyResolver;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +15,9 @@ import org.springframework.core.env.Environment;
 
 import com.jimistore.boot.nemo.security.helper.ApiAuth;
 import com.jimistore.boot.nemo.security.helper.IApiAuth;
+import com.jimistore.boot.nemo.security.helper.ISignatureValidator;
 import com.jimistore.boot.nemo.security.helper.ITokenFactory;
+import com.jimistore.boot.nemo.security.helper.SignatureMD5Validator;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV1;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV2;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateFilterV3;
@@ -86,21 +90,35 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(SignatureValidateAspectV1.class)
+	@ConditionalOnMissingBean(SignatureMD5Validator.class)
+	public SignatureMD5Validator signatureMD5Validator(IApiAuth apiAuth) {
+		return new SignatureMD5Validator().setApiAuth(apiAuth);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(SignatureValidateFilterV3.class)
+	@ConditionalOnProperty(value = "auth.version", havingValue = "v3")
+	public SignatureValidateFilterV3 signatureValidateFilterV3(List<ISignatureValidator> signatureValidatorList) {
+		Map<String, ISignatureValidator> signValidatorMap = new HashMap<>();
+		for (ISignatureValidator signatureValidator : signatureValidatorList) {
+			if (signValidatorMap.containsKey(signatureValidator.getSignType())) {
+				throw new RuntimeException("signature validator can't be repeated");
+			}
+			signValidatorMap.put(signatureValidator.getSignType(), signatureValidator);
+		}
+		return new SignatureValidateFilterV3().setSignValidatorMap(signValidatorMap);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean({ SignatureValidateFilterV3.class })
 	public SignatureValidateAspectV1 signatureValidateAspectV1(IApiAuth apiAuth) {
 		return new SignatureValidateAspectV1().setApiAuth(apiAuth);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(SignatureValidateAspectV2.class)
+	@ConditionalOnMissingBean({ SignatureValidateFilterV3.class })
 	public SignatureValidateAspectV2 signatureValidateAspectV2(IApiAuth apiAuth) {
 		return new SignatureValidateAspectV2().setApiAuth(apiAuth);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(SignatureValidateFilterV3.class)
-	public SignatureValidateFilterV3 signatureValidateFilterV3(IApiAuth apiAuth) {
-		return new SignatureValidateFilterV3().setApiAuth(apiAuth);
 	}
 
 	@Bean
