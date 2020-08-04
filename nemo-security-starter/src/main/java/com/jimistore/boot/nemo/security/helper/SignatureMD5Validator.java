@@ -68,12 +68,23 @@ public class SignatureMD5Validator implements ISignatureValidator {
 	 * @return
 	 */
 	private boolean checkIgnore(HttpServletRequest request) {
-		String url = request.getRequestURI().toString();
-		AntPathMatcher matcher = new AntPathMatcher();
+
+		// 匹配忽略的method
+		String[] ignoreMethods = apiAuth.getIgnoreMethod();
+		if (ignoreMethods != null && ignoreMethods.length > 0) {
+			String method = request.getMethod();
+			for (String ignoreMethod : ignoreMethods) {
+				if (method != null && method.equals(ignoreMethod)) {
+					return true;
+				}
+			}
+		}
 
 		// 匹配忽略url
 		String[] ignoreMatchs = apiAuth.getIgnoreMatch();
 		if (ignoreMatchs != null) {
+			AntPathMatcher matcher = new AntPathMatcher();
+			String url = request.getRequestURI().toString();
 			for (String matchStr : ignoreMatchs) {
 				if (matchStr.trim().length() > 0 && matcher.match(matchStr, url)) {
 					if (log.isDebugEnabled()) {
@@ -94,14 +105,13 @@ public class SignatureMD5Validator implements ISignatureValidator {
 	 */
 	private void checkUrl(HttpServletRequest request) {
 
-		String url = request.getRequestURI().toString();
-		AntPathMatcher matcher = new AntPathMatcher();
-
 		String appid = request.getHeader(Constant.APPID);
 		// 匹配可访问的范围
 		String[] matchs = apiAuth.getMatch(appid);
 		boolean flag = false;
 		if (matchs != null) {
+			String url = request.getRequestURI().toString();
+			AntPathMatcher matcher = new AntPathMatcher();
 			for (String matchStr : matchs) {
 				if (matchStr.trim().length() > 0 && matcher.match(matchStr, url)) {
 					if (log.isDebugEnabled()) {
