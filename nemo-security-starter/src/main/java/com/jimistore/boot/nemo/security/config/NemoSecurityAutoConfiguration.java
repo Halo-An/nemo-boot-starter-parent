@@ -98,7 +98,8 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 	@Bean
 	@ConditionalOnMissingBean(SignatureValidateFilterV3.class)
 	@ConditionalOnProperty(value = "auth.version", havingValue = "v3")
-	public SignatureValidateFilterV3 signatureValidateFilterV3(List<ISignatureValidator> signatureValidatorList) {
+	public SignatureValidateFilterV3 signatureValidateFilterV3(List<ISignatureValidator> signatureValidatorList,
+			IApiAuth apiAuth) {
 		Map<String, ISignatureValidator> signValidatorMap = new HashMap<>();
 		for (ISignatureValidator signatureValidator : signatureValidatorList) {
 			if (signValidatorMap.containsKey(signatureValidator.getSignType())) {
@@ -106,7 +107,7 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 			}
 			signValidatorMap.put(signatureValidator.getSignType(), signatureValidator);
 		}
-		return new SignatureValidateFilterV3().setSignValidatorMap(signValidatorMap);
+		return new SignatureValidateFilterV3().setApiAuth(apiAuth).setSignValidatorMap(signValidatorMap);
 	}
 
 	@Bean
