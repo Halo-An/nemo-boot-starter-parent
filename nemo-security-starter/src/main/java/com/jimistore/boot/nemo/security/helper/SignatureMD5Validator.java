@@ -124,12 +124,14 @@ public class SignatureMD5Validator implements ISignatureValidator {
 		Long timestamp = Long.parseLong(request.getHeader(Constant.TIMESTAMP));
 		String token = request.getHeader(Constant.TOKEN);
 		String appid = request.getHeader(Constant.APPID);
+		String signType = request.getHeader(Constant.SIGN_TYPE);
 		String password = apiAuth.getSecret(appid);
 		String body = this.getBody(request);
 
 		try {
-			String signatureServer = SecurityUtil.SignMD5(MapUtil.hasMap(Constant.APPID, appid, Constant.TIMESTAMP,
-					timestamp, Constant.SECRET, password, Constant.TOKEN, token, Constant.BODY, body));
+			String signatureServer = SecurityUtil
+					.SignMD5(MapUtil.hasMap(Constant.APPID, appid, Constant.SIGN_TYPE, signType, Constant.TIMESTAMP,
+							timestamp, Constant.SECRET, password, Constant.TOKEN, token, Constant.BODY, body));
 			// 校验签名
 			if (signature.toUpperCase().equals(signatureServer.toUpperCase())) {
 				if (LOG.isDebugEnabled()) {
