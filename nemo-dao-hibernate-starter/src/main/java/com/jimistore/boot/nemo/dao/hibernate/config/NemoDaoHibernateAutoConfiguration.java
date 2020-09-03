@@ -27,6 +27,7 @@ import com.jimistore.boot.nemo.dao.hibernate.helper.MutilDataSourceHealthEndPoin
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilQueryParser;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactory;
 import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactoryHelper;
+import com.jimistore.boot.nemo.dao.hibernate.helper.NotEmptyArraySpelFunc;
 import com.jimistore.boot.nemo.dao.hibernate.helper.NotEmptySpelFunc;
 import com.jimistore.boot.nemo.dao.hibernate.helper.QueryAspect;
 import com.jimistore.boot.nemo.dao.hibernate.helper.QueryHelper;
@@ -56,10 +57,10 @@ public class NemoDaoHibernateAutoConfiguration {
 		this.dataSourceProperties = dataSourceProperties;
 		this.mutilDataSourceProperties = mutilDataSourceProperties;
 		if (dataSourceProperties != null && dataSourceProperties.getJdbcUrl() != null) {
-			this.mutilDataSourceProperties.getDatasource().put(MutilDataSourceProperties.DEFAULT_DATASOURCE,
-					dataSourceProperties);
-			this.mutilDataSourceProperties.getHibernate().put(MutilDataSourceProperties.DEFAULT_DATASOURCE,
-					hibernateProperties);
+			this.mutilDataSourceProperties.getDatasource()
+					.put(MutilDataSourceProperties.DEFAULT_DATASOURCE, dataSourceProperties);
+			this.mutilDataSourceProperties.getHibernate()
+					.put(MutilDataSourceProperties.DEFAULT_DATASOURCE, hibernateProperties);
 		}
 	}
 
@@ -136,8 +137,10 @@ public class NemoDaoHibernateAutoConfiguration {
 	public MutilHibernateQueryDao MutilHibernateQueryDao(MutilSessionFactory sessionFactory, IQueryParser queryParser,
 			List<IXSSValidator> xssValidatorList, List<IInjectSqlValidator> queryValidatorList) {
 		MutilHibernateQueryDao mutilHibernateQueryDao = new MutilHibernateQueryDao();
-		mutilHibernateQueryDao.setMutilSessionFactory(sessionFactory).setQueryParser(queryParser)
-				.setXssValidatorList(xssValidatorList).setQueryValidatorList(queryValidatorList);
+		mutilHibernateQueryDao.setMutilSessionFactory(sessionFactory)
+				.setQueryParser(queryParser)
+				.setXssValidatorList(xssValidatorList)
+				.setQueryValidatorList(queryValidatorList);
 		return mutilHibernateQueryDao;
 	}
 
@@ -145,6 +148,12 @@ public class NemoDaoHibernateAutoConfiguration {
 	@ConditionalOnMissingBean(NotEmptySpelFunc.class)
 	public NotEmptySpelFunc spelExtendFunc() {
 		return new NotEmptySpelFunc();
+	}
+
+	@Bean()
+	@ConditionalOnMissingBean(NotEmptyArraySpelFunc.class)
+	public NotEmptyArraySpelFunc notEmptyArraySpelFunc() {
+		return new NotEmptyArraySpelFunc();
 	}
 
 	@Bean()
@@ -158,7 +167,8 @@ public class NemoDaoHibernateAutoConfiguration {
 	public QueryHelper QueryHelper(MutilHibernateQueryDao mutilHibernateQueryDao,
 			List<IInjectSqlValidator> queryValidatorList, List<ISpelExtendFunc> spelExtendFuncList) {
 		return new QueryHelper().setQueryValidatorList(queryValidatorList)
-				.setMutilHibernateQueryDao(mutilHibernateQueryDao).setSpelExtendFuncList(spelExtendFuncList);
+				.setMutilHibernateQueryDao(mutilHibernateQueryDao)
+				.setSpelExtendFuncList(spelExtendFuncList);
 	}
 
 	@Bean
