@@ -1,4 +1,4 @@
-package com.jimistore.boot.nemo.security.helper;
+package com.jimistore.boot.nemo.security.core;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -7,11 +7,11 @@ import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
 public interface ISignatureValidator {
 
 	/**
-	 * 获取签名类型
+	 * 是否匹配
 	 * 
 	 * @return
 	 */
-	public String getSignType();
+	public boolean isMatch(HttpServletRequest request);
 
 	/**
 	 * 校验签名

@@ -1,4 +1,4 @@
-package com.jimistore.boot.nemo.security.helper;
+package com.jimistore.boot.nemo.security.core;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +12,8 @@ import org.springframework.util.AntPathMatcher;
 
 import com.jimistore.boot.nemo.core.helper.HttpServletRequestProxy;
 import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
+import com.jimistore.boot.nemo.security.helper.Constant;
+import com.jimistore.boot.nemo.security.helper.IApiAuth;
 import com.jimistore.util.format.collection.MapUtil;
 import com.jimistore.util.format.exception.SignException;
 import com.jimistore.util.format.string.SecurityUtil;
@@ -36,20 +38,26 @@ public class SignatureMD5Validator implements ISignatureValidator {
 	}
 
 	@Override
-	public String getSignType() {
-		return Constant.SIGN_TYPE_MD5;
+	public boolean isMatch(HttpServletRequest request) {
+		// 判断是否是本版本的签名
+		String signType = request.getHeader(Constant.SIGN_TYPE);
+		if (signType != null) {
+			return Constant.SIGN_TYPE_MD5.equals(signType);
+		}
+		return false;
 	}
 
 	@Override
 	public void check(HttpServletRequest request) throws SignatureInvalidException {
-		String signType = request.getHeader(Constant.SIGN_TYPE);
-		// 判断是否是本版本的签名
-		if (!Constant.SIGN_TYPE_MD5.equals(signType)) {
-			throw new SignatureInvalidException();
-		}
+
 		// 判断配置是否生效
 		if (apiAuth == null || apiAuth.isEmpty()) {
 			throw new SignatureInvalidException();
+		}
+
+		// 判断是否忽略
+		if (this.checkIgnore(request)) {
+			return;
 		}
 
 		// 判断访问的资源是否有权限
@@ -176,6 +184,42 @@ public class SignatureMD5Validator implements ISignatureValidator {
 		}
 		return body;
 
+	}
+
+	/**
+	 * 判断是否命中忽略策略
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private boolean checkIgnore(HttpServletRequest request) {
+
+		// 匹配忽略的method
+		String[] ignoreMethods = apiAuth.getIgnoreMethod();
+		if (ignoreMethods != null && ignoreMethods.length > 0) {
+			String method = request.getMethod();
+			for (String ignoreMethod : ignoreMethods) {
+				if (method != null && method.equals(ignoreMethod)) {
+					return true;
+				}
+			}
+		}
+
+		// 匹配忽略url
+		String[] ignoreMatchs = apiAuth.getIgnoreMatch();
+		if (ignoreMatchs != null) {
+			AntPathMatcher matcher = new AntPathMatcher();
+			String url = request.getRequestURI().toString();
+			for (String matchStr : ignoreMatchs) {
+				if (matchStr.trim().length() > 0 && matcher.match(matchStr, url)) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(String.format("hit ignore strategy, the match is %s, url is %s ", matchStr, url));
+					}
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }
