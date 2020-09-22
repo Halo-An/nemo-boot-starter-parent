@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import com.jimistore.boot.nemo.security.core.ISignatureValidator;
+import com.jimistore.boot.nemo.security.core.SignatureDefaultValidator;
 import com.jimistore.boot.nemo.security.core.SignatureMD5Validator;
 import com.jimistore.boot.nemo.security.core.SignatureValidatorV1;
 import com.jimistore.boot.nemo.security.core.SignatureValidatorV2;
@@ -93,16 +94,22 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(SignatureMD5Validator.class)
-	public SignatureMD5Validator signatureMD5Validator(IApiAuth apiAuth) {
-		return new SignatureMD5Validator().setApiAuth(apiAuth);
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(SignatureValidateFilter.class)
 	@ConditionalOnProperty(value = "auth.version", havingValue = "v3")
 	public SignatureValidateFilter signatureValidateFilter(Set<ISignatureValidator> signValidatorSet) {
 		return new SignatureValidateFilter().setSignValidatorSet(signValidatorSet);
+	}
+
+	@Bean
+	@ConditionalOnBean({ SignatureValidateFilter.class })
+	public SignatureDefaultValidator signatureDefaultValidator(IApiAuth apiAuth) {
+		return new SignatureDefaultValidator().setApiAuth(apiAuth);
+	}
+
+	@Bean
+	@ConditionalOnBean(SignatureValidateFilter.class)
+	public SignatureMD5Validator signatureMD5Validator(IApiAuth apiAuth) {
+		return new SignatureMD5Validator().setApiAuth(apiAuth);
 	}
 
 	@Bean
