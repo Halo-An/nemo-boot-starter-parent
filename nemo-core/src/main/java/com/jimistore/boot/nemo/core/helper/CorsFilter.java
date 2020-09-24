@@ -27,6 +27,9 @@ public class CorsFilter implements Filter {
 
 	private final Logger LOG = LoggerFactory.getLogger(getClass());
 
+	@Value("${nemo.cors.open-match:false}")
+	boolean openMatch;
+
 	@Value("${nemo.cors.url-match:/**}")
 	String urlMatch;
 
@@ -50,11 +53,13 @@ public class CorsFilter implements Filter {
 			LOG.debug(String.format("request doFilter, origin is %s, uri is %s, method is %s", req.getHeader(ORIGIN),
 					req.getRequestURI(), req.getMethod()));
 		}
-		if (METHOD_OPTION.equals(req.getMethod())) {
-			if (matcher.match(originMatch, req.getHeader(ORIGIN)) && matcher.match(urlMatch, req.getRequestURI())) {
-				rep.setHeader("Access-Control-Allow-Origin", "*");
-				rep.setHeader("Access-Control-Allow-Methods", "*");
-				rep.setHeader("Access-Control-Allow-Headers", "*");
+
+		if (!openMatch || (matcher.match(originMatch, req.getHeader(ORIGIN))
+				&& matcher.match(urlMatch, req.getRequestURI()))) {
+			rep.setHeader("Access-Control-Allow-Origin", "*");
+			rep.setHeader("Access-Control-Allow-Methods", "*");
+			rep.setHeader("Access-Control-Allow-Headers", "*");
+			if (METHOD_OPTION.equals(req.getMethod())) {
 				rep.setStatus(204);
 				return;
 			}

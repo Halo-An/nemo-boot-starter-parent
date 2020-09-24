@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.bind.RelaxedPropertyResolver;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -95,7 +94,6 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 
 	@Bean
 	@ConditionalOnMissingBean(SignatureValidateFilter.class)
-	@ConditionalOnProperty(value = "auth.version", havingValue = "v3")
 	public SignatureValidateFilter signatureValidateFilter(Set<ISignatureValidator> signValidatorSet) {
 		return new SignatureValidateFilter().setSignValidatorSet(signValidatorSet);
 	}
