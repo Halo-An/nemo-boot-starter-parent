@@ -33,6 +33,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jimistore.boot.nemo.core.api.service.OfflineHandler;
 import com.jimistore.boot.nemo.core.api.service.OnlineHandler;
+import com.jimistore.boot.nemo.core.helper.CharsetFilter;
+import com.jimistore.boot.nemo.core.helper.CorsFilter;
 import com.jimistore.boot.nemo.core.helper.DaoLoggerAspect;
 import com.jimistore.boot.nemo.core.helper.InitContextFilter;
 import com.jimistore.boot.nemo.core.helper.NemoJsonKeyGennerator;
@@ -86,6 +88,16 @@ public class NemoCoreAutoConfiguration {
 	@Bean
 	public RequestProxyFilter requestProxyFilter() {
 		return new RequestProxyFilter();
+	}
+
+	@Bean
+	public CharsetFilter charsetFilter() {
+		return new CharsetFilter();
+	}
+
+	@Bean
+	public CorsFilter corsFilter() {
+		return new CorsFilter();
 	}
 
 	@Bean

@@ -60,8 +60,6 @@ public class SignatureValidateFilter implements Filter {
 			validator.check(request);
 		} catch (Exception e) {
 			Response<?> re = Response.error(e);
-			resp.setCharacterEncoding("utf-8");
-			resp.setContentType("application/json");
 			resp.getWriter().print(JsonString.toJson(re));
 			return;
 		}
