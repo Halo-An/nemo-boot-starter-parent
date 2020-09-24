@@ -27,6 +27,9 @@ public class CorsFilter implements Filter {
 
 	private final Logger LOG = LoggerFactory.getLogger(getClass());
 
+	@Value("${nemo.cors.open:false}")
+	boolean open;
+
 	@Value("${nemo.cors.open-match:false}")
 	boolean openMatch;
 
@@ -46,6 +49,11 @@ public class CorsFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		// 默认是开启的，如果没开启，则跳过
+		if (!open) {
+			chain.doFilter(request, response);
+			return;
+		}
 		HttpServletRequest req = HttpServletRequest.class.cast(request);
 		HttpServletResponse rep = HttpServletResponse.class.cast(response);
 

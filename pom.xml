@@ -62,7 +62,7 @@
 		<hikaricp.version>3.3.1</hikaricp.version>
 
 		<nemo.core.api.version>1.11.5-RELEASE</nemo.core.api.version>
-		<nemo.core.version>1.11.25-RELEASE</nemo.core.version>
+		<nemo.core.version>1.11.26-RELEASE</nemo.core.version>
 		<nemo.validator.version>1.11.14-RELEASE</nemo.validator.version>
 		<nemo.dao.api.version>1.11.10-RELEASE</nemo.dao.api.version>
 		<nemo.dao.core.version>1.11.2-RELEASE</nemo.dao.core.version>
