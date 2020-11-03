@@ -78,7 +78,7 @@
 		<nemo.lock.version>1.11.15-RELEASE</nemo.lock.version>
 		<nemo.security.version>1.11.26-RELEASE</nemo.security.version>
 		<nemo.fuse.version>1.11.1-RELEASE</nemo.fuse.version>
-		<nemo.monitor.server.version>1.10.11-RELEASE</nemo.monitor.server.version>
+		<nemo.monitor.server.version>1.12.1-RELEASE</nemo.monitor.server.version>
 		<nemo.gateway.server.version>1.12.1-RELEASE</nemo.gateway.server.version>
 		<nemo.rpc.eureka.server.version>1.11.5-RELEASE</nemo.rpc.eureka.server.version>
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
