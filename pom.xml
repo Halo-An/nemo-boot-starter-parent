@@ -38,7 +38,9 @@
 		<module>nemo-apollo-starter</module>
 		<module>nemo-hunter-starter</module>
 		<module>nemo-sleuth-zipkin-server</module>
+		<!-- 
 		<module>nemo-gateway-server</module>
+		 -->
 
 	</modules>
 
