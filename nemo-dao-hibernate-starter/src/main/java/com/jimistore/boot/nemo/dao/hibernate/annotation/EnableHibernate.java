@@ -10,10 +10,12 @@ import org.springframework.context.annotation.Import;
 
 import com.jimistore.boot.nemo.dao.hibernate.config.NemoDaoHibernateAutoConfiguration;
 
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import({NemoDaoHibernateAutoConfiguration.class})
+@Import({ NemoDaoHibernateAutoConfiguration.class })
 public @interface EnableHibernate {
+
+	String[] daoScanPackage() default { "com.jimistore" };
 
 }

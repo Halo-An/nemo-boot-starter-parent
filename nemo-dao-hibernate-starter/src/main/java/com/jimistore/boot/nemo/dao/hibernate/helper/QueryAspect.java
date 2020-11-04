@@ -17,9 +17,9 @@ import com.jimistore.boot.nemo.dao.hibernate.annotation.SpelQuery;
 @Aspect
 @Order(Integer.MAX_VALUE)
 public class QueryAspect {
-	
+
 	private final Logger log = Logger.getLogger(getClass());
-	
+
 	QueryHelper queryHelper;
 
 	public QueryAspect setQueryHelper(QueryHelper queryHelper) {
@@ -28,9 +28,9 @@ public class QueryAspect {
 	}
 
 	@Pointcut("@annotation(com.jimistore.boot.nemo.dao.hibernate.annotation.SpelQuery)")
-	public void gquery(){
+	public void gquery() {
 	}
-	
+
 	@Around("gquery()")
 	public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 		log.debug("request query");
@@ -38,11 +38,8 @@ public class QueryAspect {
 		MethodSignature methodSignature = (MethodSignature) signature;
 		Method method = methodSignature.getMethod();
 		SpelQuery query = AnnotationUtil.getAnnotation(method, SpelQuery.class);
-		
+
 		return queryHelper.query(query, method, joinPoint.getArgs());
 	}
-	
-	
-	
-}
 
+}

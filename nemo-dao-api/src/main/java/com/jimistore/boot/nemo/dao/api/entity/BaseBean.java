@@ -13,34 +13,38 @@ import org.springframework.format.annotation.DateTimeFormat;
 import com.jimistore.boot.nemo.core.api.annotation.JsonExclusion;
 
 @MappedSuperclass
-public class BaseBean<T> implements Serializable{
-	
+public class BaseBean<T> implements Serializable {
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	//json的字段需要public声明
-	@JsonExclusion @Transient
-	public T[] ids;	
-	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	@Column(nullable = false,updatable = false)
-	public Date createTime;											//数据创建时间
-	
-	@Column(updatable = false)
-	public String createAuthor;										//数据创建人员
-	
-	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	public Date updateTime;											//数据更新时间
-	
-	public String updateAuthor;										//数据更新人员
+	// json的字段需要public声明
 	@JsonExclusion
-	public Boolean deleted=false;									//是否逻辑删除
-	@Version @Column(nullable = false,columnDefinition="bigint default 0")	
-	public Long version; 											//数据版本号
-	@JsonExclusion @Transient
-	public String[] fields;											//需要的查询字段
-	
-	public T getId(){
+	@Transient
+	public T[] ids;
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	@Column(nullable = false, updatable = false)
+	public Date createTime; // 数据创建时间
+
+	@Column(length = 32, updatable = false)
+	public String createAuthor; // 数据创建人员
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	public Date updateTime; // 数据更新时间
+
+	@Column(length = 32)
+	public String updateAuthor; // 数据更新人员
+	@JsonExclusion
+	public Boolean deleted = false; // 是否逻辑删除
+	@Version
+	@Column(nullable = false, columnDefinition = "bigint default 0")
+	public Long version; // 数据版本号
+	@JsonExclusion
+	@Transient
+	public String[] fields; // 需要的查询字段
+
+	public T getId() {
 		return null;
 	}
 
@@ -110,6 +114,6 @@ public class BaseBean<T> implements Serializable{
 
 	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
-	}	
-	
+	}
+
 }

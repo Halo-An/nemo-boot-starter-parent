@@ -33,6 +33,11 @@ import com.jimistore.boot.nemo.dao.hibernate.helper.QueryAspect;
 import com.jimistore.boot.nemo.dao.hibernate.helper.QueryHelper;
 import com.jimistore.boot.nemo.dao.hibernate.helper.SpelExtendFuncAspect;
 import com.jimistore.boot.nemo.dao.hibernate.helper.TransactionManagerFactory;
+import com.jimistore.boot.nemo.dao.hibernate.qbatis.DaoExecutorHelper;
+import com.jimistore.boot.nemo.dao.hibernate.qbatis.DaoExecutorSelect;
+import com.jimistore.boot.nemo.dao.hibernate.qbatis.DaoProxyCreator;
+import com.jimistore.boot.nemo.dao.hibernate.qbatis.IDaoExecutor;
+import com.jimistore.boot.nemo.dao.hibernate.qbatis.IDaoSpelFunc;
 import com.jimistore.boot.nemo.dao.hibernate.validator.IInjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.InjectSqlValidator;
 import com.jimistore.boot.nemo.dao.hibernate.validator.XSSValidator;
@@ -175,6 +180,27 @@ public class NemoDaoHibernateAutoConfiguration {
 	@ConditionalOnMissingBean(QueryAspect.class)
 	public QueryAspect QueryAspect(QueryHelper queryHelper) {
 		return new QueryAspect().setQueryHelper(queryHelper);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(DaoExecutorHelper.class)
+	public DaoExecutorHelper daoExecutorHelper() {
+		return new DaoExecutorHelper();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(DaoExecutorSelect.class)
+	public DaoExecutorSelect daoExecutorSelect(@Lazy MutilHibernateQueryDao mutilHibernateQueryDao,
+			List<IDaoSpelFunc> daoSpelFuncList, DaoExecutorHelper daoExecutorHelper) {
+		return new DaoExecutorSelect().setMutilHibernateQueryDao(mutilHibernateQueryDao)
+				.setDaoSpelFuncList(daoSpelFuncList)
+				.setDaoExecutorHelper(daoExecutorHelper);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(DaoProxyCreator.class)
+	public DaoProxyCreator daoProxyCreator(List<IDaoExecutor> daoExecutorList) {
+		return new DaoProxyCreator().setDaoExecutorList(daoExecutorList);
 	}
 
 }

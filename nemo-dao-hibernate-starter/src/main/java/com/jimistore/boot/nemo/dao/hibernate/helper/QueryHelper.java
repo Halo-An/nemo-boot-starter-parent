@@ -145,7 +145,6 @@ public class QueryHelper {
 				if (!funcSet.contains(items[0])) {
 					for (IInjectSqlValidator injectSqlValidator : queryValidatorList) {
 						injectSqlValidator.check(param);
-
 					}
 				}
 			} catch (SpelEvaluationException e) {
