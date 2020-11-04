@@ -14,8 +14,11 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import de.codecentric.boot.admin.server.config.EnableAdminServer;
+
 @SpringBootApplication
 @EnableEurekaServer
+@EnableAdminServer
 @Configuration
 public class NemoRpcEurekaServerApplication extends SpringBootServletInitializer {
 
