@@ -4,7 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.jimistore.boot.nemo.core.util.AnnotationUtil;
@@ -15,99 +16,90 @@ import com.jimistore.boot.nemo.dao.api.exception.XssValidatorException;
 import com.jimistore.boot.nemo.dao.api.validator.IXSSValidator;
 
 public class XSSValidator implements IXSSValidator {
-	
-	private static final Logger log = Logger.getLogger(XSSValidator.class);
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(XSSValidator.class);
+
 	@Value("${xss.replace:}")
 	String replace;
-	
+
 	/**
 	 * 非法字符串
 	 */
-	public static final String[] errStr={
-			"script",
-			"link",
-			"iframe",
-			"img",
-			"input",
-			"frameset",
-			"video",
-			"sound",
-			"object",
-			"embed",
-			"bgsound",
-			"audio",
-			"source",
-			"<"
-			};
+	public static final String[] errStr = { "script", "link", "iframe", "img", "input", "frameset", "video", "sound",
+			"object", "embed", "bgsound", "audio", "source", "<" };
 
 	@Override
 	public void check(Object entity) throws XssValidatorException {
-		if(log.isDebugEnabled()){
-			log.debug(String.format("xss checking, the entity is %s", JsonString.toJson(entity)));
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("xss checking, the entity is %s", JsonString.toJson(entity)));
 		}
-		if(entity==null){
-			return ;
+		if (entity == null) {
+			return;
 		}
 		List<Field> fieldList = ClassUtil.getFields(entity.getClass());
-		for(Field field:fieldList){
+		for (Field field : fieldList) {
 			String getMethod = ClassUtil.getGetMethodNameByField(field);
 			try {
-				Object value = entity.getClass().getMethod(getMethod, new Class[]{}).invoke(entity, new Object[]{});
-				if(value instanceof String){
+				Object value = entity.getClass().getMethod(getMethod, new Class[] {}).invoke(entity, new Object[] {});
+				if (value instanceof String) {
 					String str = (String) value;
 					String[] ignores = null;
 					XssIgnoreField xssIgnoreField = AnnotationUtil.getAnnotation(field, XssIgnoreField.class);
-					if(xssIgnoreField!=null){
+					if (xssIgnoreField != null) {
 						ignores = xssIgnoreField.value();
 					}
 					int result = checkValue(str, ignores);
-					if(result>=0){
-						//替换还是直接抛异常
-						if(replace!=null&&replace.length()>0){
-							str = str.replaceAll(errStr[result], String.format("%s%s%s", replace, errStr[result], replace));
+					if (result >= 0) {
+						// 替换还是直接抛异常
+						if (replace != null && replace.length() > 0) {
+							str = str.replaceAll(errStr[result],
+									String.format("%s%s%s", replace, errStr[result], replace));
 							String setMethod = ClassUtil.getSetMethodNameByField(field);
-							entity.getClass().getMethod(setMethod, new Class[]{String.class}).invoke(entity, new Object[]{str});
-						}else{
+							entity.getClass()
+									.getMethod(setMethod, new Class[] { String.class })
+									.invoke(entity, new Object[] { str });
+						} else {
 							throw new XssValidatorException();
 						}
-						
+
 					}
 				}
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				if(log.isDebugEnabled()){
-					log.debug(e);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException e) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(e.getMessage(), e);
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * 检查命中异常规则第几项
+	 * 
 	 * @param value
 	 * @return
 	 * @throws XssValidatorException
 	 */
 	public static int checkValue(String value, String[] ignores) throws XssValidatorException {
-		for(int i=0;i<errStr.length;i++){
+		for (int i = 0; i < errStr.length; i++) {
 			String str = errStr[i];
-			if(ignores!=null){
-				//忽略全部
-				if(ignores.length==0){
-					continue ;
+			if (ignores != null) {
+				// 忽略全部
+				if (ignores.length == 0) {
+					continue;
 				}
 				boolean flag = false;
-				//忽略制定关键字
-				for(String ignore:ignores){
-					if(ignore!=null&&ignore.equals(str)){
-						flag=true;
+				// 忽略制定关键字
+				for (String ignore : ignores) {
+					if (ignore != null && ignore.equals(str)) {
+						flag = true;
 					}
 				}
-				if(flag){
-					continue ;
+				if (flag) {
+					continue;
 				}
 			}
-			if(value.toString().indexOf(str)>=0){
+			if (value.toString().indexOf(str) >= 0) {
 				return i;
 			}
 		}

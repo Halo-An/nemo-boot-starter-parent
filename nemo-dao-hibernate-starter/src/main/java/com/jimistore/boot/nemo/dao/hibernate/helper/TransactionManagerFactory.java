@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.transaction.ChainedTransactionManager;
-import org.springframework.orm.hibernate4.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 public class TransactionManagerFactory implements FactoryBean<PlatformTransactionManager> {
@@ -36,7 +36,6 @@ public class TransactionManagerFactory implements FactoryBean<PlatformTransactio
 			hibernateTransactionManagers[i].setSessionFactory(sessionFactory.getObject());
 			hibernateTransactionManagers[i].afterPropertiesSet();
 		}
-
 		return new ChainedTransactionManager(hibernateTransactionManagers);
 	}
 

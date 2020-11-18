@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.jimistore.boot.nemo.security.exception.UnauthorizedException;
-import com.jimistore.util.format.string.StringUtil;
 
 public class ApiAuth implements IApiAuth {
 

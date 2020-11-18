@@ -6,31 +6,33 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jimistore.boot.nemo.core.api.exception.ValidatedException;
 
 /**
  * 计数容器
+ * 
  * @author chenqi
  * @Date 2018年6月1日
  *
  */
 public class LocalCounterContainer implements ICounterContainer {
-	
-	private static final Logger log = Logger.getLogger(LocalCounterContainer.class);
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(LocalCounterContainer.class);
+
 	protected Map<String, ICounter<?>> counterMap = new HashMap<String, ICounter<?>>();
-		
-	public LocalCounterContainer(){
+
+	public LocalCounterContainer() {
 	}
 
 	@Override
 	public ICounterContainer publish(IPublishEvent<?> event) {
-		if(log.isDebugEnabled()){
-			log.debug(String.format("request put[%s]", event.getTopicKey()));
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("request put[%s]", event.getTopicKey()));
 		}
-		if(event==null){
+		if (event == null) {
 			throw new ValidatedException("event can not be null");
 		}
 		ICounter<?> counter = getCounterByKey(event.getTopicKey());
@@ -40,42 +42,43 @@ public class LocalCounterContainer implements ICounterContainer {
 
 	@Override
 	public ICounterContainer createCounter(Topic topic) {
-		if(log.isDebugEnabled()){
-			log.debug(String.format("create counter[%s]", topic.getKey()));
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("create counter[%s]", topic.getKey()));
 		}
 
-		if(counterMap.containsKey(topic.getKey())){
+		if (counterMap.containsKey(topic.getKey())) {
 			throw new ValidatedException(String.format("counter[%s] is exist", topic.getKey()));
 		}
-		ICounter<?> counter = Counter.create(topic.getKey(), topic.getTimeUnit(), topic.getCapacity(), topic.getValueType());
+		ICounter<?> counter = Counter.create(topic.getKey(), topic.getTimeUnit(), topic.getCapacity(),
+				topic.getValueType());
 		counterMap.put(topic.getKey(), counter);
-		
+
 		return this;
 	}
 
 	@Override
 	public ICounterContainer deleteCounter(String key) {
-		if(log.isDebugEnabled()){
-			log.debug(String.format("delete counter[%s]", key));
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("delete counter[%s]", key));
 		}
 		counterMap.remove(key);
 		return this;
 	}
-	
-	protected ICounter<?> getCounterByKey(String key){
-		if(key==null){
+
+	protected ICounter<?> getCounterByKey(String key) {
+		if (key == null) {
 			throw new ValidatedException("key of event can not be null");
 		}
-		
+
 		ICounter<?> counter = counterMap.get(key);
-		if(counter==null){
+		if (counter == null) {
 			throw new ValidatedException(String.format("can not find counter[%s]", key));
 		}
 		return counter;
 	}
-	
-	public void heartbeat(){
-		for(Entry<String, ICounter<?>> entry:counterMap.entrySet()){
+
+	public void heartbeat() {
+		for (Entry<String, ICounter<?>> entry : counterMap.entrySet()) {
 			entry.getValue().heartbeat();
 		}
 	}
@@ -91,5 +94,5 @@ public class LocalCounterContainer implements ICounterContainer {
 		ICounter<?> counter = this.getCounterByKey(key);
 		return counter.window(timeUnit, length, valueType, timestamp);
 	}
-	
+
 }

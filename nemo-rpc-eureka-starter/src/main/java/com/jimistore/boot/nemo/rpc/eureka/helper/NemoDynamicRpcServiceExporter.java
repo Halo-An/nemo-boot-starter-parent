@@ -3,7 +3,8 @@ package com.jimistore.boot.nemo.rpc.eureka.helper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
@@ -12,43 +13,46 @@ import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 
 /**
  * 动态RPCService输出类
+ * 
  * @author chenqi
  * @Date 2018年10月7日
  *
  */
 public class NemoDynamicRpcServiceExporter implements IDynamicRpcServiceExporter, BeanPostProcessor {
-	
-	private static final Logger log = Logger.getLogger(NemoDynamicRpcServiceExporter.class);
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(NemoDynamicRpcServiceExporter.class);
+
 	NemoAutoJsonRpcClientProxyCreatorHelper helper;
-	
+
 	Map<String, Object> beanCacheMap = new HashMap<String, Object>();
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getRpcService(Class<T> inf, String serviceName, String version) {
-		if(log.isDebugEnabled()){
-			log.debug(String.format("request getRpcService, the serviceName is %s, the version is %s", serviceName, version));
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("request getRpcService, the serviceName is %s, the version is %s", serviceName,
+					version));
 		}
 		String key = this.parseKey(inf, serviceName, version);
-		if(!beanCacheMap.containsKey(key)){
+		if (!beanCacheMap.containsKey(key)) {
 			T service = null;
-			try{
+			try {
 				service = helper.getRegisteredBean(serviceName, inf, version);
-			}catch(Exception e){
-				log.warn(e.getMessage());
+			} catch (Exception e) {
+				LOG.warn(e.getMessage());
 			}
-			if(service==null){
+			if (service == null) {
 				JsonRpcService jsonRpcService = AnnotationUtil.getAnnotation(inf, JsonRpcService.class);
-				helper.registerJsonProxyBean(inf.getName(), serviceName, version, jsonRpcService.value(), jsonRpcService.useNamedParams());
+				helper.registerJsonProxyBean(inf.getName(), serviceName, version, jsonRpcService.value(),
+						jsonRpcService.useNamedParams());
 				service = helper.getRegisteredBean(serviceName, inf, version);
 			}
 			beanCacheMap.put(key, service);
 		}
-		return (T)beanCacheMap.get(key);
+		return (T) beanCacheMap.get(key);
 	}
-	
-	private String parseKey(Class<?> inf, String serviceName, String version){
+
+	private String parseKey(Class<?> inf, String serviceName, String version) {
 		return String.format("%s-%s-%s", inf.getName(), serviceName, version);
 	}
 

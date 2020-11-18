@@ -8,9 +8,9 @@ import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 
 public class MutilHibernateNamingStrategy {
 
-	static Map<String, HibernateNamingStrategy> hibernateNamingStrategyMap = new HashMap<String, HibernateNamingStrategy>();
+	static Map<String, NemoNamingStrategy> hibernateNamingStrategyMap = new HashMap<String, NemoNamingStrategy>();
 
-	public static void put(String key, HibernateNamingStrategy hibernateNamingStrategy) {
+	public static void put(String key, NemoNamingStrategy hibernateNamingStrategy) {
 		hibernateNamingStrategyMap.put(key, hibernateNamingStrategy);
 	}
 
@@ -22,9 +22,9 @@ public class MutilHibernateNamingStrategy {
 		return key;
 	}
 
-	public static HibernateNamingStrategy getHibernateNamingStrategy() {
+	public static NemoNamingStrategy getNemoNamingStrategy() {
 		String key = getDataSourceKey();
-		HibernateNamingStrategy hibernateNamingStrategy = hibernateNamingStrategyMap.get(key);
+		NemoNamingStrategy hibernateNamingStrategy = hibernateNamingStrategyMap.get(key);
 		if (hibernateNamingStrategy == null) {
 			throw new RuntimeException(String.format("can not find datasource[%s] in configuration", key));
 		}

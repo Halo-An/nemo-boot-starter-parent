@@ -18,7 +18,6 @@ import com.jimistore.boot.nemo.lock.annotation.LockConsume;
 import com.jimistore.boot.nemo.lock.annotation.LockProduce;
 import com.jimistore.boot.nemo.lock.annotation.LockStockCreate;
 import com.jimistore.boot.nemo.lock.annotation.LockStockUpdate;
-import com.jimistore.util.reflex.AnnotationUtil;
 
 @Aspect
 @Order(13)
@@ -54,8 +53,7 @@ public class StockAspect {
 		Signature signature = joinPoint.getSignature();
 		MethodSignature methodSignature = (MethodSignature) signature;
 		Method method = methodSignature.getMethod();
-
-		LockProduce lock = AnnotationUtil.getAnnotation(method, LockProduce.class);
+		LockProduce lock = method.getAnnotation(LockProduce.class);
 		StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, obj);
 		String key = this.parseExpression(context, lock.key(), String.class);
 		Long num = this.parseExpression(context, lock.num(), Long.class);
@@ -73,7 +71,7 @@ public class StockAspect {
 		MethodSignature methodSignature = (MethodSignature) signature;
 		Method method = methodSignature.getMethod();
 
-		LockStockCreate lock = AnnotationUtil.getAnnotation(method, LockStockCreate.class);
+		LockStockCreate lock = method.getAnnotation(LockStockCreate.class);
 		StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, obj);
 		String key = this.parseExpression(context, lock.key(), String.class);
 		Long num = this.parseExpression(context, lock.num(), Long.class);
@@ -89,7 +87,7 @@ public class StockAspect {
 		MethodSignature methodSignature = (MethodSignature) signature;
 		Method method = methodSignature.getMethod();
 
-		LockStockUpdate lock = AnnotationUtil.getAnnotation(method, LockStockUpdate.class);
+		LockStockUpdate lock = method.getAnnotation(LockStockUpdate.class);
 		StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, obj);
 		String key = this.parseExpression(context, lock.key(), String.class);
 		Long num = this.parseExpression(context, lock.num(), Long.class);
@@ -104,7 +102,7 @@ public class StockAspect {
 		MethodSignature methodSignature = (MethodSignature) signature;
 		Method method = methodSignature.getMethod();
 
-		LockConsume lock = AnnotationUtil.getAnnotation(method, LockConsume.class);
+		LockConsume lock = method.getAnnotation(LockConsume.class);
 		StandardEvaluationContext context = this.getContextByProceedingJoinPoint(joinPoint, null);
 		String key = this.parseExpression(context, lock.key(), String.class);
 		Long num = this.parseExpression(context, lock.num(), Long.class);

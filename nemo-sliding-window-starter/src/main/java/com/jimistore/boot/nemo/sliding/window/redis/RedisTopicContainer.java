@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,24 +15,22 @@ import com.jimistore.boot.nemo.sliding.window.core.ITopicContainer;
 import com.jimistore.boot.nemo.sliding.window.core.Topic;
 import com.jimistore.boot.nemo.sliding.window.core.TopicContainer;
 
-public class RedisTopicContainer extends TopicContainer implements ITopicContainer,IRedisSyncTask {
-	
-	private static final Logger log = Logger.getLogger(RedisPublisherContainer.class);
+public class RedisTopicContainer extends TopicContainer implements ITopicContainer, IRedisSyncTask {
+
+	private static final Logger LOG = LoggerFactory.getLogger(RedisPublisherContainer.class);
 
 	SlidingWindowProperties slidingWindowProperties;
-	
+
 	@SuppressWarnings("rawtypes")
 	RedisTemplate redisTemplate;
 
 	ObjectMapper objectMapper;
 
-	
 	public RedisTopicContainer setObjectMapper(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
 		return this;
 	}
 
-	
 	public RedisTopicContainer setSlidingWindowProperties(SlidingWindowProperties slidingWindowProperties) {
 		this.slidingWindowProperties = slidingWindowProperties;
 		return this;
@@ -46,10 +45,12 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 	@SuppressWarnings("unchecked")
 	@Override
 	public ITopicContainer createTopic(Topic topic) {
-		log.debug("request create");
-		if(!topicMap.containsKey(topic.getKey())&&!topic.isFixed()){
+		LOG.debug("request create");
+		if (!topicMap.containsKey(topic.getKey()) && !topic.isFixed()) {
 			try {
-				redisTemplate.opsForHash().put(slidingWindowProperties.getRedisTopicKey(), topic.getKey(), objectMapper.writeValueAsString(topic));
+				redisTemplate.opsForHash()
+						.put(slidingWindowProperties.getRedisTopicKey(), topic.getKey(),
+								objectMapper.writeValueAsString(topic));
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException(e);
 			}
@@ -61,9 +62,9 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 	@SuppressWarnings("unchecked")
 	@Override
 	public ITopicContainer deleteTopic(String topic) {
-		log.debug("request delete");
-		if(topicMap.containsKey(topic)){
-			if(!topicMap.get(topic).isFixed()){
+		LOG.debug("request delete");
+		if (topicMap.containsKey(topic)) {
+			if (!topicMap.get(topic).isFixed()) {
 				redisTemplate.opsForHash().delete(slidingWindowProperties.getRedisTopicKey(), topic);
 			}
 		}
@@ -74,19 +75,19 @@ public class RedisTopicContainer extends TopicContainer implements ITopicContain
 	@SuppressWarnings("unchecked")
 	@Override
 	public void sync() {
-		log.debug("request sync");
-		
+		LOG.debug("request sync");
+
 		Map<String, String> src = redisTemplate.opsForHash().entries(slidingWindowProperties.getRedisTopicKey());
 		Map<String, Topic> remoteMap = new HashMap<String, Topic>();
-		for(Entry<String,String> entry:src.entrySet()){
+		for (Entry<String, String> entry : src.entrySet()) {
 			try {
 				remoteMap.put(entry.getKey(), objectMapper.readValue(entry.getValue(), Topic.class));
 			} catch (Exception e) {
-				log.warn(e.getMessage(), e);
+				LOG.warn(e.getMessage(), e);
 			}
 		}
 		topicMap = remoteMap;
-		
+
 	}
 
 }

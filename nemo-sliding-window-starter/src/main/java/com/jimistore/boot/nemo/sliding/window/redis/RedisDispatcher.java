@@ -3,7 +3,8 @@ package com.jimistore.boot.nemo.sliding.window.redis;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jimistore.boot.nemo.sliding.window.core.Dispatcher;
 import com.jimistore.boot.nemo.sliding.window.core.ICounter;
@@ -14,25 +15,26 @@ import com.jimistore.boot.nemo.sliding.window.core.Topic;
 
 /**
  * 同步redis数据
+ * 
  * @author chenqi
  * @Date 2018年7月17日
  *
  */
 public class RedisDispatcher extends Dispatcher implements IRedisSyncTask {
-	
-	private static final Logger log = Logger.getLogger(RedisDispatcher.class);
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(RedisDispatcher.class);
+
 	List<IRedisSyncTask> redisSyncTaskList = new ArrayList<IRedisSyncTask>();
-	
-	//同步远端数据线程
-	Thread syncThread = new Thread("nemo-sliding-window-redis-sync"){
+
+	// 同步远端数据线程
+	Thread syncThread = new Thread("nemo-sliding-window-redis-sync") {
 		@Override
 		public void run() {
-			while(true){
+			while (true) {
 				try {
 					Thread.sleep(slidingWindowProperties.getSyncInterval());
-					if(redisSyncTaskList!=null){
-						for(IRedisSyncTask redisSyncTask:redisSyncTaskList){
+					if (redisSyncTaskList != null) {
+						for (IRedisSyncTask redisSyncTask : redisSyncTaskList) {
 							createQueueTask(new Runnable() {
 								@Override
 								public void run() {
@@ -42,7 +44,7 @@ public class RedisDispatcher extends Dispatcher implements IRedisSyncTask {
 						}
 					}
 				} catch (Exception e) {
-					log.error("redis sync error", e);
+					LOG.error("redis sync error", e);
 				}
 			}
 		}
@@ -57,51 +59,50 @@ public class RedisDispatcher extends Dispatcher implements IRedisSyncTask {
 		return this;
 	}
 
-	public void sync(){
-		if(counterContainer!=null&&counterContainer instanceof RedisCounterContainer){
+	public void sync() {
+		if (counterContainer != null && counterContainer instanceof RedisCounterContainer) {
 			RedisCounterContainer redisCounterContainer = (RedisCounterContainer) counterContainer;
-			log.debug("request sync");
-			//同步缺少的计数器
+			LOG.debug("request sync");
+			// 同步缺少的计数器
 			List<CounterMsg> counterMsgList = redisCounterContainer.getNotExistCounterList();
-			for(CounterMsg counterMsg:counterMsgList){
-				Topic topic = new Topic()
-						.setKey(counterMsg.getKey())
+			for (CounterMsg counterMsg : counterMsgList) {
+				Topic topic = new Topic().setKey(counterMsg.getKey())
 						.setTimeUnitStr(counterMsg.getTimeUnit())
 						.setCapacity(counterMsg.getCapacity())
 						.setClassName(counterMsg.getClassName());
-				
+
 				createCounter(topic);
 
 			}
-			//同步已经被删除的计数器
+			// 同步已经被删除的计数器
 			List<ICounter<?>> counterList = redisCounterContainer.getOverflowCounterList();
-			for(ICounter<?> counter:counterList){
+			for (ICounter<?> counter : counterList) {
 				redisCounterContainer.deleteCounter(counter.getKey());
 			}
 		}
-		
+
 	}
 
 	@Override
 	public RedisDispatcher init() {
 		super.init();
-		
+
 		this.addSyncTask(this);
-		
+
 		syncThread.setDaemon(true);
 		syncThread.start();
 		return this;
 	}
-	
-	public void addSyncTask(IRedisSyncTask task){
+
+	public void addSyncTask(IRedisSyncTask task) {
 		redisSyncTaskList.add(task);
 	}
 
 	@Override
 	public Dispatcher setCounterContainer(ICounterContainer counterContainer) {
 		super.setCounterContainer(counterContainer);
-		if(counterContainer instanceof IRedisSyncTask){
-			this.addSyncTask((IRedisSyncTask)counterContainer);
+		if (counterContainer instanceof IRedisSyncTask) {
+			this.addSyncTask((IRedisSyncTask) counterContainer);
 		}
 		return this;
 	}
@@ -109,8 +110,8 @@ public class RedisDispatcher extends Dispatcher implements IRedisSyncTask {
 	@Override
 	public Dispatcher setPublisherContainer(IPublisherContainer publisherContainer) {
 		super.setPublisherContainer(publisherContainer);
-		if(publisherContainer instanceof IRedisSyncTask){
-			this.addSyncTask((IRedisSyncTask)publisherContainer);
+		if (publisherContainer instanceof IRedisSyncTask) {
+			this.addSyncTask((IRedisSyncTask) publisherContainer);
 		}
 		return this;
 	}
@@ -118,8 +119,8 @@ public class RedisDispatcher extends Dispatcher implements IRedisSyncTask {
 	@Override
 	public Dispatcher setTopicContainer(ITopicContainer topicContainer) {
 		super.setTopicContainer(topicContainer);
-		if(topicContainer instanceof IRedisSyncTask){
-			this.addSyncTask((IRedisSyncTask)topicContainer);
+		if (topicContainer instanceof IRedisSyncTask) {
+			this.addSyncTask((IRedisSyncTask) topicContainer);
 		}
 		return this;
 	}

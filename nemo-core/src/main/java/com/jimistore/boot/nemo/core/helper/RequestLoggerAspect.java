@@ -17,8 +17,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
+import org.springframework.util.AntPathMatcher;
 
 import com.jimistore.boot.nemo.core.util.JsonString;
 
@@ -26,7 +29,97 @@ import com.jimistore.boot.nemo.core.util.JsonString;
 @WebFilter(urlPatterns = "/*", filterName = "RequestLoggerFilter")
 public class RequestLoggerAspect implements Filter {
 
-	private final Logger logger = Logger.getLogger(getClass());
+	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
+	public ThreadLocal<Log> log = new ThreadLocal<Log>();
+
+	@Value("${nemo.log-pattern:/api/**}")
+	private String logPattern;
+
+	AntPathMatcher matcher = new AntPathMatcher();
+
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+
+	}
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
+		HttpServletRequest req = (HttpServletRequest) request;
+		if (logPattern != null) {
+			if (!matcher.match(logPattern, req.getRequestURI())) {
+				chain.doFilter(request, response);
+				return;
+			}
+		}
+		try {
+			log.set(new Log());
+			Thread thread = Thread.currentThread();
+			Map<String, String> map = new HashMap<String, String>();
+			@SuppressWarnings("rawtypes")
+			Enumeration headerNames = req.getHeaderNames();
+			while (headerNames.hasMoreElements()) {
+				String key = (String) headerNames.nextElement();
+				String value = req.getHeader(key);
+				map.put(key, value);
+			}
+			StringBuilder queryString = new StringBuilder();
+			for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+				if (queryString.length() > 0) {
+					queryString.append("&");
+				}
+
+				queryString.append(entry.getKey()).append("=");
+				if (entry.getValue() != null) {
+					StringBuilder value = new StringBuilder();
+					for (String str : entry.getValue()) {
+						if (value.length() > 0) {
+							value.append(",");
+						}
+						value.append(str);
+					}
+					queryString.append(value);
+				}
+			}
+
+			log.get().setUrl(req.getRequestURL().toString());
+			log.get().setParam(queryString.toString());
+			log.get().setMethod(req.getMethod());
+			log.get().setIp(request.getRemoteAddr());
+			log.get().setUser((String) Context.get(Context.CONTEXT_REQUEST_USER));
+			log.get().setThread(new StringBuilder(thread.getName()).append("-").append(thread.getId()).toString());
+			log.get().setHeader(map);
+			log.get().setLength(request.getContentLengthLong());
+			log.get().setStart(System.currentTimeMillis());
+
+			if (request instanceof HttpServletRequestProxy) {
+				HttpServletRequestProxy reqp = (HttpServletRequestProxy) request;
+				log.get().setRequest(reqp.getBody());
+			}
+			// before
+			chain.doFilter(request, response);
+			// after
+			log.get().setEnd(System.currentTimeMillis());
+			if (response instanceof HttpServletResponseProxy) {
+				HttpServletResponseProxy reqp = (HttpServletResponseProxy) response;
+				log.get().setResponse(reqp.getBody());
+			}
+			log.get().setCode("200");
+			LOGGER.debug(JsonString.toJson(log.get()));
+		} catch (Exception e) {
+			// error
+			log.get().setEnd(System.currentTimeMillis());
+			log.get().setError(e.getMessage());
+			log.get().setCode("500");
+			LOGGER.info(JsonString.toJson(log.get()));
+		}
+	}
+
+	@Override
+	public void destroy() {
+
+	}
 
 	public static final class Log {
 		String code;
@@ -178,86 +271,6 @@ public class RequestLoggerAspect implements Filter {
 		public void setParam(String param) {
 			this.param = param;
 		}
-
-	}
-
-	public ThreadLocal<Log> log = new ThreadLocal<Log>();
-
-	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
-
-	}
-
-	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
-
-		try {
-			log.set(new Log());
-			HttpServletRequest req = (HttpServletRequest) request;
-			Thread thread = Thread.currentThread();
-			Map<String, String> map = new HashMap<String, String>();
-			@SuppressWarnings("rawtypes")
-			Enumeration headerNames = req.getHeaderNames();
-			while (headerNames.hasMoreElements()) {
-				String key = (String) headerNames.nextElement();
-				String value = req.getHeader(key);
-				map.put(key, value);
-			}
-			StringBuilder queryString = new StringBuilder();
-			for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
-				if (queryString.length() > 0) {
-					queryString.append("&");
-				}
-
-				queryString.append(entry.getKey()).append("=");
-				if (entry.getValue() != null) {
-					StringBuilder value = new StringBuilder();
-					for (String str : entry.getValue()) {
-						if (value.length() > 0) {
-							value.append(",");
-						}
-						value.append(str);
-					}
-					queryString.append(value);
-				}
-			}
-
-			log.get().setUrl(req.getRequestURL().toString());
-			log.get().setParam(queryString.toString());
-			log.get().setMethod(req.getMethod());
-			log.get().setIp(request.getRemoteAddr());
-			log.get().setUser((String) Context.get(Context.CONTEXT_REQUEST_USER));
-			log.get().setThread(new StringBuilder(thread.getName()).append("-").append(thread.getId()).toString());
-			log.get().setHeader(map);
-			log.get().setLength(request.getContentLengthLong());
-			log.get().setStart(System.currentTimeMillis());
-
-			if (request instanceof HttpServletRequestProxy) {
-				HttpServletRequestProxy reqp = (HttpServletRequestProxy) request;
-				log.get().setRequest(reqp.getBody());
-			}
-			// before
-			chain.doFilter(request, response);
-			// after
-			log.get().setEnd(System.currentTimeMillis());
-			if (response instanceof HttpServletResponseProxy) {
-				HttpServletResponseProxy reqp = (HttpServletResponseProxy) response;
-				log.get().setResponse(reqp.getBody());
-			}
-			log.get().setCode("200");
-			logger.debug(JsonString.toJson(log.get()));
-		} catch (Exception e) {
-			// error
-			log.get().setEnd(System.currentTimeMillis());
-			log.get().setError(e.getMessage());
-			log.get().setCode("500");
-			logger.info(JsonString.toJson(log.get()));
-		}
-	}
-
-	@Override
-	public void destroy() {
 
 	}
 

@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -39,7 +40,7 @@ import com.jimistore.boot.nemo.mq.core.annotation.JsonMQService;
 
 public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware, InitializingBean, DisposableBean {
 
-	private static final Logger log = Logger.getLogger(MQCoreClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MQCoreClient.class);
 
 	Map<String, IMQDataSource> mQDataSourceMap = new HashMap<String, IMQDataSource>();
 
@@ -115,8 +116,8 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 
 		for (String scanPackage : scanPackages) {
 			String resolvedPath = resolvePackageToScan(scanPackage);
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Scanning '%s' for JSON-MQ service interfaces.", resolvedPath));
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String.format("Scanning '%s' for JSON-MQ service interfaces.", resolvedPath));
 			}
 			try {
 				for (Resource resource : applicationContext.getResources(resolvedPath)) {
@@ -128,19 +129,21 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 						if (annotationMetadata.isAnnotated(jsonRpcPathAnnotation)) {
 							String className = classMetadata.getClassName();
 							String dataSource = (String) annotationMetadata
-									.getAnnotationAttributes(jsonRpcPathAnnotation).get("value");
+									.getAnnotationAttributes(jsonRpcPathAnnotation)
+									.get("value");
 
 							String beanName = this.getExistKey(className);
 							if (beanName != null) {
 								MQSenderProxy mQSenderProxy = new MQSenderProxy().setmQNameHelper(mQNameHelper)
-										.setAsynExecuter(asynExecuter).setObjectMapper(objectMapper)
+										.setAsynExecuter(asynExecuter)
+										.setObjectMapper(objectMapper)
 										.setmQSender(this.getMQDataSource(dataSource).getMQSender());
 								mQSenderProxy.setServiceInterface(Class.forName(className));
 
 								senderMap.put(beanName, mQSenderProxy);
 							} else {
-								if (log.isDebugEnabled()) {
-									log.debug(String.format("Found JSON-MQ service to proxy [%s].", className));
+								if (LOG.isDebugEnabled()) {
+									LOG.debug(String.format("Found JSON-MQ service to proxy [%s].", className));
 								}
 								// 本地重新注册一个调用代理
 								registerJsonProxyBean(dlbf, className, dataSource);
@@ -174,7 +177,8 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 			BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.rootBeanDefinition(MQSenderProxy.class)
 					.addPropertyValue("asynExecuter", asynExecuter)
 					.addPropertyValue("serviceInterface", serviceInterface)
-					.addPropertyValue("objectMapper", objectMapper).addPropertyValue("mQNameHelper", mQNameHelper)
+					.addPropertyValue("objectMapper", objectMapper)
+					.addPropertyValue("mQNameHelper", mQNameHelper)
 					.addPropertyValue("mQSender", this.getMQDataSource(dataSource).getMQSender());
 			dlbf.registerBeanDefinition(className + "-clientProxy", beanDefinitionBuilder.getBeanDefinition());
 		} catch (ClassNotFoundException e) {
@@ -221,9 +225,14 @@ public class MQCoreClient implements BeanPostProcessor, ApplicationContextAware,
 			String mQName = mQNameHelper.getMQNameClassAndMethod(clazz, method);
 
 			IMQListener mQListener = this.getMQDataSource(jsonMQService.value()).getMQListener();
-			mQListener.listener(new MQReceiverProxy().setmQNameHelper(mQNameHelper).setQueueType(destination.type())
-					.setTarget(target).setMsgClass(method.getParameterTypes()).setObjectMapper(objectMapper)
-					.setmQDataSource(jsonMQService.value()).setmQName(mQName).setTag(destination.tag()));
+			mQListener.listener(new MQReceiverProxy().setmQNameHelper(mQNameHelper)
+					.setQueueType(destination.type())
+					.setTarget(target)
+					.setMsgClass(method.getParameterTypes())
+					.setObjectMapper(objectMapper)
+					.setmQDataSource(jsonMQService.value())
+					.setmQName(mQName)
+					.setTag(destination.tag()));
 		}
 	}
 

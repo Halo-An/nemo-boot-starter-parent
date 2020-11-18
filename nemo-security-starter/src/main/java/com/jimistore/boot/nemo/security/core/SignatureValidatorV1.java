@@ -11,7 +11,7 @@ import org.springframework.util.AntPathMatcher;
 import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
 import com.jimistore.boot.nemo.security.exception.UnauthorizedException;
 import com.jimistore.boot.nemo.security.helper.IApiAuth;
-import com.jimistore.util.format.string.MD5Util;
+import com.jimistore.boot.nemo.security.helper.MD5Util;
 
 public class SignatureValidatorV1 implements ISignatureValidator {
 

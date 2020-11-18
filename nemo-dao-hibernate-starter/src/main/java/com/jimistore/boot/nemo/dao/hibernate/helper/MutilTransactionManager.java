@@ -12,7 +12,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.orm.hibernate4.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
 
 import com.jimistore.boot.nemo.core.helper.Context;
 import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;

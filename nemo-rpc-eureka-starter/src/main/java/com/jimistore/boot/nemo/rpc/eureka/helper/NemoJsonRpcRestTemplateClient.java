@@ -5,7 +5,8 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ import com.jimistore.boot.nemo.core.helper.Context;
 
 public class NemoJsonRpcRestTemplateClient extends JsonRpcClient implements IJsonRpcClient {
 
-	private static final Logger LOGGER = Logger.getLogger(NemoJsonRpcServer.class.getName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(NemoJsonRpcServer.class.getName());
 
 	private static final String JOIN_STR = "-";
 

@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jimistore.boot.nemo.fuse.config.FuseProperties;
 import com.jimistore.boot.nemo.fuse.enums.FuseState;
@@ -27,7 +28,7 @@ import com.jimistore.boot.nemo.sliding.window.core.Topic;
  */
 public class DefaultFuseStrategy implements IFuseStrategy {
 
-	private static final Logger log = Logger.getLogger(DefaultFuseStrategy.class);
+	private static final Logger log = LoggerFactory.getLogger(DefaultFuseStrategy.class);
 
 	protected FuseProperties fuseProperties;
 
@@ -55,7 +56,8 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 			log.debug(String.format("request execute before, the key is %s", fuseInfo.getKey()));
 		}
 		slidingWindowTemplate.publish(new PublishEvent<Integer>().setTime(System.currentTimeMillis())
-				.setTopicKey(String.format(REQUEST_KEY_FORMAT, fuseInfo.getKey())).setValue(1));
+				.setTopicKey(String.format(REQUEST_KEY_FORMAT, fuseInfo.getKey()))
+				.setValue(1));
 	}
 
 	@Override
@@ -90,7 +92,8 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 			}
 
 			slidingWindowTemplate.publish(new PublishEvent<Integer>().setTime(System.currentTimeMillis())
-					.setTopicKey(String.format(REQUEST_EXCEPTION_KEY_FORMAT, fuseInfo.getKey())).setValue(1));
+					.setTopicKey(String.format(REQUEST_EXCEPTION_KEY_FORMAT, fuseInfo.getKey()))
+					.setValue(1));
 
 		}
 	}
@@ -148,12 +151,16 @@ public class DefaultFuseStrategy implements IFuseStrategy {
 		variableMap.put(exceptionKey, "b");
 
 		// 创建调用的计数器
-		slidingWindowTemplate.createCounter(new Topic().setKey(requestKey).setTimeUnit(TimeUnit.SECONDS)
-				.setCapacity(3600).setValueType(Integer.class));
+		slidingWindowTemplate.createCounter(new Topic().setKey(requestKey)
+				.setTimeUnit(TimeUnit.SECONDS)
+				.setCapacity(3600)
+				.setValueType(Integer.class));
 
 		// 创建调用异常的计数器
-		slidingWindowTemplate.createCounter(new Topic().setKey(exceptionKey).setTimeUnit(TimeUnit.SECONDS)
-				.setCapacity(3600).setValueType(Integer.class));
+		slidingWindowTemplate.createCounter(new Topic().setKey(exceptionKey)
+				.setTimeUnit(TimeUnit.SECONDS)
+				.setCapacity(3600)
+				.setValueType(Integer.class));
 
 		// 订阅调用监控信息变更
 		slidingWindowTemplate.subscribe(new ILogicSubscriber() {

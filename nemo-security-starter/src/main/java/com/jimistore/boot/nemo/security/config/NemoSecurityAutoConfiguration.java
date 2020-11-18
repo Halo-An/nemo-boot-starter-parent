@@ -3,11 +3,14 @@ package com.jimistore.boot.nemo.security.config;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.bind.RelaxedPropertyResolver;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.source.ConfigurationPropertySource;
+import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,9 +27,9 @@ import com.jimistore.boot.nemo.security.helper.ITokenFactory;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV1;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateAspectV2;
 import com.jimistore.boot.nemo.security.helper.SignatureValidateFilter;
+import com.jimistore.boot.nemo.security.helper.StringUtil;
 import com.jimistore.boot.nemo.security.helper.TokenFactory;
 import com.jimistore.boot.nemo.security.helper.TokenValidateAspect;
-import com.jimistore.util.format.string.StringUtil;
 
 @Configuration
 public class NemoSecurityAutoConfiguration implements EnvironmentAware {
@@ -34,17 +37,19 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 	private Map<String, ApiAuth.ApiAuthConfig> secretMap = new HashMap<String, ApiAuth.ApiAuthConfig>();
 
 	private void setSignatureConfig(Environment environment) {
-		Map<String, Map<String, Object>> map = this.parseEnv(environment, "auth", "appids");
+		Map<String, Map<Object, Object>> map = this.parseEnv(environment, "auth", "appids");
 
 		if (map != null) {
-			for (Entry<String, Map<String, Object>> entry : map.entrySet()) {
+			for (Entry<String, Map<Object, Object>> entry : map.entrySet()) {
 				String dsPrefix = entry.getKey();
-				Map<String, Object> dsMap = entry.getValue();
+				Map<Object, Object> dsMap = entry.getValue();
 				try {
+					String secret = String.class.cast(dsMap.get("secret"));
+					String match = String.class.cast(dsMap.get("match"));
 					secretMap.put(dsPrefix,
 							new ApiAuth.ApiAuthConfig().setAppid(dsPrefix)
-									.setSecret(dsMap.get("secret").toString())
-									.setMatch(StringUtil.split(dsMap.get("match").toString(), StringUtil.SPLIT_STR)));
+									.setSecret(secret)
+									.setMatch(StringUtil.split(match, StringUtil.SPLIT_STR)));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -58,12 +63,13 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 		this.setSignatureConfig(environment);
 	}
 
-	private Map<String, Map<String, Object>> parseEnv(Environment environment, String prefix, String nameKey) {
-		Map<String, Map<String, Object>> map = new HashMap<String, Map<String, Object>>();
+	private Map<String, Map<Object, Object>> parseEnv(Environment environment, String prefix, String nameKey) {
 
-		RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(environment,
-				String.format("%s.", prefix));
-		String dsPrefixs = propertyResolver.getProperty(nameKey);
+		// 现在的code:
+		Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources.get(environment);
+		Binder binder = new Binder(sources);
+		String dsPrefixs = binder.bind(String.format("%s.%s", prefix, nameKey), String.class).get();
+
 		if (dsPrefixs == null) {
 			return null;
 		}
@@ -71,8 +77,11 @@ public class NemoSecurityAutoConfiguration implements EnvironmentAware {
 		if (dsPrefixsArr == null) {
 			return null;
 		}
+
+		Map<String, Map<Object, Object>> map = new HashMap<>();
 		for (String dsPrefix : dsPrefixsArr) {
-			Map<String, Object> dsMap = propertyResolver.getSubProperties(String.format("%s.", dsPrefix));
+			Map<Object, Object> dsMap = binder.bind(String.format("%s.%s", prefix, dsPrefix), Properties.class).get();
+
 			if (dsMap == null) {
 				continue;
 			}

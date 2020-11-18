@@ -10,7 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
@@ -28,7 +29,7 @@ import com.jimistore.boot.nemo.sliding.window.helper.NoticeEventHelper;
  */
 public class Dispatcher implements IDispatcher {
 
-	private static final Logger log = Logger.getLogger(Dispatcher.class);
+	private static final Logger LOG = LoggerFactory.getLogger(Dispatcher.class);
 
 	public static final Long INTERVAL = 1000l;
 
@@ -195,8 +196,8 @@ public class Dispatcher implements IDispatcher {
 				this.execute(eventTime, channel);
 			}
 		} finally {
-			if (log.isTraceEnabled()) {
-				log.trace(String.format("request scheduler end , cost time is %s",
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(String.format("request scheduler end , cost time is %s",
 						System.currentTimeMillis() - eventTime));
 			}
 		}
@@ -301,12 +302,12 @@ public class Dispatcher implements IDispatcher {
 				valueList.add(logicMap);
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			LOG.error(e.getMessage(), e);
 
 		} finally {
 
-			if (log.isTraceEnabled()) {
-				log.trace(String.format("get logic topic map , cost time is %s", System.currentTimeMillis() - old));
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(String.format("get logic topic map , cost time is %s", System.currentTimeMillis() - old));
 			}
 		}
 
@@ -336,17 +337,17 @@ public class Dispatcher implements IDispatcher {
 				try {
 					value = (Number) this.parseExpression(context, logicSubscriber.getTopicMatch(), valueType);
 				} catch (Exception e) {
-					log.error(e.getMessage(), e);
+					LOG.error(e.getMessage(), e);
 				}
 				valueList.add(value);
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			LOG.error(e.getMessage(), e);
 
 		} finally {
 
-			if (log.isTraceEnabled()) {
-				log.trace(String.format("get logic topic value , cost time is %s", System.currentTimeMillis() - old));
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(String.format("get logic topic value , cost time is %s", System.currentTimeMillis() - old));
 			}
 		}
 
@@ -369,8 +370,8 @@ public class Dispatcher implements IDispatcher {
 				ISubscriber subscriber = channel.getSubscriber();
 				String key = subscriber.getTopicMatch();
 				try {
-					if (log.isDebugEnabled()) {
-						log.debug(String.format("call notice of subscriber[%s] start", key));
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(String.format("call notice of subscriber[%s] start", key));
 					}
 					INoticeEvent<?> event = parseValue(channel, eventTime);
 
@@ -387,11 +388,11 @@ public class Dispatcher implements IDispatcher {
 
 					subscriber.getNotice().notice(event);
 				} catch (Exception e) {
-					log.error(e.getMessage(), e);
+					LOG.error(e.getMessage(), e);
 				} finally {
 					long diff = System.currentTimeMillis() - old;
-					if (log.isDebugEnabled()) {
-						log.debug(String.format("call notice of subscriber[%s] end, cost time is %sms", key, diff));
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(String.format("call notice of subscriber[%s] end, cost time is %sms", key, diff));
 					}
 				}
 			}
@@ -418,8 +419,8 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("create counter %s", topic.getKey()));
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("create counter %s", topic.getKey()));
 				}
 				counterContainer.createCounter(topic);
 				channelContainer.put(topic.getKey());
@@ -441,8 +442,8 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("create topic %s", topic.getKey()));
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("create topic %s", topic.getKey()));
 				}
 				topicContainer.createTopic(topic);
 				counterContainer.createCounter(topic);
@@ -457,8 +458,8 @@ public class Dispatcher implements IDispatcher {
 		this.createQueueTask(new Runnable() {
 			@Override
 			public void run() {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("delete topic %s", topic));
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("delete topic %s", topic));
 				}
 				topicContainer.deleteTopic(topic);
 				counterContainer.deleteCounter(topic);

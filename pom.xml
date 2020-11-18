@@ -5,7 +5,7 @@
 
 	<groupId>com.jimistore.boot</groupId>
 	<artifactId>nemo-boot-starter-parent</artifactId>
-	<version>1.12.1-RELEASE</version>
+	<version>2.0.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -13,13 +13,9 @@
 		<module>nemo-core</module>
 		<module>nemo-rpc-eureka-api</module>
 		<module>nemo-rpc-eureka-starter</module>
-		
+
 		<module>nemo-rpc-eureka-server</module>
-		<module>nemo-monitor-server</module>
-		<!-- 
-		<module>nemo-monitor-server</module>
 		<module>nemo-config-server</module>
-		 -->
 		<module>nemo-sleuth-starter</module>
 		<module>nemo-validator</module>
 		<module>nemo-dao-api</module>
@@ -38,25 +34,26 @@
 		<module>nemo-apollo-starter</module>
 		<module>nemo-hunter-starter</module>
 		<module>nemo-sleuth-zipkin-server</module>
-		<!-- 
-		<module>nemo-gateway-server</module>
-		 -->
+		<!-- <module>nemo-gateway-server</module> -->
 
 	</modules>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.9.RELEASE</version>
+		<version>2.3.0.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
 	<properties>
-		<hibernate.version>4.3.11.Final</hibernate.version>
+		<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
+		<validation.api.version>2.0.1.Final</validation.api.version>
+		<spring.cloud.version>Hoxton.SR8</spring.cloud.version>
+		<!-- <hibernate.version>4.3.11.Final</hibernate.version> -->
 		<common.util.version>1.1.0-RELEASE</common.util.version>
-		<de.codecentric.version>1.5.2</de.codecentric.version>
+		<de.codecentric.version>2.3.0</de.codecentric.version>
 		<jsonrpc4j.version>1.2.0</jsonrpc4j.version>
 		<portlet.api.version>2.0</portlet.api.version>
 		<jwt.version>3.3.0</jwt.version>
@@ -64,31 +61,32 @@
 		<ons.client.version>1.8.3.Final</ons.client.version>
 		<hikaricp.version>3.3.1</hikaricp.version>
 
-		<nemo.core.api.version>1.11.5-RELEASE</nemo.core.api.version>
-		<nemo.core.version>1.11.26-RELEASE</nemo.core.version>
-		<nemo.validator.version>1.11.14-RELEASE</nemo.validator.version>
-		<nemo.dao.api.version>1.11.10-RELEASE</nemo.dao.api.version>
-		<nemo.dao.core.version>1.11.2-RELEASE</nemo.dao.core.version>
-		<nemo.dao.hibernate.version>1.11.22-RELEASE</nemo.dao.hibernate.version>
-		<nemo.mq.core.api.version>1.9.7-RELEASE</nemo.mq.core.api.version>
-		<nemo.mq.core.version>1.10.6-RELEASE</nemo.mq.core.version>
-		<nemo.mq.activemq.version>1.10.6-RELEASE</nemo.mq.activemq.version>
-		<nemo.mq.rabbitmq.version>1.10.6-RELEASE</nemo.mq.rabbitmq.version>
-		<nemo.mq.rocketmq.version>1.11.16-RELEASE</nemo.mq.rocketmq.version>
-		<nemo.rpc.eureka.api.version>1.9.1-RELEASE</nemo.rpc.eureka.api.version>
-		<nemo.rpc.eureka.version>1.11.5-RELEASE</nemo.rpc.eureka.version>
-		<nemo.lock.version>1.11.15-RELEASE</nemo.lock.version>
-		<nemo.security.version>1.11.26-RELEASE</nemo.security.version>
-		<nemo.fuse.version>1.11.1-RELEASE</nemo.fuse.version>
+		<nemo.core.api.version>2.0.0-RELEASE</nemo.core.api.version>
+		<nemo.core.version>2.0.0-RELEASE</nemo.core.version>
+		<nemo.validator.version>2.0.0-RELEASE</nemo.validator.version>
+		<nemo.dao.api.version>2.0.0-RELEASE</nemo.dao.api.version>
+		<nemo.dao.core.version>2.0.0-RELEASE</nemo.dao.core.version>
+		<nemo.dao.hibernate.version>2.0.0-RELEASE</nemo.dao.hibernate.version>
+		<nemo.mq.core.api.version>2.0.0-RELEASE</nemo.mq.core.api.version>
+		<nemo.mq.core.version>2.0.0-RELEASE</nemo.mq.core.version>
+		<nemo.mq.activemq.version>2.0.0-RELEASE</nemo.mq.activemq.version>
+		<nemo.mq.rabbitmq.version>2.0.0-RELEASE</nemo.mq.rabbitmq.version>
+		<nemo.mq.rocketmq.version>2.0.0-RELEASE</nemo.mq.rocketmq.version>
+		<nemo.rpc.eureka.api.version>2.0.0-RELEASE</nemo.rpc.eureka.api.version>
+		<nemo.rpc.eureka.version>2.0.0-RELEASE</nemo.rpc.eureka.version>
+		<nemo.lock.version>2.0.0-RELEASE</nemo.lock.version>
+		<nemo.security.version>2.0.0-RELEASE</nemo.security.version>
+		<nemo.fuse.version>2.0.0-RELEASE</nemo.fuse.version>
 		<nemo.monitor.server.version>1.12.1-RELEASE</nemo.monitor.server.version>
 		<nemo.gateway.server.version>1.12.1-RELEASE</nemo.gateway.server.version>
-		<nemo.rpc.eureka.server.version>1.11.5-RELEASE</nemo.rpc.eureka.server.version>
+		<nemo.rpc.eureka.server.version>2.0.0-RELEASE</nemo.rpc.eureka.server.version>
 		<nemo.config.server.version>1.4.0-RELEASE</nemo.config.server.version>
-		<nemo.sliding.window.version>1.11.1-RELEASE</nemo.sliding.window.version>
-		<nemo.id.generator.version>1.11.10-RELEASE</nemo.id.generator.version>
+		<nemo.sliding.window.version>2.0.0-RELEASE</nemo.sliding.window.version>
+		<nemo.id.generator.version>2.0.0-RELEASE</nemo.id.generator.version>
 		<nemo.apollo.starter.version>1.1.1-RELEASE</nemo.apollo.starter.version>
 		<nemo.hunter.starter.version>1.0.0-RELEASE</nemo.hunter.starter.version>
-        <nemo.sleuth.starter.version>1.0.0-RELEASE</nemo.sleuth.starter.version>
+		<nemo.sleuth.starter.version>1.0.0-RELEASE</nemo.sleuth.starter.version>
+		<mysql.connector.version>5.1.44</mysql.connector.version>
 	</properties>
 
 	<profiles>
@@ -116,17 +114,18 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
 			<dependency>
-				<groupId>com.jimistore.util</groupId>
-				<artifactId>common-util-parent</artifactId>
-				<version>${common.util.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
+				<groupId>javax.validation</groupId>
+				<artifactId>validation-api</artifactId>
+				<version>${validation.api.version}</version>
 			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>Dalston.SR1</version>
+				<version>${spring.cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -269,6 +268,12 @@
 				<artifactId>spring-boot-admin-server</artifactId>
 				<version>${de.codecentric.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-server-cloud</artifactId>
+				<version>${de.codecentric.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>de.codecentric</groupId>
 				<artifactId>spring-boot-admin-server-ui</artifactId>
@@ -284,17 +289,31 @@
 				<artifactId>spring-boot-admin-server-ui-login</artifactId>
 				<version>${de.codecentric.version}</version>
 			</dependency>
-			
+
 			<!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP -->
 			<dependency>
-			    <groupId>com.zaxxer</groupId>
-			    <artifactId>HikariCP</artifactId>
-			    <version>${hikaricp.version}</version>
+				<groupId>com.zaxxer</groupId>
+				<artifactId>HikariCP</artifactId>
+				<version>${hikaricp.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>mysql</groupId>
+				<artifactId>mysql-connector-java</artifactId>
+				<version>${mysql.connector.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -305,7 +324,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
@@ -314,23 +333,7 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-websocket</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>

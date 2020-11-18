@@ -4,11 +4,12 @@ import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -16,12 +17,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
 import com.jimistore.boot.nemo.security.exception.UnauthorizedException;
-import com.jimistore.util.format.string.MD5Util;
 
 @Aspect
 @Order(101)
 public class SignatureValidateAspectV1 {
-	private final Logger log = Logger.getLogger(getClass());
+	private final Logger LOG = LoggerFactory.getLogger(getClass());
 	public static final String APPID = "appId";
 	public static final String PASSWORD = "password";
 	public static final String TIMESTAMP = "timestamp";
@@ -68,8 +68,8 @@ public class SignatureValidateAspectV1 {
 				for (int i = 0; i < j; i++) {
 					String matchStr = arrayOfString1[i];
 					if ((matchStr.trim().length() > 0) && (matcher.match(matchStr, url))) {
-						if (log.isDebugEnabled()) {
-							log.debug(String.format("hit ignore strategy, the match is %s, url is %s ",
+						if (LOG.isDebugEnabled()) {
+							LOG.debug(String.format("hit ignore strategy, the match is %s, url is %s ",
 									new Object[] { matchStr, url }));
 						}
 						return;
@@ -86,8 +86,8 @@ public class SignatureValidateAspectV1 {
 				for (int k = 0; k < m; k++) {
 					String matchStr = arrayOfString2[k];
 					if ((matchStr.trim().length() > 0) && (matcher.match(matchStr, url))) {
-						if (log.isDebugEnabled()) {
-							log.debug(String.format("hit match of authorised api, the match is %s, url is %s ",
+						if (LOG.isDebugEnabled()) {
+							LOG.debug(String.format("hit match of authorised api, the match is %s, url is %s ",
 									new Object[] { matchStr, url }));
 						}
 						flag = true;
@@ -119,18 +119,18 @@ public class SignatureValidateAspectV1 {
 
 			String signatureServer = MD5Util.Bit32(sortStr);
 			if (signature.toUpperCase().equals(signatureServer.toUpperCase())) {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("signature check success, the signature is %s, url is %s ",
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("signature check success, the signature is %s, url is %s ",
 							new Object[] { signature, url }));
 				}
 				return;
 			}
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("signature check failed, the correct signature is %s, the error is %s ",
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String.format("signature check failed, the correct signature is %s, the error is %s ",
 						new Object[] { signature, url }));
 			}
 		} catch (Exception e) {
-			log.debug(e);
+			LOG.debug(e.getMessage(), e);
 			throw new SignatureInvalidException();
 		}
 		throw new UnauthorizedException("don't have authorization to access");
@@ -145,8 +145,8 @@ public class SignatureValidateAspectV1 {
 		if (ignoreMatchs != null) {
 			for (String matchStr : ignoreMatchs) {
 				if (matchStr.trim().length() > 0 && matcher.match(matchStr, url)) {
-					if (log.isDebugEnabled()) {
-						log.debug(String.format("hit ignore strategy, the match is %s, url is %s ", matchStr, url));
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(String.format("hit ignore strategy, the match is %s, url is %s ", matchStr, url));
 					}
 					return true;
 				}

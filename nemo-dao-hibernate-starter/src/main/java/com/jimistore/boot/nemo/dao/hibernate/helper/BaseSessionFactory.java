@@ -5,14 +5,12 @@ import java.io.IOException;
 import javax.sql.DataSource;
 
 import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.cfg.NamingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 import com.jimistore.boot.nemo.dao.api.config.NemoDataSourceProperties;
 import com.jimistore.boot.nemo.dao.hibernate.config.HibernateProperties;
 
-@SuppressWarnings("deprecation")
 public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 	String key;
@@ -23,7 +21,7 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 	DataSource dataSource;
 
-	NamingStrategy namingStrategy;
+//	NamingStrategy namingStrategy;
 
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
@@ -31,20 +29,20 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 		super.setDataSource(dataSource);
 	}
 
-	@Autowired
-	@Override
-	public void setNamingStrategy(NamingStrategy namingStrategy) {
-		this.namingStrategy = namingStrategy;
-		super.setNamingStrategy(namingStrategy);
-	}
+//	@Autowired
+//	@Override
+//	public void setNamingStrategy(NamingStrategy namingStrategy) {
+//		this.namingStrategy = namingStrategy;
+//		super.setNamingStrategy(namingStrategy);
+//	}
 
 	public DataSource getDataSource() {
 		return dataSource;
 	}
 
-	public NamingStrategy getNamingStrategy() {
-		return namingStrategy;
-	}
+//	public NamingStrategy getNamingStrategy() {
+//		return namingStrategy;
+//	}
 
 	public BaseSessionFactory() {
 		super();
@@ -65,13 +63,15 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 		super.setPackagesToScan(hibernatePropertie.getPackagesToScan());
 
 		this.getHibernateProperties().setProperty(AvailableSettings.SHOW_SQL, hibernatePropertie.getShow_sql());
-		this.getHibernateProperties().setProperty(AvailableSettings.HBM2DDL_AUTO,
-				hibernatePropertie.getHbm2ddl().getAuto());
+		this.getHibernateProperties()
+				.setProperty(AvailableSettings.HBM2DDL_AUTO, hibernatePropertie.getHbm2ddl().getAuto());
 
-		this.getHibernateProperties().setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE,
-				hibernatePropertie.getQuery().getPlan_cache_max_size());
-		this.getHibernateProperties().setProperty(AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE,
-				hibernatePropertie.getQuery().getPlan_parameter_metadata_max_size());
+		this.getHibernateProperties()
+				.setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE,
+						hibernatePropertie.getQuery().getPlan_cache_max_size());
+		this.getHibernateProperties()
+				.setProperty(AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE,
+						hibernatePropertie.getQuery().getPlan_parameter_metadata_max_size());
 
 		String driverClass = dataSourcePropertie.getDriverClass();
 		String characterEncoding = dataSourcePropertie.getCharacterEncoding();
@@ -79,14 +79,14 @@ public class BaseSessionFactory extends LocalSessionFactoryBean {
 
 		try {
 			if (driverClass.indexOf("mysql") >= 0) {
-				this.getHibernateProperties().setProperty(AvailableSettings.DIALECT,
-						"org.hibernate.dialect.MySQLDialect");
+				this.getHibernateProperties()
+						.setProperty(AvailableSettings.DIALECT, "org.hibernate.dialect.MySQLDialect");
 			} else if (driverClass.indexOf("oracle") >= 0) {
-				this.getHibernateProperties().setProperty(AvailableSettings.DIALECT,
-						"org.hibernate.dialect.OracleDialect");
+				this.getHibernateProperties()
+						.setProperty(AvailableSettings.DIALECT, "org.hibernate.dialect.OracleDialect");
 			} else if (driverClass.indexOf("sqlserver") >= 0 || driverClass.indexOf("jtds") >= 0) {
-				this.getHibernateProperties().setProperty(AvailableSettings.DIALECT,
-						"org.hibernate.dialect.SQLServerDialect");
+				this.getHibernateProperties()
+						.setProperty(AvailableSettings.DIALECT, "org.hibernate.dialect.SQLServerDialect");
 			}
 		} catch (Exception e) {
 

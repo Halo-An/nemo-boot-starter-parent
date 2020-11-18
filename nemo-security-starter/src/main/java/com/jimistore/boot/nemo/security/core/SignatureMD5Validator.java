@@ -14,9 +14,8 @@ import com.jimistore.boot.nemo.core.helper.HttpServletRequestProxy;
 import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
 import com.jimistore.boot.nemo.security.helper.Constant;
 import com.jimistore.boot.nemo.security.helper.IApiAuth;
-import com.jimistore.util.format.collection.MapUtil;
-import com.jimistore.util.format.exception.SignException;
-import com.jimistore.util.format.string.SecurityUtil;
+import com.jimistore.boot.nemo.security.helper.MapUtil;
+import com.jimistore.boot.nemo.security.helper.SecurityUtil;
 
 public class SignatureMD5Validator implements ISignatureValidator {
 
@@ -148,7 +147,7 @@ public class SignatureMD5Validator implements ISignatureValidator {
 				}
 				return;
 			}
-		} catch (SignException e) {
+		} catch (SignatureInvalidException e) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("signature check failed, the correct signature is %s, the error is %s ",
 						signature, e.getMessage()));

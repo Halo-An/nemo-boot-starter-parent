@@ -9,7 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -25,12 +26,12 @@ import com.jimistore.boot.nemo.core.util.JsonString;
 
 public class ResponseExceptionHandle implements HandlerExceptionResolver, PriorityOrdered {
 
-	private static Logger log = Logger.getLogger(ResponseExceptionHandle.class);
+	private static Logger LOG = LoggerFactory.getLogger(ResponseExceptionHandle.class);
 
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler,
 			Exception ex) {
-		log.error(ex.getMessage(), ex);
+		LOG.error(ex.getMessage(), ex);
 		response.setCharacterEncoding("utf-8");
 		response.setContentType("application/json");
 

@@ -3,11 +3,12 @@ package com.jimistore.boot.nemo.dao.hibernate.helper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 @Order(100)
 public class MutilDaoAccessAspect {
 
-	private final Logger log = Logger.getLogger(getClass());
+	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	Map<Class<?>, DataSource> buffer = new HashMap<Class<?>, DataSource>();
 

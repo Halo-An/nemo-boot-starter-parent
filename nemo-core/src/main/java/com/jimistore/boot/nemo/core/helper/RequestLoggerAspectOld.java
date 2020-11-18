@@ -8,12 +8,13 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -25,7 +26,7 @@ public class RequestLoggerAspectOld {
 
 	private String filterPrefix = "/api";
 
-	private final Logger logger = Logger.getLogger(getClass());
+	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
 	@Pointcut("@annotation(org.springframework.web.bind.annotation.RequestMapping)")
 	public void log() {
@@ -222,7 +223,7 @@ public class RequestLoggerAspectOld {
 		log.get().setResponse(response);
 		log.get().setCode("200");
 		if (log.get().getUrl().indexOf(filterPrefix) >= 0) {
-			logger.debug(JsonString.toJson(log.get()));
+			LOGGER.debug(JsonString.toJson(log.get()));
 		}
 	}
 
@@ -231,7 +232,7 @@ public class RequestLoggerAspectOld {
 		log.get().setEnd(System.currentTimeMillis());
 		log.get().setError(e.getMessage());
 		log.get().setCode("500");
-		logger.info(JsonString.toJson(log.get()));
+		LOGGER.info(JsonString.toJson(log.get()));
 	}
 
 	public RequestLoggerAspectOld setFilterPrefix(String filterPrefix) {

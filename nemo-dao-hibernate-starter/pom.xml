@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -13,24 +14,20 @@
 	<parent>
 		<groupId>com.jimistore.boot</groupId>
 		<artifactId>nemo-boot-starter-parent</artifactId>
-		<version>1.11.22-RELEASE</version>
+		<version>2.0.0-RELEASE</version>
 	</parent>
-	
-	<properties>
-		<hibernate.version>4.3.11.Final</hibernate.version>
-	</properties>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>com.jimistore.boot</groupId>
 			<artifactId>nemo-dao-api</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.jimistore.boot</groupId>
 			<artifactId>nemo-dao-core</artifactId>
 		</dependency>
-		
+
 		<!-- hibernate -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -61,7 +58,7 @@
 			</exclusions>
 		</dependency>
 		<!-- c3p0 -->
-		
+
 		<dependency>
 			<groupId>c3p0</groupId>
 			<artifactId>c3p0</artifactId>
@@ -72,28 +69,27 @@
 			<artifactId>c3p0-oracle-thin-extras</artifactId>
 			<version>0.9.0.2</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		
+
 		<!-- cglib -->
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib-nodep</artifactId>
 			<version>2.1_3</version>
 		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP 
+
+		<!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP <dependency> 
+			<groupId>com.zaxxer</groupId> <artifactId>HikariCP</artifactId> <scope>compile</scope> 
+			</dependency> -->
 		<dependency>
-		    <groupId>com.zaxxer</groupId>
-		    <artifactId>HikariCP</artifactId>
-		    <scope>compile</scope>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
 		</dependency>
-		-->
-				
 	</dependencies>
 
 

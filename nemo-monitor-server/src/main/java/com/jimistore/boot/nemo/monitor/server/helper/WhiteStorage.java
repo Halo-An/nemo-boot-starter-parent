@@ -2,7 +2,8 @@ package com.jimistore.boot.nemo.monitor.server.helper;
 
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class WhiteStorage extends Thread implements IWhiteStorage, InitializingBean, DisposableBean {
 
-	private static final Logger log = Logger.getLogger(WhiteStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(WhiteStorage.class);
 
 	private int syncInterval;
 	private static final String REDIS_WHILIE_KEY = "nemo-monitor-white-list";
@@ -53,7 +54,7 @@ public class WhiteStorage extends Thread implements IWhiteStorage, InitializingB
 				this.sync();
 				Thread.sleep(syncInterval);
 			} catch (Exception e) {
-				log.warn(e);
+				log.warn(e.getMessage(), e);
 			}
 		}
 	}

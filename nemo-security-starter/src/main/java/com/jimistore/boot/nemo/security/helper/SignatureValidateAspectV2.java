@@ -8,11 +8,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.AntPathMatcher;
@@ -21,15 +22,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.jimistore.boot.nemo.core.helper.HttpServletRequestProxy;
 import com.jimistore.boot.nemo.security.exception.SignatureInvalidException;
-import com.jimistore.util.format.collection.MapUtil;
-import com.jimistore.util.format.exception.SignException;
-import com.jimistore.util.format.string.SecurityUtil;
 
 @Aspect
 @Order(100)
 public class SignatureValidateAspectV2 {
 
-	private final Logger log = Logger.getLogger(getClass());
+	private final Logger LOG = LoggerFactory.getLogger(getClass());
 	public static final String APPID = "appId";
 	public static final String PASSWORD = "password";
 	public static final String TIMESTAMP = "timestamp";
@@ -108,8 +106,8 @@ public class SignatureValidateAspectV2 {
 		if (ignoreMatchs != null) {
 			for (String matchStr : ignoreMatchs) {
 				if (matchStr.trim().length() > 0 && matcher.match(matchStr, url)) {
-					if (log.isDebugEnabled()) {
-						log.debug(String.format("hit ignore strategy, the match is %s, url is %s ", matchStr, url));
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(String.format("hit ignore strategy, the match is %s, url is %s ", matchStr, url));
 					}
 					return true;
 				}
@@ -136,8 +134,8 @@ public class SignatureValidateAspectV2 {
 		if (matchs != null) {
 			for (String matchStr : matchs) {
 				if (matchStr.trim().length() > 0 && matcher.match(matchStr, url)) {
-					if (log.isDebugEnabled()) {
-						log.debug(String.format("hit match of authorised api, the match is %s, url is %s ", matchStr,
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(String.format("hit match of authorised api, the match is %s, url is %s ", matchStr,
 								url));
 					}
 					flag = true;
@@ -204,17 +202,17 @@ public class SignatureValidateAspectV2 {
 					device, OS, os, USERID, userid, PASSWORD, password, TOKEN, token, BODY, body));
 			// 校验签名
 			if (signature.toUpperCase().equals(signatureServer.toUpperCase())) {
-				if (log.isDebugEnabled()) {
-					log.debug(
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(
 							String.format("signature check success, the signature is %s, url is %s ", signature, url));
 				}
 				return;
 			}
-		} catch (SignException e) {
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("signature check failed, the correct signature is %s, the error is %s ",
+		} catch (SignatureInvalidException e) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(String.format("signature check failed, the correct signature is %s, the error is %s ",
 						signature, e.getMessage()));
-				log.debug(e);
+				LOG.debug(e.getMessage(), e);
 			}
 			throw new SignatureInvalidException(e);
 		}

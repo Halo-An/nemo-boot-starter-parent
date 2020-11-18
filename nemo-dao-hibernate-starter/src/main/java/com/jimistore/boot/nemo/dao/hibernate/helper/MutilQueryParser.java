@@ -1,5 +1,7 @@
 package com.jimistore.boot.nemo.dao.hibernate.helper;
 
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+
 public class MutilQueryParser extends QueryParser {
 
 	MutilSessionFactory mutilSessionFactory;
@@ -9,8 +11,8 @@ public class MutilQueryParser extends QueryParser {
 		return this;
 	}
 
-	public HibernateNamingStrategy getHibernateNamingStrategy() {
-		return MutilHibernateNamingStrategy.getHibernateNamingStrategy();
+	public ImplicitNamingStrategy getImplicitNamingStrategy() {
+		return MutilHibernateNamingStrategy.getNemoNamingStrategy();
 	}
 
 }

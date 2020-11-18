@@ -10,7 +10,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import com.aliyun.openservices.ons.api.Action;
@@ -33,7 +34,7 @@ import com.jimistore.boot.nemo.mq.rocketmq.enums.RocketMQType;
 
 public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderListener {
 
-	private static final Logger log = Logger.getLogger(RocketAdapter.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RocketAdapter.class);
 
 	RocketMQProperties rocketMQProperties;
 
@@ -73,7 +74,7 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 		type = RocketMQType.parse(rocketMQProperties.getType());
 
 		if (rocketMQProperties.getProducerId() != null) {
-			log.debug("create rocketmq producer");
+			LOG.debug("create rocketmq producer");
 			// 您在控制台创建的 Producer ID
 			properties.put(PropertyKeyConst.GROUP_ID, rocketMQProperties.getProducerId());
 			// 设置发送超时时间，单位毫秒
@@ -90,11 +91,11 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 				producer.start();
 				break;
 			}
-			log.debug("rocketmq producer created");
+			LOG.debug("rocketmq producer created");
 		}
 
 		if (rocketMQProperties.getConsumerId() != null) {
-			log.debug("create rocketmq consumer");
+			LOG.debug("create rocketmq consumer");
 			// 您在控制台创建的 Consumer ID
 			properties.put(PropertyKeyConst.GROUP_ID, rocketMQProperties.getConsumerId());
 
@@ -108,9 +109,9 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 				consumer.start();
 				break;
 			}
-			log.debug("rocketmq rocketmq created");
+			LOG.debug("rocketmq rocketmq created");
 
-			log.info(String.format("rocketmq client [%s] started", rocketMQProperties.getKey()));
+			LOG.info(String.format("rocketmq client [%s] started", rocketMQProperties.getKey()));
 
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 
@@ -182,7 +183,7 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 	}
 
 	public void shutdown() {
-		log.debug("rocketmq client shutdowning");
+		LOG.debug("rocketmq client shutdowning");
 
 		if (producer != null) {
 			producer.shutdown();
@@ -197,11 +198,11 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 			orderConsumer.shutdown();
 		}
 
-		log.debug("rocketmq client shutdowned");
+		LOG.debug("rocketmq client shutdowned");
 	}
 
 	public void start() {
-		log.debug("rocketmq client start");
+		LOG.debug("rocketmq client start");
 
 		if (producer != null) {
 			producer.start();
@@ -216,7 +217,7 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 			orderConsumer.start();
 		}
 
-		log.debug("rocketmq client start");
+		LOG.debug("rocketmq client start");
 	}
 
 	@Override
@@ -226,7 +227,7 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 			mQReceiver.receive(new String(message.getBody()));
 			return Action.CommitMessage;
 		} catch (Throwable e) {
-			log.error(e.getMessage(), e);
+			LOG.error(e.getMessage(), e);
 		}
 		return Action.ReconsumeLater;
 	}
@@ -238,7 +239,7 @@ public class RocketAdapter implements IMQAdapter, MessageListener, MessageOrderL
 			mQReceiver.receive(new String(message.getBody()));
 			return OrderAction.Success;
 		} catch (Throwable e) {
-			log.error(e.getMessage(), e);
+			LOG.error(e.getMessage(), e);
 		}
 		return OrderAction.Suspend;
 	}

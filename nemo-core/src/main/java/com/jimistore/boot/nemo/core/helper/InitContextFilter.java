@@ -12,14 +12,15 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 
 @Order(11)
 @WebFilter(urlPatterns = "/*", filterName = "InitContextFilter")
 public class InitContextFilter implements Filter {
 
-	private final Logger log = Logger.getLogger(getClass());
+	private final Logger LOG = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * 解析参数
@@ -30,21 +31,21 @@ public class InitContextFilter implements Filter {
 	 */
 	private Object parse(HttpServletRequest request, String key) {
 		Object value = request.getHeader(key);
-		if (log.isTraceEnabled()) {
-			log.trace(String.format("request user of header is %s", value));
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(String.format("request user of header is %s", value));
 		}
 		if (value == null) {
 			value = request.getParameter(key);
 		}
-		if (log.isTraceEnabled()) {
-			log.trace(String.format("request user of param is %s", value));
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(String.format("request user of param is %s", value));
 		}
 		if (value == null) {
 			HttpSession session = request.getSession();
 			value = session.getAttribute(key);
 		}
-		if (log.isTraceEnabled()) {
-			log.trace(String.format("request user of session is %s", value));
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(String.format("request user of session is %s", value));
 		}
 		return value;
 	}
@@ -65,11 +66,11 @@ public class InitContextFilter implements Filter {
 				if (value != null) {
 					Context.put(key, value);
 				}
-				if (log.isTraceEnabled()) {
-					log.trace(String.format("initing context, %s = %s", code, value));
+				if (LOG.isTraceEnabled()) {
+					LOG.trace(String.format("initing context, %s = %s", code, value));
 				}
 			} catch (Exception e) {
-				log.warn(String.format("initing context, parse %s error", key.getCode()));
+				LOG.warn(String.format("initing context, parse %s error", key.getCode()));
 			}
 		}
 		// 兼容老版本

@@ -3,7 +3,8 @@ package com.jimistore.boot.nemo.dao.hibernate.helper;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -20,7 +21,7 @@ import com.jimistore.boot.nemo.dao.hibernate.config.MutilDataSourceProperties;
 
 public class MutilSessionFactoryHelper implements BeanPostProcessor, ApplicationContextAware, InitializingBean {
 
-	private static final Logger log = Logger.getLogger(MutilSessionFactoryHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(MutilSessionFactoryHelper.class);
 
 	MutilSessionFactory mutilSessionFactory;
 
@@ -72,9 +73,9 @@ public class MutilSessionFactoryHelper implements BeanPostProcessor, Application
 			NemoDataSourceProperties dataSourceProperties = entry.getValue();
 			HibernateProperties hibernateProperties = hibernateMap.get(entry.getKey());
 
-			HibernateNamingStrategy hibernateNamingStrategy = new HibernateNamingStrategy();
-			hibernateNamingStrategy.setHibernateProperties(hibernateProperties);
-			MutilHibernateNamingStrategy.put(entry.getKey(), hibernateNamingStrategy);
+			NemoNamingStrategy nemoNamingStrategy = new NemoNamingStrategy();
+			nemoNamingStrategy.setHibernateProperties(hibernateProperties);
+			MutilHibernateNamingStrategy.put(entry.getKey(), nemoNamingStrategy);
 
 			// 注册datasource
 			String dataSourceName = String.format("nemo-data-source-%s", entry.getKey());
@@ -87,8 +88,9 @@ public class MutilSessionFactoryHelper implements BeanPostProcessor, Application
 			// 注册sessionfactory
 			String sessionFactoryName = String.format("nemo-mutil-session-factory-%s", entry.getKey());
 			beanDefinitionBuilder = BeanDefinitionBuilder.rootBeanDefinition(BaseSessionFactory.class)
-					.addPropertyValue("key", entry.getKey()).addPropertyReference("dataSource", dataSourceName)
-					.addPropertyValue("namingStrategy", hibernateNamingStrategy)
+					.addPropertyValue("key", entry.getKey())
+					.addPropertyReference("dataSource", dataSourceName)
+					.addPropertyValue("implicitNamingStrategy", nemoNamingStrategy)
 					.addPropertyValue("hibernatePropertie", hibernateMap.get(entry.getKey()))
 					.addPropertyValue("dataSourcePropertie", dataSourceProperties);
 			dlbf.registerBeanDefinition(sessionFactoryName, beanDefinitionBuilder.getBeanDefinition());

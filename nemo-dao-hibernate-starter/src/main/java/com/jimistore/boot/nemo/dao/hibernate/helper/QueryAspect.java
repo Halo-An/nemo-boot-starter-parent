@@ -2,13 +2,14 @@ package com.jimistore.boot.nemo.dao.hibernate.helper;
 
 import java.lang.reflect.Method;
 
-import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 
 import com.jimistore.boot.nemo.core.util.AnnotationUtil;
@@ -18,7 +19,7 @@ import com.jimistore.boot.nemo.dao.hibernate.annotation.SpelQuery;
 @Order(Integer.MAX_VALUE)
 public class QueryAspect {
 
-	private final Logger log = Logger.getLogger(getClass());
+	private final Logger LOG = LoggerFactory.getLogger(getClass());
 
 	QueryHelper queryHelper;
 
@@ -33,7 +34,9 @@ public class QueryAspect {
 
 	@Around("gquery()")
 	public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-		log.debug("request query");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("request query, args is %s", joinPoint.getArgs()));
+		}
 		Signature signature = joinPoint.getSignature();
 		MethodSignature methodSignature = (MethodSignature) signature;
 		Method method = methodSignature.getMethod();

@@ -1,5 +1,6 @@
 package com.jimistore.boot.nemo.core.config;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -9,6 +10,7 @@ import java.util.Set;
 
 import javax.validation.MessageInterpolator;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
@@ -16,7 +18,9 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
@@ -24,7 +28,6 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -54,7 +57,7 @@ public class NemoCoreAutoConfiguration {
 
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurerAdapter() {
+		return new WebMvcConfigurer() {
 
 			@Override
 			public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
@@ -109,44 +112,52 @@ public class NemoCoreAutoConfiguration {
 		return new DaoLoggerAspect();
 	}
 
-	@Bean
-	public MessageInterpolator messageInterpolator() {
-		return new MessageInterpolator() {
+	@Configuration
+	@ConditionalOnClass(MessageInterpolator.class)
+	class ValidateConfiguration {
 
-			@Override
-			public String interpolate(String messageTemplate, Context context) {
-				return null;
-			}
+		@Bean
+		@ConditionalOnClass(MessageInterpolator.class)
+		public MessageInterpolator messageInterpolator() {
+			return new MessageInterpolator() {
 
-			@Override
-			public String interpolate(String messageTemplate, Context context, Locale locale) {
-
-				if (messageTemplate.indexOf("NotNull") >= 0 || messageTemplate.indexOf("NotBlank") >= 0) {
-					return " ${field} cannot be empty. ";
+				@Override
+				public String interpolate(String messageTemplate, Context context) {
+					return null;
 				}
-				if (messageTemplate.indexOf("{") >= 0) {
-					return " ${field} format error. ";
+
+				@Override
+				public String interpolate(String messageTemplate, Context context, Locale locale) {
+
+					if (messageTemplate.indexOf("NotNull") >= 0 || messageTemplate.indexOf("NotBlank") >= 0) {
+						return " ${field} cannot be empty. ";
+					}
+					if (messageTemplate.indexOf("{") >= 0) {
+						return " ${field} format error. ";
+					}
+					return messageTemplate;
 				}
-				return messageTemplate;
-			}
 
-		};
-	}
+			};
+		}
 
-	@Bean
-	public LocalValidatorFactoryBean localValidatorFactoryBean(MessageInterpolator messageInterpolator) {
-		LocalValidatorFactoryBean localValidatorFactoryBean = new LocalValidatorFactoryBean();
-		localValidatorFactoryBean.setMessageInterpolator(messageInterpolator);
-		return localValidatorFactoryBean;
-	}
+		@Bean
+		@ConditionalOnClass(MessageInterpolator.class)
+		public LocalValidatorFactoryBean localValidatorFactoryBean(MessageInterpolator messageInterpolator) {
+			LocalValidatorFactoryBean localValidatorFactoryBean = new LocalValidatorFactoryBean();
+			localValidatorFactoryBean.setMessageInterpolator(messageInterpolator);
+			return localValidatorFactoryBean;
+		}
 
-	@Bean
-	public MethodValidationPostProcessor methodValidationPostProcessor(
-			LocalValidatorFactoryBean localValidatorFactoryBean) {
-		NemoMethodValidationPostProcessor methodValidationPostProcessor = new NemoMethodValidationPostProcessor();
-		methodValidationPostProcessor.setValidatorFactory(localValidatorFactoryBean);
-		methodValidationPostProcessor.setOrder(1);
-		return methodValidationPostProcessor;
+		@Bean
+		@ConditionalOnClass(MessageInterpolator.class)
+		public MethodValidationPostProcessor methodValidationPostProcessor(
+				LocalValidatorFactoryBean localValidatorFactoryBean) {
+			NemoMethodValidationPostProcessor methodValidationPostProcessor = new NemoMethodValidationPostProcessor();
+			methodValidationPostProcessor.setValidatorFactory(localValidatorFactoryBean);
+			methodValidationPostProcessor.setOrder(1);
+			return methodValidationPostProcessor;
+		}
 	}
 
 	@Bean
@@ -158,7 +169,6 @@ public class NemoCoreAutoConfiguration {
 		ObjectMapper om = new ObjectMapper();
 		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
 		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 		nemoJsonRedisSerializer.setObjectMapper(om);
 		template.setKeySerializer(nemoJsonRedisSerializer);
 		template.setValueSerializer(nemoJsonRedisSerializer);
@@ -167,22 +177,27 @@ public class NemoCoreAutoConfiguration {
 	}
 
 	@Bean
-	public CacheManager cacheManager(StringRedisTemplate redisTemplate, RedisProperties redisProperties) {
-		RedisCacheManager redisCacheManager = new RedisCacheManager(redisTemplate);
-		redisCacheManager.setDefaultExpiration(300l);
-		Map<String, Long> map = new HashMap<String, Long>();
-		map.put("day", 86400l);
-		map.put("default", 300l);
-		map.put("list", 1l);
+	public CacheManager cacheManager(RedisProperties redisProperties, RedisConnectionFactory redisConnectionFactory) {
+		RedisCacheConfiguration defaultRedisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+				.entryTtl(Duration.ofSeconds(300));
+
+		Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+		cacheConfigurations.put("day", defaultRedisCacheConfiguration.entryTtl(Duration.ofSeconds(86400)));
+		cacheConfigurations.put("list", defaultRedisCacheConfiguration.entryTtl(Duration.ofSeconds(1)));
 		if (redisProperties != null && redisProperties.getExpired() != null) {
 			Iterator<Entry<String, Long>> it = redisProperties.getExpired().entrySet().iterator();
 			while (it.hasNext()) {
 				Entry<String, Long> entry = it.next();
-				map.put(entry.getKey(), entry.getValue());
+				cacheConfigurations.put(entry.getKey(),
+						defaultRedisCacheConfiguration.entryTtl(Duration.ofSeconds(entry.getValue())));
 			}
 		}
-		redisCacheManager.setExpires(map);
-		return redisCacheManager;
+
+		return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory))
+				.cacheDefaults(defaultRedisCacheConfiguration)
+				.withInitialCacheConfigurations(cacheConfigurations)
+				.build();
+
 	}
 
 	@Bean

@@ -4,7 +4,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -14,15 +15,15 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import com.jimistore.boot.nemo.core.util.AnnotationUtil;
 import com.jimistore.boot.nemo.sliding.window.annotation.Publish;
 import com.jimistore.boot.nemo.sliding.window.annotation.Publisher;
 import com.jimistore.boot.nemo.sliding.window.annotation.Subscribe;
 import com.jimistore.boot.nemo.sliding.window.annotation.Subscriber;
-import com.jimistore.util.reflex.AnnotationUtil;
 
 public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostProcessor, ApplicationContextAware {
 
-	private static final Logger log = Logger.getLogger(SlidingWindowClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SlidingWindowClient.class);
 
 	ApplicationContext applicationContext;
 
@@ -97,13 +98,13 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
 			}
 			Map<Method, Publish> methodMap = this.parseAnnotationList(clazz, Publish.class);
 			for (Map.Entry<Method, Publish> entry : methodMap.entrySet()) {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("create publisher[%s]", entry.getKey().getName()));
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("create publisher[%s]", entry.getKey().getName()));
 				}
 				try {
 					publisherHelper.createPublisher(entry.getKey());
 				} catch (Exception e) {
-					log.warn(e.getMessage(), e);
+					LOG.warn(e.getMessage(), e);
 				}
 			}
 		}
@@ -116,8 +117,8 @@ public class SlidingWindowClient implements BeanFactoryPostProcessor, BeanPostPr
 			}
 			Map<Method, Subscribe> methodMap = this.parseAnnotationList(clazz, Subscribe.class);
 			for (Map.Entry<Method, Subscribe> entry : methodMap.entrySet()) {
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("create subscriber[%s:%s]", entry.getValue(), entry.getKey().getName()));
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(String.format("create subscriber[%s:%s]", entry.getValue(), entry.getKey().getName()));
 				}
 				subscriberHelper.createSubscriber(entry.getValue(), entry.getKey(), bean);
 			}

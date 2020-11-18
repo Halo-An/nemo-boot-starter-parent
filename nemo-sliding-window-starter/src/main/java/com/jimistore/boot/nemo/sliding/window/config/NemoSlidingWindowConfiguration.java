@@ -33,7 +33,6 @@ public class NemoSlidingWindowConfiguration {
 		ObjectMapper om = new ObjectMapper();
 		om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
 		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 		nemoJsonRedisSerializer.setObjectMapper(om);
 		template.setKeySerializer(nemoJsonRedisSerializer);
 		template.setValueSerializer(nemoJsonRedisSerializer);
@@ -51,7 +50,8 @@ public class NemoSlidingWindowConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(PublisherHelper.class)
-	public PublisherHelper publisherHelper(SlidingWindowTemplate slidingWindowTemplate, @Value("${spring.application.group}") String service) {
+	public PublisherHelper publisherHelper(SlidingWindowTemplate slidingWindowTemplate,
+			@Value("${spring.application.group}") String service) {
 		return new PublisherHelper().setSlidingWindowTemplate(slidingWindowTemplate).setService(service);
 	}
 

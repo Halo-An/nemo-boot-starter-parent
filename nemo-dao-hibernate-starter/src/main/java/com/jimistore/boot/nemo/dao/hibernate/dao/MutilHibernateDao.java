@@ -11,7 +11,7 @@ import com.jimistore.boot.nemo.dao.hibernate.helper.MutilSessionFactory;
 import com.jimistore.boot.nemo.dao.hibernate.validator.IInjectSqlValidator;
 
 public class MutilHibernateDao extends HibernateDao {
-	
+
 	private MutilSessionFactory mutilSessionFactory;
 
 	public MutilHibernateDao setMutilSessionFactory(MutilSessionFactory mutilSessionFactory) {
@@ -19,8 +19,8 @@ public class MutilHibernateDao extends HibernateDao {
 		return this;
 	}
 
-	public Session getSession(){
-		return mutilSessionFactory.getSessionFactory().getCurrentSession();
+	public Session getSession() {
+		return mutilSessionFactory.getSessionFactoryProxy().getCurrentSession();
 	}
 
 	@Override
