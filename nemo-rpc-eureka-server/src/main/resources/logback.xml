@@ -19,7 +19,7 @@
 	<appender name="dispatcherFileAppender"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${logging.request.path:-./logs}/nemo-roc-eureka-server-%d{yyyy-MM-dd}.%i.log
+			<fileNamePattern>${logging.request.path:-./logs}/nemo-rpc-eureka-server-%d{yyyy-MM-dd}.%i.log
 			</fileNamePattern>
 			<timeBasedFileNamingAndTriggeringPolicy
 				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
